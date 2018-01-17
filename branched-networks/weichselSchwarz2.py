@@ -14,13 +14,20 @@ def bimodal(dx, sigma, nSize = 1):
         return xDist[0]
     
 def mode(xArray, binRes = 100):
+    """Returns the mode of a distribution"""
     kde = stats.gaussian_kde(xArray)
     bins = linspace(-pi, pi, binRes)
     pdfx = kde(bins)
     return bins[argmax(pdfx)]
 
 class network(object):
-    def __init__(n, polRate, branchRate, capRate, noFilaments, noFilFront, rxnWidth, recordHistory = True):
+    def __init__(n, polRate, branchRate, capRate, noFilFront, rxnWidth):
+        # Set constants.
+        noFilaments = 200
+        filRange = 1000.0
+        n.monoWidth = 2.7
+        
+        # Initialize variables.
         n.polRate = polRate
         n.noBarbed = noFilaments
         n.branchRate = branchRate
@@ -30,12 +37,11 @@ class network(object):
         n.noFilFront = noFilFront
         n.tElapsed = 0.0
         n.xEdge = array([0.0])
+        n.atanArr = array([])
         n.noFilaments = [[n.noBarbed, n.noBranches, n.noCaps]]
         
-        # Initialize.
-        filRange = 1000.0
-        n.monoWidth = 2.7
-        # Sample from uniform distribution given N filaments.
+        # Set up noFilaments in a box of width rxnWidth and length filRange.
+        # Filament orientation angles are sampled from uniform distribution.
         n.thetaArr = uniform(-pi / 2.0, pi / 2.0, size = noFilaments)
         n.xArr = uniform(low = 0.0, high = filRange, size = noFilaments)
         n.yArr = uniform(low = -rxnWidth, high = 0.0, size = noFilaments)
@@ -45,20 +51,24 @@ class network(object):
         n.xArr -= amin(n.xArr)
         n.xBoundary = amax(n.xArr)
         n.noActive = noFilaments - noFilFront
+    
     def xPeriodic(n, xArr):
         """Enforces periodic boundary conditions in the x-direction"""
         xArr %= n.xBoundary
         return xArr
+    
     def elongate(n, idxArr):
         """Moves barbed ends by one monomer per time step"""
         n.xArr[idxArr] = n.xPeriodic(n.xArr[idxArr] + n.uArr[idxArr])
         n.yArr[idxArr] += n.vArr[idxArr]
+    
     def cap(n, idxArr):
         """Saves capping locations and removes barbed ends from position and orientation arrays"""
         n.xArr = delete(n.xArr, idxArr)
         n.yArr = delete(n.yArr, idxArr)
         n.uArr = delete(n.uArr, idxArr)
         n.vArr = delete(n.vArr, idxArr)
+    
     def branch(n, idxArr):
         arrLength = len(idxArr)
         uPrimeArr = empty(arrLength)
@@ -80,6 +90,7 @@ class network(object):
         n.yArr = concatenate((n.yArr, n.yArr[idxArr]))
         n.uArr = concatenate((n.uArr, uPrimeArr))
         n.vArr = concatenate((n.vArr, vPrimeArr))
+        n.atanArr = concatenate((n.atanArr, arctan2(uPrimeArr, vPrimeArr)))
     
     def indexactive(n):
         """Returns index of filaments that are active"""
@@ -140,10 +151,4 @@ class network(object):
             n.noFilaments += [[n.noBarbed, n.noBranches, n.noCaps]]
             
     def getAngles(n):
-        
         return arctan2(n.uArr, n.vArr)
-            
-        
-        
-    
-    
