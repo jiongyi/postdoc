@@ -1,6 +1,6 @@
 # Import libraries
 from numpy.random import randint, normal, uniform, poisson, choice, exponential
-from numpy import array, pi, linspace, argmax, sin, cos, amin, amax, delete, empty, concatenate, sort, logical_and, flatnonzero, arctan2, append, nan, arange, ones, zeros, sum, exp
+from numpy import array, pi, linspace, argmax, sin, cos, amin, amax, delete, empty, concatenate, sort, logical_and, flatnonzero, arctan2, append, nan, arange, ones, zeros, sum, exp, invert
 from scipy import stats
 
 # Function definitions
@@ -20,59 +20,57 @@ def mode(xArray, binRes = 100):
     return bins[argmax(pdfx)]
 
 class network(object):
-    def __init__(n, polRate, branchRate, capRate, loadRate, noFilaments, noNPFs, rxnWidth, recordHistory = False):
+    def __init__(n, polRate, branchRate, capRate, loadRate):
+        # Copy argument values.
         n.polRate = polRate
-        n.noBarbed = noFilaments
         n.branchRate = branchRate
-        n.noBranches = 0
         n.capRate = capRate
+        n.loadRate = loadRate
+        
+        # Define constants.
+        n.lamWidth = 1000.0
+        n.monomerWidth = 2.7
+        n.noBarbed = 200
+        n.noNPFs = 30
+        n.rxnWidth = 2 * n.monomerWidth
+        
+        # Initialize variables.
+        n.noBranches = 0
         n.noCaps = 0
         n.isCappedArr = zeros(n.noBarbed)
-        n.loadRate = loadRate
-        n.noNPFs = noNPFs
-        n.rxnWidth = rxnWidth
         n.noFilled = 0
         n.noFilledArr = empty([])
         n.tElapsed = 0.0
         n.xEdge = array([0.0])
         n.noFilaments = [[n.noBarbed, n.noBranches, n.noCaps]]
-        n.Fext = 0.0
         
         # Initialize.
-        filRange = 1000.0
-        n.monoWidth = 2.7
         # Sample from uniform distribution given N filaments.
-        n.thetaArr = uniform(-pi / 2.0, pi / 2.0, size = noFilaments)
-        n.xArr = uniform(low = 0.0, high = filRange, size = noFilaments)
-        n.yArr = uniform(low = -rxnWidth, high = 0.0, size = noFilaments)
-        n.uArr = n.monoWidth * sin(n.thetaArr)
-        n.vArr = n.monoWidth * cos(n.thetaArr)
+        n.thetaArr = uniform(-pi / 2.0, pi / 2.0, size = n.noBarbed)
+        n.xArr = uniform(low = 0.0, high = n.lamWidth, size = n.noBarbed)
+        n.yArr = uniform(low = -n.rxnWidth, high = 0.0, size = n.noBarbed)
+        n.uArr = n.monomerWidth * sin(n.thetaArr)
+        n.vArr = n.monomerWidth * cos(n.thetaArr)
         
         n.xArr -= amin(n.xArr)
         n.xBoundary = amax(n.xArr)
-        n.noActive = noFilaments
+        n.noActiveArr = array([n.noBarbed])
+        
     def xPeriodic(n, xArr):
         """Enforces periodic boundary conditions in the x-direction"""
         xArr %= n.xBoundary
         return xArr
-    
-    def computeforce(n, idx):
-        """Finds out force on filament"""
-        theta = arctan2(n.yArr[idx] / n.xArr[idx])
-        cosTheta = cos(theta)
-        
+            
     def elongate(n, idx):
         """Moves barbed ends by one monomer per time step"""
         n.xArr[idx] = n.xPeriodic(n.xArr[idx] + n.uArr[idx])
         n.yArr[idx] += n.vArr[idx]
         n.noFilled -= 1
+        
     def cap(n, idxArr):
-        """Saves capping locations and removes barbed ends from position and orientation arrays
-        n.xArr = delete(n.xArr, idxArr)
-        n.yArr = delete(n.yArr, idxArr)
-        n.uArr = delete(n.uArr, idxArr)
-        n.vArr = delete(n.vArr, idxArr)"""
+        """Saves capping locations"""
         n.isCappedArr[idxArr] = True
+        
     def branch(n, idx):
         theta = bimodal(70 / 180 * pi, 5 / 180 * pi)
         u = n.uArr[idx]
@@ -95,23 +93,27 @@ class network(object):
         n.noBarbed += 1
         n.noBranches += 1
         
+    def computeweight(n):
+        distanceToEdgeArr = amax(n.yArr) - n.yArr
+        isAtEdgeArr = distanceToEdgeArr <= n.monomerWidth
+        forceArr = 200.0 / sum(isAtEdgeArr) * n.vArr
+        forceArr[invert(isAtEdgeArr)] = 0.0
+        weightArr = exp(-forceArr * n.monomerWidth / 4.114)
+        return weightArr
+        
     def indexactive(n):
-        isBehindArr = n.xEdge[-1] > n.yArr
         isAheadArr = n.yArr >= (n.xEdge[-1] - n.rxnWidth)
-        isActiveArr = logical_and(isBehindArr, isAheadArr)
-        idxActiveArr = flatnonzero(isActiveArr)
+        idxActiveArr = flatnonzero(isAheadArr)
         return idxActiveArr
     
     def timeStep(n, dt):
         # Index active filaments.
         idxActiveArr = n.indexactive()
         n.noActive = len(idxActiveArr)
+        n.noActiveArr = append(n.noActiveArr, n.noActive)
         
-        # Calculate force.
-        cosThetaArr = cos(arctan2(n.yArr[idxActiveArr], n.xArr[idxActiveArr]))
-        sumCosThetaArr = sum(cosThetaArr)
-        forceActiveArr = n.Fext * cosThetaArr / sumCosThetaArr
-        expFactorArr = exp(-forceActiveArr * 2.7 / 4.114)
+        # Compute force-dependent weights.
+        weightArr = n.computeweight()
         
         # Cap.
         noCaps = poisson(n.capRate * n.noActive * dt)
@@ -140,8 +142,8 @@ class network(object):
         # Iterate over active barbed ends.
         for i in idxActiveArr:
             if isLoadedArr[idxActiveArr == i]:
-                branchTime = exponential(1 / n.branchRate / expFactorArr[idxActiveArr == i])
-                polTime = exponential(1 / n.polRate / expFactorArr[idxActiveArr == i])
+                branchTime = exponential(1 / n.branchRate)
+                polTime = exponential(1 / n.polRate / weightArr[i])
                 dtTime = exponential(dt)
                 if n.isCappedArr[i] == True:
                     if branchTime <= dtTime:
