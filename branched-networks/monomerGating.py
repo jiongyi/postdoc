@@ -96,7 +96,7 @@ class network(object):
     def computeweight(n):
         distanceToEdgeArr = amax(n.yArr) - n.yArr
         isAtEdgeArr = distanceToEdgeArr <= n.monomerWidth
-        forceArr = 200.0 / sum(isAtEdgeArr) * n.vArr
+        forceArr = 50.0 / sum(isAtEdgeArr) * n.vArr
         forceArr[invert(isAtEdgeArr)] = 0.0
         weightArr = exp(-forceArr * n.monomerWidth / 4.114)
         return weightArr
