@@ -43,6 +43,7 @@ class network(object):
         n.tElapsed = 0.0
         n.xEdge = array([0.0])
         n.noFilaments = [[n.noBarbed, n.noBranches, n.noCaps]]
+        n.filamentLengthArr = n.monomerWidth * ones(n.noBarbed)
         
         # Initialize.
         # Sample from uniform distribution given N filaments.
@@ -66,10 +67,13 @@ class network(object):
         n.xArr[idx] = n.xPeriodic(n.xArr[idx] + n.uArr[idx])
         n.yArr[idx] += n.vArr[idx]
         n.noFilled -= 1
+        n.filamentLengthArr[idx] += n.monomerWidth
         
     def cap(n, idxArr):
         """Saves capping locations"""
         n.isCappedArr[idxArr] = True
+        n.noCaps += 1
+        n.noBarbed -= 1
         
     def branch(n, idx):
         theta = bimodal(70 / 180 * pi, 5 / 180 * pi)
@@ -89,6 +93,7 @@ class network(object):
         n.uArr = append(n.uArr, uPrime)
         n.vArr = append(n.vArr, vPrime)
         n.isCappedArr = append(n.isCappedArr, False)
+        n.filamentLengthArr = append(n.filamentLengthArr, n.monomerWidth)
         n.noFilled -= 1
         n.noBarbed += 1
         n.noBranches += 1
@@ -96,7 +101,7 @@ class network(object):
     def computeweight(n):
         distanceToEdgeArr = amax(n.yArr) - n.yArr
         isAtEdgeArr = distanceToEdgeArr <= n.monomerWidth
-        forceArr = 50.0 / sum(isAtEdgeArr) * n.vArr
+        forceArr = 25.0 / sum(isAtEdgeArr) * n.vArr
         forceArr[invert(isAtEdgeArr)] = 0.0
         weightArr = exp(-forceArr * n.monomerWidth / 4.114)
         return weightArr
@@ -116,6 +121,7 @@ class network(object):
         weightArr = n.computeweight()
         
         # Cap.
+        """
         noCaps = poisson(n.capRate * n.noActive * dt)
         if noCaps > 0:
             if noCaps >= n.noActive:
@@ -125,6 +131,7 @@ class network(object):
             n.cap(idxCapArr)
             n.noCaps += noCaps
             n.noBarbed -= noCaps
+        """
         
         # Update NPF occupancy.
         n.noFilled += poisson(n.loadRate * (n.noNPFs - n.noFilled) * dt)
@@ -141,6 +148,26 @@ class network(object):
             
         # Iterate over active barbed ends.
         for i in idxActiveArr:
+            capTime = exponential(1 / n.capRate / weightArr[i])
+            polTime = exponential(1 / n.polRate / weightArr[i])
+            branchTime = exponential(1 / n.branchRate)
+            dtTime = exponential(dt)
+            if capTime <= dtTime:
+                n.cap(i)
+                if isLoadedArr[idxActiveArr == i]:
+                    if branchTime <= dtTime:
+                        n.branch(i)
+            else:
+                if isLoadedArr[idxActiveArr == i]:
+                    if (branchTime < polTime) and (branchTime <= dtTime):
+                        n.branch(i)
+                    else:
+                        if (polTime < branchTime) and (polTime <= dtTime):
+                            n.elongate(i)
+        
+        
+        """
+        for i in idxActiveArr:
             if isLoadedArr[idxActiveArr == i]:
                 branchTime = exponential(1 / n.branchRate)
                 polTime = exponential(1 / n.polRate / weightArr[i])
@@ -154,6 +181,7 @@ class network(object):
                     else:
                         if (polTime < branchTime) and (polTime <= dtTime):
                             n.elongate(i)
+        """
                                
                             
         # Update.
