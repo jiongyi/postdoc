@@ -20,12 +20,13 @@ def mode(xArray, binRes = 100):
     return bins[argmax(pdfx)]
 
 class network(object):
-    def __init__(n, polRate, branchRate, capRate, loadRate):
+    def __init__(n, polRate, branchRate, capRate, loadRate, extForce):
         # Copy argument values.
         n.polRate = polRate
         n.branchRate = branchRate
         n.capRate = capRate
         n.loadRate = loadRate
+        n.extForce = extForce
         
         # Define constants.
         n.lamWidth = 1000.0
@@ -101,7 +102,7 @@ class network(object):
     def computeweight(n):
         distanceToEdgeArr = amax(n.yArr) - n.yArr
         isAtEdgeArr = distanceToEdgeArr <= n.monomerWidth
-        forceArr = 25.0 / sum(isAtEdgeArr) * n.vArr
+        forceArr = n.extForce / sum(isAtEdgeArr) * n.vArr
         forceArr[invert(isAtEdgeArr)] = 0.0
         weightArr = exp(-forceArr * n.monomerWidth / 4.114)
         return weightArr
