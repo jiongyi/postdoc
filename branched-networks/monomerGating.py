@@ -33,7 +33,7 @@ class network(object):
         n.monomerWidth = 2.7
         n.noBarbed = 200
         n.noNPFs = 30
-        n.rxnWidth = 2 * n.monomerWidth
+        n.rxnWidth = 10 * n.monomerWidth
         
         # Initialize variables.
         n.noBranches = 0
@@ -102,7 +102,7 @@ class network(object):
     def computeweight(n):
         distanceToEdgeArr = amax(n.yArr) - n.yArr
         isAtEdgeArr = distanceToEdgeArr <= n.monomerWidth
-        forceArr = n.extForce / sum(isAtEdgeArr) * n.vArr
+        forceArr = n.extForce * n.vArr / sum(isAtEdgeArr * n.vArr)
         forceArr[invert(isAtEdgeArr)] = 0.0
         weightArr = exp(-forceArr * n.monomerWidth / 4.114)
         return weightArr
@@ -165,25 +165,8 @@ class network(object):
                     else:
                         if (polTime < branchTime) and (polTime <= dtTime):
                             n.elongate(i)
+                            
         
-        
-        """
-        for i in idxActiveArr:
-            if isLoadedArr[idxActiveArr == i]:
-                branchTime = exponential(1 / n.branchRate)
-                polTime = exponential(1 / n.polRate / weightArr[i])
-                dtTime = exponential(dt)
-                if n.isCappedArr[i] == True:
-                    if branchTime <= dtTime:
-                        n.branch(i)
-                else:
-                    if (branchTime < polTime) and (branchTime <= dtTime):
-                        n.branch(i)
-                    else:
-                        if (polTime < branchTime) and (polTime <= dtTime):
-                            n.elongate(i)
-        """
-                               
                             
         # Update.
         n.xEdge = append(n.xEdge, amax(n.yArr))
