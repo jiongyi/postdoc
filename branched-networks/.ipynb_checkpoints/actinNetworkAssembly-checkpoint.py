@@ -3,7 +3,7 @@ from numpy import array, zeros, nan, isnan, pi, cos, sin, mod, int, argmin, appe
 from numpy.random import rand, poisson, randn, choice
 
 class network(object):
-    def __init__(n, kPol = 100.0, kBr = 1.0, kCap = 1.0, kAct = 10.0, extForce = 1e2, totalTime = 10.0):
+    def __init__(n, kPol = 50.0, kBr = 0.5, kCap = 0.5, kAct = 100.0, extForce = 1e2, totalTime = 10.0):
         # Define constants.
         n.L = 1000.0 # Length of leading edge in nanometers
         n.kPol = kPol # Polymerization rate in subunits per second
@@ -29,7 +29,7 @@ class network(object):
         n.vArr = n.d * sin(n.thetaArr) # y-coordinate of theta
         n.xBarbArr = n.xPointArr
         n.yBarbArr = n.yPointArr
-        n.xLead = amax(n.xBarbArr)
+        n.xLead = amax(n.xBarbArr[logical_and(n.yBarbArr <= n.L, n.yBarbArr >= 0)])
         n.isCappedArr = zeros(n.N, dtype = bool)
         n.isTouchingArr = n.xLead - n.xBarbArr < n.d
         n.nTouching = sum(n.isTouchingArr)
@@ -78,6 +78,7 @@ class network(object):
     def elongate(n, index):
         n.xBarbArr[index] = n.xBarbArr[index] + n.uArr[index]
         n.yBarbArr[index] = n.yBarbArr[index] + n.vArr[index]
+        """
         # Enforce periodic boundary conditions in the y-direction.
         if n.yBarbArr[index] > n.L:
             n.yBarbArr[index] = mod(n.yBarbArr[index], n.L)
@@ -85,6 +86,7 @@ class network(object):
         if n.yBarbArr[index] < 0:
             n.yBarbArr[index] = mod(n.yBarbArr[index], n.L)
             n.yPointArr[index] = n.yBarbArr[index]
+        """
             
     def orderparameter(n):
         thetaArr = arctan(n.vArr / n.uArr) / pi * 180
@@ -94,6 +96,22 @@ class network(object):
         return phi
                 
     def update(n):
+        # Elongate from solution.
+        for i in range(n.N):
+            if n.isCappedArr[i] == False:
+                if n.isTouchingArr[i] == True:
+                    polProb = poisson(n.kPol * n.forceWeight * n.dt)
+                else:
+                    polProb = poisson(n.kPol * n.dt)
+                if bool(polProb) == True:
+                    n.elongate(i)
+                    
+        n.xLead = amax(n.xBarbArr[logical_and(n.yBarbArr <= n.L, n.yBarbArr >= 0)])
+        n.xNpfArr[:] = n.xLead
+        n.isTouchingArr = n.xLead - n.xBarbArr < n.d
+        n.nTouching = sum(n.isTouchingArr)
+        n.forceWeight = exp(-n.extForce * n.d / 4.114 / n.nTouching)
+        
         # Cap.
         for i in range(n.N):
             if n.isCappedArr[i] == 0:
@@ -122,16 +140,16 @@ class network(object):
                             continue
                         # Elongate
                         if n.isTouchingArr[idxBarb] == False:
-                            polProb = poisson(n.kPol * n.dt)
+                            polProb = poisson(3 * n.kPol * n.dt)
                         else:
-                            polProb = poisson(n.kPol * n.forceWeight * n.dt)
+                            polProb = poisson(3 * n.kPol * n.forceWeight * n.dt)
                         if bool(polProb) == True:
                             n.elongate(idxBarb)
                             n.isNpfLoadedArr[i] = False
                                 
         n.t = n.t + n.dt
         n.N = len(n.xBarbArr)
-        n.xLead = amax(n.xBarbArr)
+        n.xLead = amax(n.xBarbArr[logical_and(n.yBarbArr <= n.L, n.yBarbArr >= 0)])
         n.xNpfArr[:] = n.xLead
         n.isTouchingArr = n.xLead - n.xBarbArr < n.d
         n.nTouching = sum(n.isTouchingArr)

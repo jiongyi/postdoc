@@ -141,7 +141,7 @@
     \def\gt{>}
     \def\lt{<}
     % Document parameters
-    \title{branched\_actin\_assembly}
+    \title{poly-proline-wa-nucleation-kinetic-model}
     
     
     
@@ -280,134 +280,175 @@
     
 
     
+    \section{Rate equations}\label{rate-equations}
+
+\begin{align}
+\frac{d[E]}{dt} &= k_N [E] [WA]^2 - k_C [E] \\
+\frac{d[WA]}{dt} &= (k_A + k_T \frac{[PA]}{[WA]_{max}}) ([WA]_{max} - [WA]) - k_N [E][WA]^2 - k_P [E][WA] \\
+\frac{d[PA]}{dt} &= (k_{PA} - k_T \frac{[PA]}{[WA]_{max}})([WA]_{max} - [WA]) - k_P [E][PA]
+\end{align}
+
+At steady state \(\frac{d[E]}{dt} = 0\), \(\frac{d[WA]}{dt} = 0\), and
+\(\frac{d[PA]}{dt} = 0\):
+
+\begin{align}
+[WA]_{eq} &= \sqrt{\frac{k_C}{k_N}} \\
+[E]_{eq} &= \frac{(k_A + k_T \frac{[PA]_{eq}}{[WA]_{max}})([WA]_{max} - \sqrt{\frac{k_C}{k_N}})}{k_P \sqrt{\frac{k_C}{k_N}}} \\
+[PA]_{eq} &= \frac{\sqrt{k_T^2 \frac{k_C}{k_N} + k_A^2 [WA]_{max}^2 + 2 k_T (k_A + 2 k_{PA})[WA]_{max} \sqrt{\frac{k_C}{k_N}}} - (k_T \sqrt{\frac{k_C}{k_N}} + k_A[WA]_{max})}{2 k_T}
+\end{align}
+
     \begin{Verbatim}[commandchars=\\\{\}]
-{\color{incolor}In [{\color{incolor}150}]:} \PY{c+c1}{\PYZsh{} Import libraries}
-          \PY{k+kn}{from} \PY{n+nn}{numpy} \PY{k}{import} \PY{n}{array}\PY{p}{,} \PY{n}{zeros}\PY{p}{,} \PY{n}{pi}\PY{p}{,} \PY{n}{cos}\PY{p}{,} \PY{n}{sin}\PY{p}{,} \PY{n}{mod}\PY{p}{,} \PY{n+nb}{int}\PY{p}{,} \PY{n}{argmin}\PY{p}{,} \PY{n}{append}\PY{p}{,} \PY{n}{amax}\PY{p}{,} \PY{n}{exp}
-          \PY{k+kn}{from} \PY{n+nn}{numpy}\PY{n+nn}{.}\PY{n+nn}{random} \PY{k}{import} \PY{n}{rand}\PY{p}{,} \PY{n}{poisson}\PY{p}{,} \PY{n}{randn}\PY{p}{,} \PY{n}{choice}
-          \PY{o}{\PYZpc{}}\PY{k}{matplotlib} inline
-          \PY{k+kn}{from} \PY{n+nn}{matplotlib}\PY{n+nn}{.}\PY{n+nn}{pyplot} \PY{k}{import} \PY{n}{plot}\PY{p}{,} \PY{n}{xlabel}\PY{p}{,} \PY{n}{ylabel}\PY{p}{,} \PY{n}{xlim}\PY{p}{,} \PY{n}{ylim}\PY{p}{,} \PY{n}{box}
-          
-          \PY{c+c1}{\PYZsh{} Define constants.}
-          \PY{n}{N} \PY{o}{=} \PY{l+m+mi}{200} \PY{c+c1}{\PYZsh{} Initial number of filaments}
-          \PY{n}{L} \PY{o}{=} \PY{l+m+mf}{1000.0} \PY{c+c1}{\PYZsh{} Length of leading edge in nanometers}
-          \PY{n}{kPol} \PY{o}{=} \PY{l+m+mf}{100.0} \PY{c+c1}{\PYZsh{} Polymerization rate in subunits per second}
-          \PY{n}{kBr} \PY{o}{=} \PY{n}{kPol} \PY{o}{/} \PY{l+m+mi}{100} \PY{c+c1}{\PYZsh{} branch rate in branches per second}
-          \PY{n}{kCap} \PY{o}{=} \PY{n}{kPol} \PY{o}{/} \PY{l+m+mi}{100} \PY{c+c1}{\PYZsh{} cap rate in branches per second}
-          \PY{n}{d} \PY{o}{=} \PY{l+m+mf}{2.7} \PY{c+c1}{\PYZsh{} Width of subunit in nanometers}
-          \PY{n}{w} \PY{o}{=} \PY{l+m+mi}{10} \PY{o}{*} \PY{n}{d} \PY{c+c1}{\PYZsh{} Width of branching region.}
-          \PY{n}{muTheta} \PY{o}{=} \PY{l+m+mf}{70.0} \PY{o}{/} \PY{l+m+mi}{180} \PY{o}{*} \PY{n}{pi}
-          \PY{n}{muSigma} \PY{o}{=} \PY{l+m+mf}{5.0} \PY{o}{/} \PY{l+m+mi}{180} \PY{o}{*} \PY{n}{pi}
-          \PY{n}{extForce} \PY{o}{=} \PY{l+m+mf}{1e2} \PY{c+c1}{\PYZsh{} external force in pN.}
-          
-          \PY{c+c1}{\PYZsh{} Initialize.}
-          \PY{n}{t} \PY{o}{=} \PY{l+m+mf}{0.0} \PY{c+c1}{\PYZsh{} Time in seconds.}
-          \PY{n}{dt} \PY{o}{=} \PY{l+m+mf}{1e\PYZhy{}3} \PY{c+c1}{\PYZsh{} Simulation time interval in seconds}
-          \PY{n}{tTotal} \PY{o}{=} \PY{l+m+mf}{10.0} \PY{c+c1}{\PYZsh{} Total simulation time in seconds}
-          \PY{n}{xPointArr} \PY{o}{=} \PY{n}{zeros}\PY{p}{(}\PY{n}{N}\PY{p}{)} \PY{c+c1}{\PYZsh{} x\PYZhy{}coordinate of barbed end position}
-          \PY{n}{yPointArr} \PY{o}{=} \PY{n}{L} \PY{o}{*} \PY{n}{rand}\PY{p}{(}\PY{n}{N}\PY{p}{)} \PY{c+c1}{\PYZsh{} y\PYZhy{}coordinate of barbed end position}
-          \PY{n}{thetaArr} \PY{o}{=} \PY{n}{pi} \PY{o}{*} \PY{n}{rand}\PY{p}{(}\PY{n}{N}\PY{p}{)} \PY{o}{\PYZhy{}} \PY{n}{pi} \PY{o}{/} \PY{l+m+mi}{2} \PY{c+c1}{\PYZsh{} angle of barbed end with respect to x\PYZhy{}axis}
-          \PY{n}{uArr} \PY{o}{=} \PY{n}{d} \PY{o}{*} \PY{n}{cos}\PY{p}{(}\PY{n}{thetaArr}\PY{p}{)} \PY{c+c1}{\PYZsh{} x\PYZhy{}coordinate of theta}
-          \PY{n}{vArr} \PY{o}{=} \PY{n}{d} \PY{o}{*} \PY{n}{sin}\PY{p}{(}\PY{n}{thetaArr}\PY{p}{)} \PY{c+c1}{\PYZsh{} y\PYZhy{}coordinate of theta}
-          \PY{n}{xBarbArr} \PY{o}{=} \PY{n}{xPointArr}
-          \PY{n}{yBarbArr} \PY{o}{=} \PY{n}{yPointArr}
-          \PY{n}{xLead} \PY{o}{=} \PY{n}{amax}\PY{p}{(}\PY{n}{xBarbArr}\PY{p}{)}
-          \PY{n}{isCappedArr} \PY{o}{=} \PY{n}{zeros}\PY{p}{(}\PY{n}{N}\PY{p}{)}
-          \PY{n}{n} \PY{o}{=} \PY{n+nb}{int}\PY{p}{(}\PY{n}{tTotal} \PY{o}{/} \PY{n}{dt}\PY{p}{)}
-          
-          \PY{c+c1}{\PYZsh{} Define functions.}
-          \PY{k}{def} \PY{n+nf}{elongate}\PY{p}{(}\PY{n}{x}\PY{p}{,} \PY{n}{y}\PY{p}{,} \PY{n}{u}\PY{p}{,} \PY{n}{v}\PY{p}{,} \PY{n}{L}\PY{p}{)}\PY{p}{:}
-              \PY{n}{xNew} \PY{o}{=} \PY{n}{x} \PY{o}{+} \PY{n}{u}
-              \PY{n}{yNew} \PY{o}{=} \PY{n}{mod}\PY{p}{(}\PY{n}{y} \PY{o}{+} \PY{n}{v}\PY{p}{,} \PY{n}{L}\PY{p}{)} \PY{c+c1}{\PYZsh{} Enforce periodic boundary in the y direction.}
-              \PY{k}{return} \PY{n}{xNew}\PY{p}{,} \PY{n}{yNew}
-          
-          \PY{k}{def} \PY{n+nf}{branch}\PY{p}{(}\PY{n}{u}\PY{p}{,} \PY{n}{v}\PY{p}{)}\PY{p}{:}
-              \PY{n}{theta} \PY{o}{=} \PY{n}{choice}\PY{p}{(}\PY{p}{[}\PY{o}{\PYZhy{}}\PY{l+m+mi}{1}\PY{p}{,} \PY{l+m+mi}{1}\PY{p}{]}\PY{p}{)} \PY{o}{*} \PY{n}{muTheta} \PY{o}{+} \PY{n}{muSigma} \PY{o}{*} \PY{n}{randn}\PY{p}{(}\PY{p}{)}
-              \PY{n}{uNew} \PY{o}{=} \PY{n}{u} \PY{o}{*} \PY{n}{cos}\PY{p}{(}\PY{n}{theta}\PY{p}{)} \PY{o}{\PYZhy{}} \PY{n}{v} \PY{o}{*} \PY{n}{sin}\PY{p}{(}\PY{n}{theta}\PY{p}{)}
-              \PY{k}{if} \PY{n}{uNew} \PY{o}{\PYZgt{}} \PY{l+m+mi}{0}\PY{p}{:}
-                  \PY{n}{vNew} \PY{o}{=} \PY{n}{u} \PY{o}{*} \PY{n}{sin}\PY{p}{(}\PY{n}{theta}\PY{p}{)} \PY{o}{+} \PY{n}{v} \PY{o}{*} \PY{n}{cos}\PY{p}{(}\PY{n}{theta}\PY{p}{)}
-              \PY{k}{else}\PY{p}{:}
-                  \PY{n}{uNew} \PY{o}{=} \PY{n}{u} \PY{o}{*} \PY{n}{cos}\PY{p}{(}\PY{n}{theta}\PY{p}{)} \PY{o}{+} \PY{n}{v} \PY{o}{*} \PY{n}{sin}\PY{p}{(}\PY{n}{theta}\PY{p}{)}
-                  \PY{n}{vNew} \PY{o}{=} \PY{o}{\PYZhy{}}\PY{n}{u} \PY{o}{*} \PY{n}{sin}\PY{p}{(}\PY{n}{theta}\PY{p}{)} \PY{o}{+} \PY{n}{v} \PY{o}{*} \PY{n}{cos}\PY{p}{(}\PY{n}{theta}\PY{p}{)}
-              \PY{k}{return} \PY{n}{uNew}\PY{p}{,} \PY{n}{vNew}
-          
-          \PY{c+c1}{\PYZsh{} Iterate.}
-          \PY{k}{for} \PY{n}{i} \PY{o+ow}{in} \PY{n+nb}{range}\PY{p}{(}\PY{n}{n}\PY{p}{)}\PY{p}{:}
-              \PY{n}{N} \PY{o}{=} \PY{n+nb}{len}\PY{p}{(}\PY{n}{xBarbArr}\PY{p}{)}
-              \PY{n}{isActiveArr} \PY{o}{=} \PY{n}{xLead} \PY{o}{\PYZhy{}} \PY{n}{xBarbArr} \PY{o}{\PYZlt{}}\PY{o}{=} \PY{n}{w}
-              \PY{n}{isTouchingArr} \PY{o}{=} \PY{n}{xLead} \PY{o}{\PYZhy{}} \PY{n}{xBarbArr} \PY{o}{\PYZlt{}} \PY{n}{d}
-              \PY{n}{nTouching} \PY{o}{=} \PY{n+nb}{sum}\PY{p}{(}\PY{n}{isTouchingArr}\PY{p}{)}
-              \PY{n}{forceWeight} \PY{o}{=} \PY{n}{exp}\PY{p}{(}\PY{o}{\PYZhy{}}\PY{n}{extForce} \PY{o}{*} \PY{n}{d} \PY{o}{/} \PY{l+m+mf}{4.114} \PY{o}{/} \PY{n}{nTouching}\PY{p}{)}
-              \PY{k}{for} \PY{n}{j} \PY{o+ow}{in} \PY{n+nb}{range}\PY{p}{(}\PY{n}{N}\PY{p}{)}\PY{p}{:}
-                  \PY{k}{if} \PY{n}{isCappedArr}\PY{p}{[}\PY{n}{j}\PY{p}{]} \PY{o}{==} \PY{l+m+mi}{0}\PY{p}{:}
-                      \PY{c+c1}{\PYZsh{} Cap.}
-                      \PY{k}{if} \PY{n}{isTouchingArr}\PY{p}{[}\PY{n}{j}\PY{p}{]} \PY{o}{==} \PY{k+kc}{False}\PY{p}{:}
-                          \PY{n}{capProb} \PY{o}{=} \PY{n}{poisson}\PY{p}{(}\PY{n}{kCap} \PY{o}{*} \PY{n}{dt}\PY{p}{)}
-                      \PY{k}{else}\PY{p}{:}
-                          \PY{n}{capProb} \PY{o}{=} \PY{n}{poisson}\PY{p}{(}\PY{n}{kCap} \PY{o}{*} \PY{n}{forceWeight} \PY{o}{*} \PY{n}{dt}\PY{p}{)}
-                      \PY{k}{if} \PY{n+nb}{bool}\PY{p}{(}\PY{n}{capProb}\PY{p}{)} \PY{o}{==} \PY{k+kc}{True}\PY{p}{:}
-                          \PY{n}{isCappedArr}\PY{p}{[}\PY{n}{j}\PY{p}{]} \PY{o}{=} \PY{l+m+mi}{1}
-                          \PY{k}{continue}
-                      \PY{c+c1}{\PYZsh{} Branch.}
-                      \PY{k}{if} \PY{n+nb}{bool}\PY{p}{(}\PY{n}{poisson}\PY{p}{(}\PY{n}{kBr} \PY{o}{*} \PY{n}{isActiveArr}\PY{p}{[}\PY{n}{j}\PY{p}{]} \PY{o}{*} \PY{n}{dt}\PY{p}{)}\PY{p}{)} \PY{o}{==} \PY{k+kc}{True}\PY{p}{:}
-                          \PY{n}{xPointArr} \PY{o}{=} \PY{n}{append}\PY{p}{(}\PY{n}{xPointArr}\PY{p}{,} \PY{n}{xBarbArr}\PY{p}{[}\PY{n}{j}\PY{p}{]}\PY{p}{)}
-                          \PY{n}{yPointArr} \PY{o}{=} \PY{n}{append}\PY{p}{(}\PY{n}{yPointArr}\PY{p}{,} \PY{n}{yBarbArr}\PY{p}{[}\PY{n}{j}\PY{p}{]}\PY{p}{)}
-                          \PY{n}{xBarbArr} \PY{o}{=} \PY{n}{append}\PY{p}{(}\PY{n}{xBarbArr}\PY{p}{,} \PY{n}{xBarbArr}\PY{p}{[}\PY{n}{j}\PY{p}{]}\PY{p}{)}
-                          \PY{n}{yBarbArr} \PY{o}{=} \PY{n}{append}\PY{p}{(}\PY{n}{yBarbArr}\PY{p}{,} \PY{n}{yBarbArr}\PY{p}{[}\PY{n}{j}\PY{p}{]}\PY{p}{)}
-                          \PY{n}{uNew}\PY{p}{,} \PY{n}{vNew} \PY{o}{=} \PY{n}{branch}\PY{p}{(}\PY{n}{uArr}\PY{p}{[}\PY{n}{j}\PY{p}{]}\PY{p}{,} \PY{n}{vArr}\PY{p}{[}\PY{n}{j}\PY{p}{]}\PY{p}{)}
-                          \PY{n}{uArr} \PY{o}{=} \PY{n}{append}\PY{p}{(}\PY{n}{uArr}\PY{p}{,} \PY{n}{uNew}\PY{p}{)}
-                          \PY{n}{vArr} \PY{o}{=} \PY{n}{append}\PY{p}{(}\PY{n}{vArr}\PY{p}{,} \PY{n}{vNew}\PY{p}{)}
-                          \PY{n}{isCappedArr} \PY{o}{=} \PY{n}{append}\PY{p}{(}\PY{n}{isCappedArr}\PY{p}{,} \PY{l+m+mi}{0}\PY{p}{)}
-                      \PY{c+c1}{\PYZsh{} Elongate.}
-                      \PY{k}{if} \PY{n}{isTouchingArr}\PY{p}{[}\PY{n}{j}\PY{p}{]} \PY{o}{==} \PY{k+kc}{False}\PY{p}{:}
-                          \PY{n}{polProb} \PY{o}{=} \PY{n}{poisson}\PY{p}{(}\PY{n}{kPol} \PY{o}{*} \PY{n}{isActiveArr}\PY{p}{[}\PY{n}{j}\PY{p}{]} \PY{o}{*} \PY{n}{dt}\PY{p}{)}
-                      \PY{k}{else}\PY{p}{:}
-                          \PY{n}{polProb} \PY{o}{=} \PY{n}{poisson}\PY{p}{(}\PY{n}{kPol} \PY{o}{*} \PY{n}{forceWeight} \PY{o}{*} \PY{n}{dt}\PY{p}{)}
-                      \PY{k}{if} \PY{n+nb}{bool}\PY{p}{(}\PY{n}{polProb}\PY{p}{)} \PY{o}{==} \PY{k+kc}{True}\PY{p}{:}
-                          \PY{n}{xBarbArr}\PY{p}{[}\PY{n}{j}\PY{p}{]} \PY{o}{=} \PY{n}{xBarbArr}\PY{p}{[}\PY{n}{j}\PY{p}{]} \PY{o}{+} \PY{n}{uArr}\PY{p}{[}\PY{n}{j}\PY{p}{]}
-                          \PY{n}{yBarbArr}\PY{p}{[}\PY{n}{j}\PY{p}{]} \PY{o}{=} \PY{n}{yBarbArr}\PY{p}{[}\PY{n}{j}\PY{p}{]} \PY{o}{+} \PY{n}{vArr}\PY{p}{[}\PY{n}{j}\PY{p}{]}
-                          \PY{k}{if} \PY{n}{yBarbArr}\PY{p}{[}\PY{n}{j}\PY{p}{]} \PY{o}{\PYZgt{}}\PY{o}{=} \PY{n}{L}\PY{p}{:}
-                              \PY{n}{yBarbArr}\PY{p}{[}\PY{n}{j}\PY{p}{]} \PY{o}{=} \PY{n}{mod}\PY{p}{(}\PY{n}{yBarbArr}\PY{p}{[}\PY{n}{j}\PY{p}{]}\PY{p}{,} \PY{n}{L}\PY{p}{)}
-                              \PY{n}{yPointArr}\PY{p}{[}\PY{n}{j}\PY{p}{]} \PY{o}{=} \PY{l+m+mf}{0.0}
-                          \PY{k}{else}\PY{p}{:}
-                              \PY{k}{if} \PY{n}{yBarbArr}\PY{p}{[}\PY{n}{j}\PY{p}{]} \PY{o}{\PYZlt{}} \PY{l+m+mi}{0}\PY{p}{:}
-                                  \PY{n}{yBarbArr}\PY{p}{[}\PY{n}{j}\PY{p}{]} \PY{o}{=} \PY{n}{L} \PY{o}{+} \PY{n}{yBarbArr}\PY{p}{[}\PY{n}{j}\PY{p}{]}
-                                  \PY{n}{yPointArr}\PY{p}{[}\PY{n}{j}\PY{p}{]} \PY{o}{=} \PY{n}{L}
-              \PY{n}{xLead} \PY{o}{=} \PY{n}{amax}\PY{p}{(}\PY{n}{xBarbArr}\PY{p}{)}
-          
-          \PY{n}{plot}\PY{p}{(}\PY{p}{[}\PY{n}{xPointArr}\PY{p}{,} \PY{n}{xBarbArr}\PY{p}{]}\PY{p}{,} \PY{p}{[}\PY{n}{yPointArr}\PY{p}{,} \PY{n}{yBarbArr}\PY{p}{]}\PY{p}{,} \PY{l+s+s1}{\PYZsq{}}\PY{l+s+s1}{b}\PY{l+s+s1}{\PYZsq{}}\PY{p}{)}
-          \PY{n}{xlabel}\PY{p}{(}\PY{l+s+sa}{r}\PY{l+s+s2}{\PYZdq{}}\PY{l+s+s2}{x (nm)}\PY{l+s+s2}{\PYZdq{}}\PY{p}{,} \PY{n}{fontsize} \PY{o}{=} \PY{l+m+mi}{18}\PY{p}{)}
-          \PY{n}{ylabel}\PY{p}{(}\PY{l+s+sa}{r}\PY{l+s+s2}{\PYZdq{}}\PY{l+s+s2}{y (nm)}\PY{l+s+s2}{\PYZdq{}}\PY{p}{,} \PY{n}{fontsize} \PY{o}{=} \PY{l+m+mi}{18}\PY{p}{)}
-          \PY{n}{xlim}\PY{p}{(}\PY{l+m+mi}{0}\PY{p}{,} \PY{l+m+mi}{3000}\PY{p}{)}
-          \PY{n}{ylim}\PY{p}{(}\PY{l+m+mi}{0}\PY{p}{,} \PY{l+m+mi}{1000}\PY{p}{)}
-          \PY{n}{box}\PY{p}{(}\PY{p}{)}
+{\color{incolor}In [{\color{incolor}1}]:} \PY{k+kn}{from} \PY{n+nn}{math} \PY{k}{import} \PY{n}{sqrt}
+        \PY{k+kn}{from} \PY{n+nn}{numpy} \PY{k}{import} \PY{n}{zeros}\PY{p}{,} \PY{n}{array}\PY{p}{,} \PY{n}{linspace}
+        \PY{k+kn}{from} \PY{n+nn}{matplotlib}\PY{n+nn}{.}\PY{n+nn}{pyplot} \PY{k}{import} \PY{n}{plot}\PY{p}{,} \PY{n}{xlabel}\PY{p}{,} \PY{n}{ylabel}
+        \PY{o}{\PYZpc{}}\PY{k}{matplotlib} inline
+        
+        \PY{k}{def} \PY{n+nf}{nucleationmodel}\PY{p}{(}\PY{n}{kP} \PY{o}{=} \PY{l+m+mf}{100.0}\PY{p}{,} \PY{n}{kN} \PY{o}{=} \PY{l+m+mf}{10.0}\PY{p}{,} \PY{n}{kC} \PY{o}{=} \PY{l+m+mf}{0.1}\PY{p}{,} \PY{n}{kA} \PY{o}{=} \PY{l+m+mf}{10.0}\PY{p}{,} \PY{n}{kPA} \PY{o}{=} \PY{l+m+mf}{10.0}\PY{p}{,} \PY{n}{kT} \PY{o}{=} \PY{l+m+mf}{0.1}\PY{p}{)}\PY{p}{:}
+            \PY{n}{noPoints} \PY{o}{=} \PY{l+m+mi}{20000}
+            \PY{n}{WAMax} \PY{o}{=} \PY{l+m+mf}{1.0}
+            \PY{n}{dt} \PY{o}{=} \PY{l+m+mf}{1e\PYZhy{}3}
+            \PY{n}{EArr} \PY{o}{=} \PY{n}{zeros}\PY{p}{(}\PY{n}{noPoints}\PY{p}{)}
+            \PY{n}{WAArr} \PY{o}{=} \PY{n}{zeros}\PY{p}{(}\PY{n}{noPoints}\PY{p}{)}
+            \PY{n}{PAArr} \PY{o}{=} \PY{n}{zeros}\PY{p}{(}\PY{n}{noPoints}\PY{p}{)}
+            \PY{n}{timeArr} \PY{o}{=} \PY{n}{zeros}\PY{p}{(}\PY{n}{noPoints}\PY{p}{)}
+            \PY{n}{EArr}\PY{p}{[}\PY{l+m+mi}{0}\PY{p}{]} \PY{o}{=} \PY{l+m+mf}{0.1}
+            
+            \PY{k}{for} \PY{n}{i} \PY{o+ow}{in} \PY{n+nb}{range}\PY{p}{(}\PY{n}{noPoints} \PY{o}{\PYZhy{}} \PY{l+m+mi}{1}\PY{p}{)}\PY{p}{:}
+                \PY{n}{E} \PY{o}{=} \PY{n}{EArr}\PY{p}{[}\PY{n}{i}\PY{p}{]}
+                \PY{n}{WA} \PY{o}{=} \PY{n}{WAArr}\PY{p}{[}\PY{n}{i}\PY{p}{]}
+                \PY{n}{PA} \PY{o}{=} \PY{n}{PAArr}\PY{p}{[}\PY{n}{i}\PY{p}{]}
+                \PY{n}{dEdt} \PY{o}{=} \PY{n}{kN} \PY{o}{*} \PY{n}{E} \PY{o}{*} \PY{n}{WA}\PY{o}{*}\PY{o}{*}\PY{l+m+mi}{2} \PY{o}{\PYZhy{}} \PY{n}{kC} \PY{o}{*} \PY{n}{E}
+                \PY{n}{dWAdt} \PY{o}{=} \PY{p}{(}\PY{n}{kA} \PY{o}{+} \PY{n}{kT} \PY{o}{*} \PY{n}{PA} \PY{o}{/} \PY{n}{WAMax}\PY{p}{)} \PY{o}{*} \PY{p}{(}\PY{n}{WAMax} \PY{o}{\PYZhy{}} \PY{n}{WA}\PY{p}{)} \PY{o}{\PYZhy{}} \PY{n}{kN} \PY{o}{*} \PY{n}{E} \PY{o}{*} \PY{n}{WA}\PY{o}{*}\PY{o}{*}\PY{l+m+mi}{2} \PY{o}{\PYZhy{}} \PY{n}{kP} \PY{o}{*} \PY{n}{E} \PY{o}{*} \PY{n}{WA}
+                \PY{n}{dPAdt} \PY{o}{=} \PY{p}{(}\PY{n}{kPA} \PY{o}{\PYZhy{}} \PY{n}{kT} \PY{o}{*} \PY{n}{PA} \PY{o}{/} \PY{n}{WAMax}\PY{p}{)} \PY{o}{*} \PY{p}{(}\PY{n}{WAMax} \PY{o}{\PYZhy{}} \PY{n}{WA}\PY{p}{)} \PY{o}{\PYZhy{}} \PY{n}{kP} \PY{o}{*} \PY{n}{E} \PY{o}{*} \PY{n}{PA}
+                \PY{n}{EArr}\PY{p}{[}\PY{n}{i} \PY{o}{+} \PY{l+m+mi}{1}\PY{p}{]} \PY{o}{=} \PY{n}{EArr}\PY{p}{[}\PY{n}{i}\PY{p}{]} \PY{o}{+} \PY{n}{dEdt} \PY{o}{*} \PY{n}{dt}
+                \PY{n}{WAArr}\PY{p}{[}\PY{n}{i} \PY{o}{+} \PY{l+m+mi}{1}\PY{p}{]} \PY{o}{=} \PY{n}{WAArr}\PY{p}{[}\PY{n}{i}\PY{p}{]} \PY{o}{+} \PY{n}{dWAdt} \PY{o}{*} \PY{n}{dt}
+                \PY{n}{PAArr}\PY{p}{[}\PY{n}{i} \PY{o}{+} \PY{l+m+mi}{1}\PY{p}{]} \PY{o}{=} \PY{n}{PAArr}\PY{p}{[}\PY{n}{i}\PY{p}{]} \PY{o}{+} \PY{n}{dPAdt} \PY{o}{*} \PY{n}{dt}
+                \PY{n}{timeArr}\PY{p}{[}\PY{n}{i} \PY{o}{+} \PY{l+m+mi}{1}\PY{p}{]} \PY{o}{=} \PY{n}{timeArr}\PY{p}{[}\PY{n}{i}\PY{p}{]} \PY{o}{+} \PY{n}{dt}
+                
+            \PY{c+c1}{\PYZsh{}Plot.}
+            \PY{c+c1}{\PYZsh{}plot(timeArr, EArr)}
+            \PY{c+c1}{\PYZsh{}print(str(EArr[\PYZhy{}1]))}
+                
+            \PY{c+c1}{\PYZsh{} Figure out steady\PYZhy{}state quantities.}
+            \PY{c+c1}{\PYZsh{}WAEq = sqrt(kC / kN)}
+            \PY{c+c1}{\PYZsh{}PAEq = sqrt((kT / WAMax + kA / WAEq)**2 + 4 * kT * kPA / WAMax / WAEq) \PYZhy{} (kT / WAMax + kA / WAEq)}
+            \PY{c+c1}{\PYZsh{}PAEq = PAEq / (2 * kT / WAMax / WAEq)}
+            \PY{c+c1}{\PYZsh{}EEq = (kA + kT * PAEq / WAMax) * (WAMax \PYZhy{} WAEq) / kP / WAEq}
+            \PY{n}{WAEq} \PY{o}{=} \PY{n}{WAArr}\PY{p}{[}\PY{o}{\PYZhy{}}\PY{l+m+mi}{1}\PY{p}{]}
+            \PY{n}{PAEq} \PY{o}{=} \PY{n}{PAArr}\PY{p}{[}\PY{o}{\PYZhy{}}\PY{l+m+mi}{1}\PY{p}{]}
+            \PY{n}{EEq} \PY{o}{=} \PY{n}{EArr}\PY{p}{[}\PY{o}{\PYZhy{}}\PY{l+m+mi}{1}\PY{p}{]}
+            
+            \PY{k}{return} \PY{n}{EEq}\PY{p}{,} \PY{n}{PAEq}\PY{p}{,} \PY{n}{WAEq}
 \end{Verbatim}
 
 
+    \begin{Verbatim}[commandchars=\\\{\}]
+{\color{incolor}In [{\color{incolor}2}]:} \PY{n}{noPoints} \PY{o}{=} \PY{l+m+mi}{100}
+        \PY{n}{capRateArr} \PY{o}{=} \PY{n}{linspace}\PY{p}{(}\PY{l+m+mf}{0.01}\PY{p}{,} \PY{l+m+mf}{10.0}\PY{p}{,} \PY{n}{noPoints}\PY{p}{)}
+        \PY{n}{nucleationRateArr} \PY{o}{=} \PY{n}{zeros}\PY{p}{(}\PY{n}{noPoints}\PY{p}{)}
+        \PY{n}{elongationRateArr} \PY{o}{=} \PY{n}{zeros}\PY{p}{(}\PY{n}{noPoints}\PY{p}{)}
+        
+        \PY{k}{for} \PY{n}{i} \PY{o+ow}{in} \PY{n+nb}{range}\PY{p}{(}\PY{n}{noPoints}\PY{p}{)}\PY{p}{:}
+            \PY{n}{EEq}\PY{p}{,} \PY{n}{PAEq}\PY{p}{,} \PY{n}{WAEq} \PY{o}{=} \PY{n}{nucleationmodel}\PY{p}{(}\PY{l+m+mf}{100.0}\PY{p}{,} \PY{l+m+mf}{10.0}\PY{p}{,} \PY{n}{capRateArr}\PY{p}{[}\PY{n}{i}\PY{p}{]}\PY{p}{,} \PY{l+m+mf}{10.0}\PY{p}{,} \PY{l+m+mf}{10.0}\PY{p}{,} \PY{l+m+mf}{1.0}\PY{p}{)}
+            \PY{n}{nucleationRateArr}\PY{p}{[}\PY{n}{i}\PY{p}{]} \PY{o}{=} \PY{l+m+mf}{10.0} \PY{o}{*} \PY{n}{EEq} \PY{o}{*} \PY{n}{WAEq}\PY{o}{*}\PY{o}{*}\PY{l+m+mi}{2}
+            \PY{n}{elongationRateArr}\PY{p}{[}\PY{n}{i}\PY{p}{]} \PY{o}{=} \PY{l+m+mf}{100.0} \PY{o}{*} \PY{n}{EEq} \PY{o}{*} \PY{p}{(}\PY{n}{WAEq} \PY{o}{+} \PY{n}{PAEq}\PY{p}{)}
+            
+        \PY{n}{plot}\PY{p}{(}\PY{n}{capRateArr}\PY{p}{,} \PY{n}{nucleationRateArr}\PY{p}{)}
+        \PY{n}{xlabel}\PY{p}{(}\PY{l+s+sa}{r}\PY{l+s+s2}{\PYZdq{}}\PY{l+s+s2}{Capping rate (1/s)}\PY{l+s+s2}{\PYZdq{}}\PY{p}{,} \PY{n}{fontsize} \PY{o}{=} \PY{l+m+mi}{18}\PY{p}{)}
+        \PY{n}{ylabel}\PY{p}{(}\PY{l+s+sa}{r}\PY{l+s+s2}{\PYZdq{}}\PY{l+s+s2}{Nucleation rate}\PY{l+s+s2}{\PYZdq{}}\PY{p}{,} \PY{n}{fontsize} \PY{o}{=} \PY{l+m+mi}{18}\PY{p}{)}
+\end{Verbatim}
+
+
+\begin{Verbatim}[commandchars=\\\{\}]
+{\color{outcolor}Out[{\color{outcolor}2}]:} Text(0,0.5,'Nucleation rate')
+\end{Verbatim}
+            
     \begin{center}
-    \adjustimage{max size={0.9\linewidth}{0.9\paperheight}}{output_0_0.png}
+    \adjustimage{max size={0.9\linewidth}{0.9\paperheight}}{output_2_1.png}
     \end{center}
     { \hspace*{\fill} \\}
     
     \begin{Verbatim}[commandchars=\\\{\}]
-{\color{incolor}In [{\color{incolor}152}]:} \PY{k+kn}{from} \PY{n+nn}{numpy} \PY{k}{import} \PY{n}{arctan}
-          \PY{k+kn}{from} \PY{n+nn}{matplotlib}\PY{n+nn}{.}\PY{n+nn}{pyplot} \PY{k}{import} \PY{n}{hist}
-          \PY{n}{hist}\PY{p}{(}\PY{n}{arctan}\PY{p}{(}\PY{n}{vArr} \PY{o}{/} \PY{n}{uArr}\PY{p}{)} \PY{o}{/} \PY{n}{pi} \PY{o}{*} \PY{l+m+mi}{180}\PY{p}{,} \PY{l+m+mi}{20}\PY{p}{)}
-          \PY{n+nb}{print}\PY{p}{(}\PY{n}{xLead}\PY{p}{)}
-          \PY{n+nb}{print}\PY{p}{(}\PY{n+nb}{sum}\PY{p}{(}\PY{n}{isActiveArr}\PY{p}{)}\PY{p}{)}
-          \PY{n+nb}{print}\PY{p}{(}\PY{n}{forceWeight}\PY{p}{)}
+{\color{incolor}In [{\color{incolor}3}]:} \PY{n}{plot}\PY{p}{(}\PY{n}{capRateArr}\PY{p}{,} \PY{n}{elongationRateArr}\PY{p}{)}
+        \PY{n}{xlabel}\PY{p}{(}\PY{l+s+sa}{r}\PY{l+s+s2}{\PYZdq{}}\PY{l+s+s2}{Capping rate (1/s)}\PY{l+s+s2}{\PYZdq{}}\PY{p}{,} \PY{n}{fontsize} \PY{o}{=} \PY{l+m+mi}{18}\PY{p}{)}
+        \PY{n}{ylabel}\PY{p}{(}\PY{l+s+sa}{r}\PY{l+s+s2}{\PYZdq{}}\PY{l+s+s2}{Elongation rate (1/s)}\PY{l+s+s2}{\PYZdq{}}\PY{p}{,} \PY{n}{fontsize} \PY{o}{=} \PY{l+m+mi}{18}\PY{p}{)}
 \end{Verbatim}
 
 
-    \begin{Verbatim}[commandchars=\\\{\}]
-1611.420096599117
-109
-1103
-0.16969173233156876
-
-    \end{Verbatim}
-
+\begin{Verbatim}[commandchars=\\\{\}]
+{\color{outcolor}Out[{\color{outcolor}3}]:} Text(0,0.5,'Elongation rate (1/s)')
+\end{Verbatim}
+            
     \begin{center}
-    \adjustimage{max size={0.9\linewidth}{0.9\paperheight}}{output_1_1.png}
+    \adjustimage{max size={0.9\linewidth}{0.9\paperheight}}{output_3_1.png}
+    \end{center}
+    { \hspace*{\fill} \\}
+    
+    \begin{Verbatim}[commandchars=\\\{\}]
+{\color{incolor}In [{\color{incolor}4}]:} \PY{n}{noPoints} \PY{o}{=} \PY{l+m+mi}{100}
+        \PY{n}{polRateArr} \PY{o}{=} \PY{n}{linspace}\PY{p}{(}\PY{l+m+mf}{0.01}\PY{p}{,} \PY{l+m+mf}{100.0}\PY{p}{,} \PY{n}{noPoints}\PY{p}{)}
+        \PY{n}{nucleationRateArr} \PY{o}{=} \PY{n}{zeros}\PY{p}{(}\PY{n}{noPoints}\PY{p}{)}
+        \PY{n}{elongationRateArr} \PY{o}{=} \PY{n}{zeros}\PY{p}{(}\PY{n}{noPoints}\PY{p}{)}
+        
+        \PY{k}{for} \PY{n}{i} \PY{o+ow}{in} \PY{n+nb}{range}\PY{p}{(}\PY{n}{noPoints}\PY{p}{)}\PY{p}{:}
+            \PY{n}{EEq}\PY{p}{,} \PY{n}{PAEq}\PY{p}{,} \PY{n}{WAEq} \PY{o}{=} \PY{n}{nucleationmodel}\PY{p}{(}\PY{n}{polRateArr}\PY{p}{[}\PY{n}{i}\PY{p}{]}\PY{p}{,} \PY{l+m+mf}{10.0}\PY{p}{,} \PY{l+m+mi}{5}\PY{p}{,} \PY{l+m+mf}{10.0}\PY{p}{,} \PY{l+m+mf}{10.0}\PY{p}{,} \PY{l+m+mf}{1.0}\PY{p}{)}
+            \PY{n}{nucleationRateArr}\PY{p}{[}\PY{n}{i}\PY{p}{]} \PY{o}{=} \PY{l+m+mf}{10.0} \PY{o}{*} \PY{n}{EEq} \PY{o}{*} \PY{n}{WAEq}\PY{o}{*}\PY{o}{*}\PY{l+m+mi}{2}
+            \PY{n}{elongationRateArr}\PY{p}{[}\PY{n}{i}\PY{p}{]} \PY{o}{=} \PY{n}{polRateArr}\PY{p}{[}\PY{n}{i}\PY{p}{]} \PY{o}{*} \PY{n}{EEq} \PY{o}{*} \PY{p}{(}\PY{n}{WAEq} \PY{o}{+} \PY{n}{PAEq}\PY{p}{)}
+            
+        \PY{n}{plot}\PY{p}{(}\PY{n}{polRateArr}\PY{p}{,} \PY{n}{nucleationRateArr}\PY{p}{)}
+        \PY{n}{xlabel}\PY{p}{(}\PY{l+s+sa}{r}\PY{l+s+s2}{\PYZdq{}}\PY{l+s+s2}{Polymerization rate (1/s)}\PY{l+s+s2}{\PYZdq{}}\PY{p}{,} \PY{n}{fontsize} \PY{o}{=} \PY{l+m+mi}{18}\PY{p}{)}
+        \PY{n}{ylabel}\PY{p}{(}\PY{l+s+sa}{r}\PY{l+s+s2}{\PYZdq{}}\PY{l+s+s2}{Nucleation rate}\PY{l+s+s2}{\PYZdq{}}\PY{p}{,} \PY{n}{fontsize} \PY{o}{=} \PY{l+m+mi}{18}\PY{p}{)}
+\end{Verbatim}
+
+
+\begin{Verbatim}[commandchars=\\\{\}]
+{\color{outcolor}Out[{\color{outcolor}4}]:} Text(0,0.5,'Nucleation rate')
+\end{Verbatim}
+            
+    \begin{center}
+    \adjustimage{max size={0.9\linewidth}{0.9\paperheight}}{output_4_1.png}
+    \end{center}
+    { \hspace*{\fill} \\}
+    
+    \begin{Verbatim}[commandchars=\\\{\}]
+{\color{incolor}In [{\color{incolor}5}]:} \PY{n}{plot}\PY{p}{(}\PY{n}{polRateArr}\PY{p}{,} \PY{n}{elongationRateArr}\PY{p}{)}
+        \PY{n}{xlabel}\PY{p}{(}\PY{l+s+sa}{r}\PY{l+s+s2}{\PYZdq{}}\PY{l+s+s2}{Polymerization rate (1/s)}\PY{l+s+s2}{\PYZdq{}}\PY{p}{,} \PY{n}{fontsize} \PY{o}{=} \PY{l+m+mi}{18}\PY{p}{)}
+        \PY{n}{ylabel}\PY{p}{(}\PY{l+s+sa}{r}\PY{l+s+s2}{\PYZdq{}}\PY{l+s+s2}{Elongation rate (1/s)}\PY{l+s+s2}{\PYZdq{}}\PY{p}{,} \PY{n}{fontsize} \PY{o}{=} \PY{l+m+mi}{18}\PY{p}{)}
+\end{Verbatim}
+
+
+\begin{Verbatim}[commandchars=\\\{\}]
+{\color{outcolor}Out[{\color{outcolor}5}]:} Text(0,0.5,'Elongation rate (1/s)')
+\end{Verbatim}
+            
+    \begin{center}
+    \adjustimage{max size={0.9\linewidth}{0.9\paperheight}}{output_5_1.png}
+    \end{center}
+    { \hspace*{\fill} \\}
+    
+    \begin{Verbatim}[commandchars=\\\{\}]
+{\color{incolor}In [{\color{incolor}6}]:} \PY{n}{noPoints} \PY{o}{=} \PY{l+m+mi}{100}
+        \PY{n}{branchRateArr} \PY{o}{=} \PY{n}{linspace}\PY{p}{(}\PY{l+m+mf}{0.01}\PY{p}{,} \PY{l+m+mf}{100.0}\PY{p}{,} \PY{n}{noPoints}\PY{p}{)}
+        \PY{n}{nucleationRateArr} \PY{o}{=} \PY{n}{zeros}\PY{p}{(}\PY{n}{noPoints}\PY{p}{)}
+        \PY{n}{elongationRateArr} \PY{o}{=} \PY{n}{zeros}\PY{p}{(}\PY{n}{noPoints}\PY{p}{)}
+        
+        \PY{k}{for} \PY{n}{i} \PY{o+ow}{in} \PY{n+nb}{range}\PY{p}{(}\PY{n}{noPoints}\PY{p}{)}\PY{p}{:}
+            \PY{n}{EEq}\PY{p}{,} \PY{n}{PAEq}\PY{p}{,} \PY{n}{WAEq} \PY{o}{=} \PY{n}{nucleationmodel}\PY{p}{(}\PY{l+m+mf}{100.0}\PY{p}{,} \PY{n}{branchRateArr}\PY{p}{[}\PY{n}{i}\PY{p}{]}\PY{p}{,} \PY{l+m+mi}{5}\PY{p}{,} \PY{l+m+mf}{10.0}\PY{p}{,} \PY{l+m+mf}{10.0}\PY{p}{,} \PY{l+m+mf}{1.0}\PY{p}{)}
+            \PY{n}{nucleationRateArr}\PY{p}{[}\PY{n}{i}\PY{p}{]} \PY{o}{=} \PY{n}{branchRateArr}\PY{p}{[}\PY{n}{i}\PY{p}{]} \PY{o}{*} \PY{n}{EEq} \PY{o}{*} \PY{n}{WAEq}\PY{o}{*}\PY{o}{*}\PY{l+m+mi}{2}
+            \PY{n}{elongationRateArr}\PY{p}{[}\PY{n}{i}\PY{p}{]} \PY{o}{=} \PY{l+m+mf}{100.0} \PY{o}{*} \PY{n}{EEq} \PY{o}{*} \PY{p}{(}\PY{n}{WAEq} \PY{o}{+} \PY{n}{PAEq}\PY{p}{)}
+            
+        \PY{n}{plot}\PY{p}{(}\PY{n}{branchRateArr}\PY{p}{,} \PY{n}{nucleationRateArr}\PY{p}{)}
+        \PY{n}{xlabel}\PY{p}{(}\PY{l+s+sa}{r}\PY{l+s+s2}{\PYZdq{}}\PY{l+s+s2}{Branching rate (1/s)}\PY{l+s+s2}{\PYZdq{}}\PY{p}{,} \PY{n}{fontsize} \PY{o}{=} \PY{l+m+mi}{18}\PY{p}{)}
+        \PY{n}{ylabel}\PY{p}{(}\PY{l+s+sa}{r}\PY{l+s+s2}{\PYZdq{}}\PY{l+s+s2}{Nucleation rate}\PY{l+s+s2}{\PYZdq{}}\PY{p}{,} \PY{n}{fontsize} \PY{o}{=} \PY{l+m+mi}{18}\PY{p}{)}
+\end{Verbatim}
+
+
+\begin{Verbatim}[commandchars=\\\{\}]
+{\color{outcolor}Out[{\color{outcolor}6}]:} Text(0,0.5,'Nucleation rate')
+\end{Verbatim}
+            
+    \begin{center}
+    \adjustimage{max size={0.9\linewidth}{0.9\paperheight}}{output_6_1.png}
     \end{center}
     { \hspace*{\fill} \\}
     
