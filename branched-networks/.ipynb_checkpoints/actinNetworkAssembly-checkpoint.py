@@ -1,14 +1,15 @@
 # Import libraries
-from numpy import array, zeros, pi, cos, sin, mod, int, argmin, append, amax, exp, arctan, abs, logical_and
+from numpy import array, zeros, nan, isnan, pi, cos, sin, mod, int, argmin, append, amax, exp, arctan, abs, logical_and, linspace, sqrt
 from numpy.random import rand, poisson, randn, choice
 
 class network(object):
-    def __init__(n, kPol = 100.0, kBr = 1.0, kCap = 1.0, extForce = 1e2, totalTime = 10.0):
+    def __init__(n, kPol = 100.0, kBr = 1.0, kCap = 1.0, kAct = 10.0, extForce = 1e2, totalTime = 10.0):
         # Define constants.
         n.L = 1000.0 # Length of leading edge in nanometers
         n.kPol = kPol # Polymerization rate in subunits per second
         n.kBr = kBr # branch rate in branches per second
         n.kCap = kCap # cap rate in branches per second
+        n.kAct = kAct # actin loading rate in subunits per second
         n.d = 2.7 # Width of subunit in nanometers
         n.w = 10 * n.d # Width of branching region.
         n.muTheta = 70.0 / 180 * pi
@@ -30,8 +31,27 @@ class network(object):
         n.yBarbArr = n.yPointArr
         n.xLead = amax(n.xBarbArr)
         n.isCappedArr = zeros(n.N, dtype = bool)
-        n.isActiveArr = n.xLead - n.xBarbArr <= n.w
+        n.isTouchingArr = n.xLead - n.xBarbArr < n.d
+        n.nTouching = sum(n.isTouchingArr)
+        n.forceWeight = exp(-n.extForce * n.d / 4.114 / n.nTouching)
         
+        # NPFs.
+        n.nNpfs = 50 # Assuming 19x8-um footprint for WAVE complexes.
+        n.xNpfArr = zeros(n.nNpfs)
+        n.yNpfArr = linspace(0.0, n.L, n.nNpfs)
+        n.isNpfLoadedArr = zeros(n.nNpfs, dtype = bool)
+        
+    def findbarb(n):
+        # Index active barbed ends.
+        idxNearBarbArr = zeros(n.nNpfs)
+        for i in range(n.nNpfs):
+            iDistanceArr = sqrt((n.xBarbArr - n.xNpfArr[i])**2 + (n.yBarbArr - n.yNpfArr[i])**2)
+            if any(iDistanceArr <= n.w):
+                idxNearBarbArr[i] = argmin(iDistanceArr)
+            else:
+                idxNearBarbArr[i] = nan
+        return idxNearBarbArr
+                    
     def cap(n, index):
         n.isCappedArr[index] = True
     
@@ -74,34 +94,49 @@ class network(object):
         return phi
                 
     def update(n):
-        n.N = len(n.xBarbArr)
-        n.isActiveArr = n.xLead - n.xBarbArr <= n.w
-        n.isTouchingArr = n.xLead - n.xBarbArr < n.d
-        n.nTouching = sum(n.isTouchingArr)
-        n.forceWeight = exp(-n.extForce * n.d / 4.114 / n.nTouching)
+        # Cap.
         for i in range(n.N):
             if n.isCappedArr[i] == 0:
-                # Cap.
                 if n.isTouchingArr[i] == False:
                     capProb = poisson(n.kCap * n.dt)
                 else:
                     capProb = poisson(n.kCap * n.forceWeight * n.dt)
                 if bool(capProb) == True:
-                    n.cap(i)
-                    continue
-                # Branch.
-                if bool(poisson(n.kBr * n.isActiveArr[i] * n.dt)) == True:
-                    n.branch(i)
-                # Elongate.
-                if n.isTouchingArr[i] == False:
-                    polProb = poisson(n.kPol * n.isActiveArr[i] * n.dt)
-                else:
-                    polProb = poisson(n.kPol * n.forceWeight * n.dt)
-                if bool(polProb) == True:
-                    n.elongate(i)
-        n.xLead = amax(n.xBarbArr)
+                    n.cap(i)    
+            
+        # NPF-dependent processes.
+        n.idxNearBarbArr = n.findbarb()
+        for i in range(n.nNpfs):
+            if n.isNpfLoadedArr[i] == False:
+                n.isNpfLoadedArr[i] = bool(poisson(n.kAct * n.dt))
+            else:
+                idxBarb = n.idxNearBarbArr[i]
+                if isnan(idxBarb) == False:
+                    idxBarb = int(idxBarb)
+                    isCapped = n.isCappedArr[idxBarb]
+                    if isCapped == False:
+                        # Branch
+                        if bool(poisson(n.kBr * n.dt)) == True:
+                            n.branch(idxBarb)
+                            n.isNpfLoadedArr[i] = False
+                            continue
+                        # Elongate
+                        if n.isTouchingArr[idxBarb] == False:
+                            polProb = poisson(n.kPol * n.dt)
+                        else:
+                            polProb = poisson(n.kPol * n.forceWeight * n.dt)
+                        if bool(polProb) == True:
+                            n.elongate(idxBarb)
+                            n.isNpfLoadedArr[i] = False
+                                
         n.t = n.t + n.dt
+        n.N = len(n.xBarbArr)
+        n.xLead = amax(n.xBarbArr)
+        n.xNpfArr[:] = n.xLead
+        n.isTouchingArr = n.xLead - n.xBarbArr < n.d
+        n.nTouching = sum(n.isTouchingArr)
+        n.forceWeight = exp(-n.extForce * n.d / 4.114 / n.nTouching)
         
     def simulate(n):
-        while n.t <= n.totalTime and sum(n.isActiveArr) > 0:
+        while n.t <= n.totalTime and sum(~n.isCappedArr) > 0:
             n.update()
