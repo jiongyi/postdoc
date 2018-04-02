@@ -10,6 +10,7 @@ class network(object):
         n.kBr = kBr # branch rate in branches per second
         n.kCap = kCap # cap rate in branches per second
         n.kAct = kAct # actin loading rate in subunits per second
+        n.kTrans = n.kAct / 10.0 # Transfer rate from polyproline to WH2 domain in subunits per second. 
         n.d = 2.7 # Width of subunit in nanometers
         n.w = 10 * n.d # Width of branching region.
         n.muTheta = 70.0 / 180 * pi
@@ -40,6 +41,7 @@ class network(object):
         n.xNpfArr = zeros(n.nNpfs)
         n.yNpfArr = linspace(0.0, n.L, n.nNpfs)
         n.isNpfLoadedArr = zeros(n.nNpfs, dtype = bool)
+        n.isPolProLoadedArr = zeros(n.nNpfs, dtype = bool)
         
     def findbarb(n):
         # Index active barbed ends.
@@ -96,7 +98,9 @@ class network(object):
         return phi
                 
     def update(n):
-        # Elongate from solution.
+        n.dt *= 0.5
+        # Reactions from solution.
+        # Elongate.
         for i in range(n.N):
             if n.isCappedArr[i] == False:
                 if n.isTouchingArr[i] == True:
@@ -112,6 +116,13 @@ class network(object):
         n.nTouching = sum(n.isTouchingArr)
         n.forceWeight = exp(-n.extForce * n.d / 4.114 / n.nTouching)
         
+        # Load NPFs.
+        for i in range(n.nNpfs):
+            if n.isPolProLoadedArr[i] == False:
+                n.isPolProLoadedArr[i] = bool(poisson(n.kAct * n.dt))
+            if n.isNpfLoadedArr[i] == False:
+                n.isNpfLoadedArr[i] = bool(poisson(0.1 * n.kAct * n.dt))
+        
         # Cap.
         for i in range(n.N):
             if n.isCappedArr[i] == 0:
@@ -121,32 +132,59 @@ class network(object):
                     capProb = poisson(n.kCap * n.forceWeight * n.dt)
                 if bool(capProb) == True:
                     n.cap(i)    
-            
-        # NPF-dependent processes.
+        
+        # Polyproline-dependent processes
         n.idxNearBarbArr = n.findbarb()
         for i in range(n.nNpfs):
-            if n.isNpfLoadedArr[i] == False:
-                n.isNpfLoadedArr[i] = bool(poisson(n.kAct * n.dt))
-            else:
+            if n.isPolProLoadedArr[i] == True:
+                # Transfer.
+                if n.isNpfLoadedArr[i] == False:
+                    if bool(poisson(n.kTrans * n.dt)) == True:
+                        n.isPolProLoadedArr[i] == False
+                        n.isNpfLoadedArr[i] == True
+                # Elongate.
                 idxBarb = n.idxNearBarbArr[i]
                 if isnan(idxBarb) == False:
                     idxBarb = int(idxBarb)
                     isCapped = n.isCappedArr[idxBarb]
                     if isCapped == False:
-                        # Branch
-                        if bool(poisson(n.kBr * n.dt)) == True:
-                            n.branch(idxBarb)
-                            n.isNpfLoadedArr[i] = False
-                            continue
-                        # Elongate
                         if n.isTouchingArr[idxBarb] == False:
                             polProb = poisson(3 * n.kPol * n.dt)
                         else:
                             polProb = poisson(3 * n.kPol * n.forceWeight * n.dt)
                         if bool(polProb) == True:
                             n.elongate(idxBarb)
-                            n.isNpfLoadedArr[i] = False
+                            n.isPolProLoadedArr[i] = False
+        
+        n.xLead = amax(n.xBarbArr[logical_and(n.yBarbArr <= n.L, n.yBarbArr >= 0)])
+        n.xNpfArr[:] = n.xLead
+        n.isTouchingArr = n.xLead - n.xBarbArr < n.d
+        n.nTouching = sum(n.isTouchingArr)
+        n.forceWeight = exp(-n.extForce * n.d / 4.114 / n.nTouching)
+                          
+        # WH2-dependent processes.
+        n.idxNearBarbArr = n.findbarb()
+        for i in range(n.nNpfs):
+            idxBarb = n.idxNearBarbArr[i]
+            if isnan(idxBarb) == False:
+                idxBarb = int(idxBarb)
+                isCapped = n.isCappedArr[idxBarb]
+                if isCapped == False:
+                    # Branch
+                    if bool(poisson(n.kBr * n.dt)) == True:
+                        n.branch(idxBarb)
+                        n.isNpfLoadedArr[i] = False
+                        continue
+                    # Elongate
+                    if n.isTouchingArr[idxBarb] == False:
+                        polProb = poisson(3 * n.kPol * n.dt)
+                    else:
+                        polProb = poisson(3 * n.kPol * n.forceWeight * n.dt)
+                    if bool(polProb) == True:
+                        n.elongate(idxBarb)
+                        n.isNpfLoadedArr[i] = False
                                 
+        n.dt *= 2
         n.t = n.t + n.dt
         n.N = len(n.xBarbArr)
         n.xLead = amax(n.xBarbArr[logical_and(n.yBarbArr <= n.L, n.yBarbArr >= 0)])
