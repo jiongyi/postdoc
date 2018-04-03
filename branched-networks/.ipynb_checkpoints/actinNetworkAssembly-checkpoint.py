@@ -40,7 +40,7 @@ class network(object):
         n.nNpfs = 50 # Assuming 19x8-um footprint for WAVE complexes.
         n.xNpfArr = zeros(n.nNpfs)
         n.yNpfArr = linspace(0.0, n.L, n.nNpfs)
-        n.isNpfLoadedArr = zeros(n.nNpfs, dtype = bool)
+        n.isWH2LoadedArr = zeros(n.nNpfs, dtype = bool)
         n.isPolProLoadedArr = zeros(n.nNpfs, dtype = bool)
         
     def findbarb(n):
@@ -50,6 +50,8 @@ class network(object):
             iDistanceArr = sqrt((n.xBarbArr - n.xNpfArr[i])**2 + (n.yBarbArr - n.yNpfArr[i])**2)
             if any(iDistanceArr <= n.w):
                 idxNearBarbArr[i] = argmin(iDistanceArr)
+                if n.isCappedArr[int(idxNearBarbArr[i])] == True:
+                    idxNearBarbArr[i] = nan
             else:
                 idxNearBarbArr[i] = nan
         return idxNearBarbArr
@@ -80,15 +82,6 @@ class network(object):
     def elongate(n, index):
         n.xBarbArr[index] = n.xBarbArr[index] + n.uArr[index]
         n.yBarbArr[index] = n.yBarbArr[index] + n.vArr[index]
-        """
-        # Enforce periodic boundary conditions in the y-direction.
-        if n.yBarbArr[index] > n.L:
-            n.yBarbArr[index] = mod(n.yBarbArr[index], n.L)
-            n.yPointArr[index] = n.yBarbArr[index]
-        if n.yBarbArr[index] < 0:
-            n.yBarbArr[index] = mod(n.yBarbArr[index], n.L)
-            n.yPointArr[index] = n.yBarbArr[index]
-        """
             
     def orderparameter(n):
         thetaArr = arctan(n.vArr / n.uArr) / pi * 180
@@ -98,7 +91,6 @@ class network(object):
         return phi
                 
     def update(n):
-        n.dt *= 0.5
         # Reactions from solution.
         # Elongate.
         for i in range(n.N):
@@ -120,8 +112,6 @@ class network(object):
         for i in range(n.nNpfs):
             if n.isPolProLoadedArr[i] == False:
                 n.isPolProLoadedArr[i] = bool(poisson(n.kAct * n.dt))
-            if n.isNpfLoadedArr[i] == False:
-                n.isNpfLoadedArr[i] = bool(poisson(0.1 * n.kAct * n.dt))
         
         # Cap.
         for i in range(n.N):
@@ -138,23 +128,21 @@ class network(object):
         for i in range(n.nNpfs):
             if n.isPolProLoadedArr[i] == True:
                 # Transfer.
-                if n.isNpfLoadedArr[i] == False:
+                if n.isWH2LoadedArr[i] == False:
                     if bool(poisson(n.kTrans * n.dt)) == True:
                         n.isPolProLoadedArr[i] == False
-                        n.isNpfLoadedArr[i] == True
+                        n.isWH2LoadedArr[i] == True
                 # Elongate.
                 idxBarb = n.idxNearBarbArr[i]
                 if isnan(idxBarb) == False:
                     idxBarb = int(idxBarb)
-                    isCapped = n.isCappedArr[idxBarb]
-                    if isCapped == False:
-                        if n.isTouchingArr[idxBarb] == False:
-                            polProb = poisson(3 * n.kPol * n.dt)
-                        else:
-                            polProb = poisson(3 * n.kPol * n.forceWeight * n.dt)
-                        if bool(polProb) == True:
-                            n.elongate(idxBarb)
-                            n.isPolProLoadedArr[i] = False
+                    if n.isTouchingArr[idxBarb] == False:
+                        polProb = poisson(3 * n.kPol * n.dt)
+                    else:
+                        polProb = poisson(3 * n.kPol * n.forceWeight * n.dt)
+                    if bool(polProb) == True:
+                        n.elongate(idxBarb)
+                        n.isPolProLoadedArr[i] = False
         
         n.xLead = amax(n.xBarbArr[logical_and(n.yBarbArr <= n.L, n.yBarbArr >= 0)])
         n.xNpfArr[:] = n.xLead
@@ -168,23 +156,20 @@ class network(object):
             idxBarb = n.idxNearBarbArr[i]
             if isnan(idxBarb) == False:
                 idxBarb = int(idxBarb)
-                isCapped = n.isCappedArr[idxBarb]
-                if isCapped == False:
-                    # Branch
-                    if bool(poisson(n.kBr * n.dt)) == True:
-                        n.branch(idxBarb)
-                        n.isNpfLoadedArr[i] = False
-                        continue
-                    # Elongate
-                    if n.isTouchingArr[idxBarb] == False:
-                        polProb = poisson(3 * n.kPol * n.dt)
-                    else:
-                        polProb = poisson(3 * n.kPol * n.forceWeight * n.dt)
-                    if bool(polProb) == True:
-                        n.elongate(idxBarb)
-                        n.isNpfLoadedArr[i] = False
+                # Branch
+                if bool(poisson(n.kBr * n.dt)) == True:
+                    n.branch(idxBarb)
+                    n.isWH2LoadedArr[i] = False
+                    continue
+                # Elongate
+                if n.isTouchingArr[idxBarb] == False:
+                    polProb = poisson(3 * n.kPol * n.dt)
+                else:
+                    polProb = poisson(3 * n.kPol * n.forceWeight * n.dt)
+                if bool(polProb) == True:
+                    n.elongate(idxBarb)
+                    n.isWH2LoadedArr[i] = False
                                 
-        n.dt *= 2
         n.t = n.t + n.dt
         n.N = len(n.xBarbArr)
         n.xLead = amax(n.xBarbArr[logical_and(n.yBarbArr <= n.L, n.yBarbArr >= 0)])
