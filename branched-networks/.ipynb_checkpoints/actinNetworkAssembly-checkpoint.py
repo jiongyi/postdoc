@@ -3,14 +3,14 @@ from numpy import array, zeros, nan, isnan, pi, cos, sin, mod, int, argmin, appe
 from numpy.random import rand, poisson, randn, choice
 
 class network(object):
-    def __init__(n, kPol = 50.0, kBr = 0.5, kCap = 0.5, kAct = 100.0, extForce = 1e2, totalTime = 10.0):
+    def __init__(n, kPol = 22.0, kBr = 0.5, kCap = 0.5, kAct = 40.0, extForce = 0.0, totalTime = 10.0):
         # Define constants.
         n.L = 1000.0 # Length of leading edge in nanometers
         n.kPol = kPol # Polymerization rate in subunits per second
         n.kBr = kBr # branch rate in branches per second
-        n.kCap = kCap # cap rate in branches per second
+        n.kCap = 2 * kCap # cap rate in branches per second
         n.kAct = kAct # actin loading rate in subunits per second
-        n.kTrans = n.kAct / 10.0 # Transfer rate from polyproline to WH2 domain in subunits per second. 
+        n.kTrans = n.kAct # Transfer rate from polyproline to WH2 domain in subunits per second. 
         n.d = 2.7 # Width of subunit in nanometers
         n.w = 10 * n.d # Width of branching region.
         n.muTheta = 70.0 / 180 * pi
@@ -163,9 +163,9 @@ class network(object):
                     continue
                 # Elongate
                 if n.isTouchingArr[idxBarb] == False:
-                    polProb = poisson(3 * n.kPol * n.dt)
+                    polProb = poisson(2 * n.kPol * n.dt)
                 else:
-                    polProb = poisson(3 * n.kPol * n.forceWeight * n.dt)
+                    polProb = poisson(2 * n.kPol * n.forceWeight * n.dt)
                 if bool(polProb) == True:
                     n.elongate(idxBarb)
                     n.isWH2LoadedArr[i] = False
