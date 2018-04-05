@@ -1,5 +1,5 @@
 # Import libraries
-from numpy import array, zeros, nan, isnan, pi, cos, sin, mod, int, argmin, append, amax, exp, arctan, abs, logical_and, linspace, sqrt
+from numpy import array, copy, zeros, nan, isnan, pi, cos, sin, mod, int, argmin, append, amax, exp, arctan, abs, logical_and, linspace, sqrt
 from numpy.random import rand, poisson, randn, choice
 
 class network(object):
@@ -10,7 +10,7 @@ class network(object):
         n.kBr = kBr # branch rate in branches per second
         n.kCap = kCap # cap rate in branches per second
         n.kAct = kAct # actin loading rate in subunits per second
-        n.kTrans = n.kAct # Transfer rate from polyproline to WH2 domain in subunits per second. 
+        n.kTrans = n.kAct / 10 # Transfer rate from polyproline to WH2 domain in subunits per second. 
         n.d = 2.7 # Width of subunit in nanometers
         n.w = 10 * n.d # Width of branching region.
         n.muTheta = 70.0 / 180 * pi
@@ -22,14 +22,13 @@ class network(object):
         n.N = 200 # Initial number of filaments
         n.t = 0.0 # Time in seconds.
         n.dt = 1e-3 # Simulation time interval in seconds
-        n.tTotal = 10.0 # Total simulation time in seconds
         n.xPointArr = zeros(n.N) # x-coordinate of barbed end position
         n.yPointArr = n.L * rand(n.N) # y-coordinate of barbed end position
         n.thetaArr = pi * rand(n.N) - pi / 2 # angle of barbed end with respect to x-axis
         n.uArr = n.d * cos(n.thetaArr) # x-coordinate of theta
         n.vArr = n.d * sin(n.thetaArr) # y-coordinate of theta
-        n.xBarbArr = n.xPointArr
-        n.yBarbArr = n.yPointArr
+        n.xBarbArr = copy(n.xPointArr)
+        n.yBarbArr = copy(n.yPointArr)
         n.xLead = amax(n.xBarbArr[logical_and(n.yBarbArr <= n.L, n.yBarbArr >= 0)])
         n.isCappedArr = zeros(n.N, dtype = bool)
         n.isTouchingArr = n.xLead - n.xBarbArr < n.d
@@ -82,7 +81,6 @@ class network(object):
     def elongate(n, index):
         n.xBarbArr[index] += n.uArr[index]
         n.yBarbArr[index] += n.vArr[index]
-            
     def orderparameter(n):
         thetaArr = arctan(n.vArr / n.uArr) / pi * 180
         n10 = sum(abs(thetaArr) <= 10.0)
@@ -147,7 +145,7 @@ class network(object):
                             n.isWH2LoadedArr[i] = False
         
         # Update network.
-        n.t = n.t + n.dt
+        n.t += n.dt
         n.N = len(n.xBarbArr)
         n.xLead = amax(n.xBarbArr[logical_and(n.yBarbArr <= n.L, n.yBarbArr >= 0)])
         n.xNpfArr[:] = n.xLead
