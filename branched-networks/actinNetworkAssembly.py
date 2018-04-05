@@ -3,7 +3,7 @@ from numpy import array, zeros, nan, isnan, pi, cos, sin, mod, int, argmin, appe
 from numpy.random import rand, poisson, randn, choice
 
 class network(object):
-    def __init__(n, kPol = 0.55 * 5 * 11, kBr = 0.5, kCap = 50e-3 * 4, kAct = 40.0, extForce = 0.0, totalTime = 10.0):
+    def __init__(n, kPol = 0.55 * 5 * 11, kBr = 0.3, kCap = 0.3, kAct = 40.0, extForce = 0.0, totalTime = 10.0):
         # Define constants.
         n.L = 1000.0 # Length of leading edge in nanometers
         n.kPol = kPol # Polymerization rate in subunits per second
@@ -114,21 +114,21 @@ class network(object):
             if n.isPolProLoadedArr[i] == False:
                 n.isPolProLoadedArr[i] = bool(poisson(n.kAct * n.dt)) # Load profilin-actin
             else:
-                if n.isWH2LoadedArr[i] == False:
-                    if bool(poisson(n.kTrans * n.dt)) == True:
-                        n.isPolProLoadedArr[i] = False
-                        n.isWH2LoadedArr[i] = True # Transfer actin monomer to WH2 domain.
+                idxBarb = n.idxNearBarbArr[i]
+                if isnan(idxBarb) == False:
+                    idxBarb = int(idxBarb)
+                    if n.isTouchingArr[idxBarb] == False:
+                        polProb = poisson(3 * n.kPol * n.dt)
                     else:
-                        idxBarb = n.idxNearBarbArr[i]
-                        if isnan(idxBarb) == False:
-                            idxBarb = int(idxBarb)
-                            if n.isTouchingArr[idxBarb] == False:
-                                polProb = poisson(3 * n.kPol * n.dt)
-                            else:
-                                polProb = poisson(3 * n.kPol * n.forceWeight * n.dt)
-                            if bool(polProb) == True:
-                                n.elongate(idxBarb) # Elongate nearest filament.
+                        polProb = poisson(3 * n.kPol * n.forceWeight * n.dt)
+                    if bool(polProb) == True:
+                        n.elongate(idxBarb) # Elongate nearest filament.
+                        n.isPolProLoadedArr[i] = False
+                    else:
+                        if n.isWH2LoadedArr[i] == False:
+                            if bool(poisson(n.kTrans * n.dt)) == True:
                                 n.isPolProLoadedArr[i] = False
+                                n.isWH2LoadedArr[i] = True # Transfer actin monomer to WH2 domain.
             # WH2-dependent processes
             if n.isWH2LoadedArr[i] == True:
                 idxBarb = n.idxNearBarbArr[i]
@@ -154,7 +154,6 @@ class network(object):
         n.isTouchingArr = n.xLead - n.xBarbArr < n.d
         n.nTouching = sum(n.isTouchingArr)
         n.forceWeight = exp(-n.extForce * n.d / 4.114 / n.nTouching)
-        
     def simulate(n):
         while n.t <= n.totalTime and sum(~n.isCappedArr) > 0:
             n.update()
