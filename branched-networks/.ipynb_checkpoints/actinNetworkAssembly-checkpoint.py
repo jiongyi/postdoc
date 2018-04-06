@@ -1,16 +1,16 @@
 # Import libraries
-from numpy import array, copy, zeros, nan, isnan, pi, cos, sin, mod, int, argmin, append, amax, exp, arctan, abs, logical_and, linspace, sqrt
+from numpy import array, copy, flatnonzero, zeros, nan, isnan, pi, cos, sin, mod, int, argmin, append, amax, exp, arctan, abs, logical_and, linspace, sqrt
 from numpy.random import rand, poisson, randn, choice
 
 class network(object):
-    def __init__(n, kPol = 0.55 * 5 * 11, kBr = 0.3, kCap = 0.3, kAct = 40.0, extForce = 0.0, totalTime = 10.0):
+    def __init__(n, kPol = 0.55 * 5 * 11, kBr = 0.3, kCap = 0.3, kAct = 40.0, extForce = 35.0, totalTime = 10.0):
         # Define constants.
         n.L = 1000.0 # Length of leading edge in nanometers
         n.kPol = kPol # Polymerization rate in subunits per second
         n.kBr = kBr # branch rate in branches per second
         n.kCap = kCap # cap rate in branches per second
         n.kAct = kAct # actin loading rate in subunits per second
-        n.kTrans = n.kAct / 10 # Transfer rate from polyproline to WH2 domain in subunits per second. 
+        n.kTrans = 3.0 # Transfer rate from polyproline to WH2 domain in subunits per second. Assumed this is koff for profilin-actin
         n.d = 2.7 # Width of subunit in nanometers
         n.w = 10 * n.d # Width of branching region.
         n.muTheta = 70.0 / 180 * pi
@@ -36,7 +36,7 @@ class network(object):
         n.forceWeight = exp(-n.extForce * n.d / 4.114 / n.nTouching)
         
         # NPFs.
-        n.nNpfs = 50 # Assuming 19x8-um footprint for WAVE complexes.
+        n.nNpfs = 30 # Assuming 19x8-um footprint for WAVE complexes.
         n.xNpfArr = zeros(n.nNpfs)
         n.yNpfArr = linspace(0.0, n.L, n.nNpfs)
         n.isWH2LoadedArr = zeros(n.nNpfs, dtype = bool)
@@ -48,9 +48,9 @@ class network(object):
         for i in range(n.nNpfs):
             iDistanceArr = sqrt((n.xBarbArr - n.xNpfArr[i])**2 + (n.yBarbArr - n.yNpfArr[i])**2)
             if any(iDistanceArr <= n.w):
-                idxNearBarbArr[i] = argmin(iDistanceArr)
-                if n.isCappedArr[int(idxNearBarbArr[i])] == True:
-                    idxNearBarbArr[i] = nan
+                idxAllBarbArr = flatnonzero(iDistanceArr)
+                idxNearBarbArr[i] = choice(idxAllBarbArr)
+                #idxNearBarbArr[i] = argmin(iDistanceArr)
             else:
                 idxNearBarbArr[i] = nan
         return idxNearBarbArr
@@ -112,21 +112,21 @@ class network(object):
             if n.isPolProLoadedArr[i] == False:
                 n.isPolProLoadedArr[i] = bool(poisson(n.kAct * n.dt)) # Load profilin-actin
             else:
-                idxBarb = n.idxNearBarbArr[i]
-                if isnan(idxBarb) == False:
-                    idxBarb = int(idxBarb)
-                    if n.isTouchingArr[idxBarb] == False:
-                        polProb = poisson(3 * n.kPol * n.dt)
-                    else:
-                        polProb = poisson(3 * n.kPol * n.forceWeight * n.dt)
-                    if bool(polProb) == True:
-                        n.elongate(idxBarb) # Elongate nearest filament.
+                if n.isWH2LoadedArr[i] == False:
+                    if bool(poisson(n.kTrans * n.dt)) == True:
                         n.isPolProLoadedArr[i] = False
-                    else:
-                        if n.isWH2LoadedArr[i] == False:
-                            if bool(poisson(n.kTrans * n.dt)) == True:
-                                n.isPolProLoadedArr[i] = False
-                                n.isWH2LoadedArr[i] = True # Transfer actin monomer to WH2 domain.
+                        n.isWH2LoadedArr[i] = True # Transfer actin monomer to WH2 domain.
+                if n.isPolProLoadedArr[i] == True:
+                    idxBarb = n.idxNearBarbArr[i]
+                    if isnan(idxBarb) == False:
+                        idxBarb = int(idxBarb)
+                        if n.isTouchingArr[idxBarb] == False:
+                            polProb = poisson(n.kPol * n.dt)
+                        else:
+                            polProb = poisson(n.kPol * n.forceWeight * n.dt)
+                        if bool(polProb) == True & n.isCappedArr[idxBarb] == False:
+                            n.elongate(idxBarb) # Elongate nearest filament.
+                            n.isPolProLoadedArr[i] = False
             # WH2-dependent processes
             if n.isWH2LoadedArr[i] == True:
                 idxBarb = n.idxNearBarbArr[i]
@@ -137,17 +137,17 @@ class network(object):
                         n.isWH2LoadedArr[i] = False
                     else:
                         if n.isTouchingArr[idxBarb] == False:
-                            polProb = poisson(2 * n.kPol * n.dt)
+                            polProb = poisson(n.kPol * n.dt)
                         else:
-                            polProb = poisson(2 * n.kPol * n.forceWeight * n.dt)
-                        if bool(polProb == True):
+                            polProb = poisson(n.kPol * n.forceWeight * n.dt)
+                        if bool(polProb) == True & n.isCappedArr[idxBarb] == False:
                             n.elongate(idxBarb) # Elongate.
                             n.isWH2LoadedArr[i] = False
         
         # Update network.
         n.t += n.dt
         n.N = len(n.xBarbArr)
-        n.xLead = amax(n.xBarbArr[logical_and(n.yBarbArr <= n.L, n.yBarbArr >= 0)])
+        n.xLead = max(amax(n.xBarbArr[logical_and(n.yBarbArr <= n.L, n.yBarbArr >= 0)]), n.xLead)
         n.xNpfArr[:] = n.xLead
         n.isTouchingArr = n.xLead - n.xBarbArr < n.d
         n.nTouching = sum(n.isTouchingArr)
