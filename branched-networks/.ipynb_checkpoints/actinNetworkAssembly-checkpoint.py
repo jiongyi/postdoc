@@ -1,18 +1,21 @@
 # Import libraries
 from numpy import array, copy, flatnonzero, zeros, nan, isnan, pi, cos, sin, mod, int, argmin, append, amax, exp, arctan, abs, logical_and, linspace, sqrt
-from numpy.random import rand, poisson, randn, choice
+from numpy.random import rand, poisson, randn, choice, exponential
 
 class network(object):
-    def __init__(n, kPol = 0.55 * 5 * 11, kBr = 0.3, kCap = 0.3, kAct = 40.0, extForce = 35.0, totalTime = 10.0):
+    def __init__(n, profActConc = 5.0, arp23Conc = 50e-3, kBr = 0.3, capConc = 50e-3, extForce = 35.0, totalTime = 10.0):
         # Define constants.
         n.L = 1000.0 # Length of leading edge in nanometers
-        n.kPol = kPol # Polymerization rate in subunits per second
+        n.kPol = 4.4 * profActConc # Polymerization rate in subunits per second
         n.kBr = kBr # branch rate in branches per second
-        n.kCap = kCap # cap rate in branches per second
-        n.kAct = kAct # actin loading rate in subunits per second
+        n.kCap = 2.6 * capConc # cap rate in branches per second
+        n.kActLoad = 2.2 * profActConc # actin loading rate in subunits per second
+        n.kArpLoad = 1.0 * arp23Conc # Arp2/3 complex loading rate to NPFs in subunits per second
         n.kTrans = 3.0 # Transfer rate from polyproline to WH2 domain in subunits per second. Assumed this is koff for profilin-actin
+        n.kProPol = 3.0
+        n.kWH2Pol = 3.0
         n.d = 2.7 # Width of subunit in nanometers
-        n.w = 10 * n.d # Width of branching region.
+        n.w = 20 * n.d # Width of branching region.
         n.muTheta = 70.0 / 180 * pi
         n.muSigma = 5.0 / 180 * pi
         n.extForce = extForce # external force in pN.
@@ -34,6 +37,7 @@ class network(object):
         n.isTouchingArr = n.xLead - n.xBarbArr < n.d
         n.nTouching = sum(n.isTouchingArr)
         n.forceWeight = exp(-n.extForce * n.d / 4.114 / n.nTouching)
+        n.nElongations = 0
         
         # NPFs.
         n.nNpfs = 30 # Assuming 19x8-um footprint for WAVE complexes.
@@ -41,6 +45,7 @@ class network(object):
         n.yNpfArr = linspace(0.0, n.L, n.nNpfs)
         n.isWH2LoadedArr = zeros(n.nNpfs, dtype = bool)
         n.isPolProLoadedArr = zeros(n.nNpfs, dtype = bool)
+        n.hasArp23Arr = zeros(n.nNpfs, dtype = bool)
         
     def findbarb(n):
         # Index active barbed ends.
@@ -81,6 +86,7 @@ class network(object):
     def elongate(n, index):
         n.xBarbArr[index] += n.uArr[index]
         n.yBarbArr[index] += n.vArr[index]
+        n.nElongations += 1
     def orderparameter(n):
         thetaArr = arctan(n.vArr / n.uArr) / pi * 180
         n10 = sum(abs(thetaArr) <= 10.0)
@@ -108,39 +114,49 @@ class network(object):
         # Reactions at NPFs.
         n.idxNearBarbArr = n.findbarb()
         for i in range(n.nNpfs):
+            idxBarb = n.idxNearBarbArr[i]
+            if n.hasArp23Arr[i] == False:
+                n.hasArp23Arr[i] = bool(poisson(n.kArpLoad * n.dt))
+            else:
+                if isnan(idxBarb) == False:
+                    if bool(poisson(0.01 * n.dt)) == True:
+                        n.hasArp23Arr[i] = False
+                else:
+                    if bool(poisson(0.4 * n.dt)) == True:
+                        n.hasArp23Arr[i] = False
             # Polyproline-dependent processes
             if n.isPolProLoadedArr[i] == False:
-                n.isPolProLoadedArr[i] = bool(poisson(n.kAct * n.dt)) # Load profilin-actin
+                n.isPolProLoadedArr[i] = bool(poisson(n.kActLoad * n.dt)) # Load profilin-actin
             else:
                 if n.isWH2LoadedArr[i] == False:
                     if bool(poisson(n.kTrans * n.dt)) == True:
                         n.isPolProLoadedArr[i] = False
                         n.isWH2LoadedArr[i] = True # Transfer actin monomer to WH2 domain.
                 if n.isPolProLoadedArr[i] == True:
-                    idxBarb = n.idxNearBarbArr[i]
                     if isnan(idxBarb) == False:
                         idxBarb = int(idxBarb)
                         if n.isTouchingArr[idxBarb] == False:
-                            polProb = poisson(n.kPol * n.dt)
+                            polProb = poisson(n.kProPol * n.dt) # koff for actin-profilin is 3.0 /s
                         else:
-                            polProb = poisson(n.kPol * n.forceWeight * n.dt)
-                        if bool(polProb) == True & n.isCappedArr[idxBarb] == False:
+                            polProb = poisson(n.kProPol * n.forceWeight * n.dt)
+                        if bool(polProb) == True & n.isCappedArr[idxBarb] == False & n.hasArp23Arr[i] == False:
                             n.elongate(idxBarb) # Elongate nearest filament.
                             n.isPolProLoadedArr[i] = False
             # WH2-dependent processes
             if n.isWH2LoadedArr[i] == True:
-                idxBarb = n.idxNearBarbArr[i]
                 if isnan(idxBarb) == False:
                     idxBarb = int(idxBarb)
-                    if bool(poisson(n.kBr * n.dt)) == True:
+                    if (exponential(1 / n.kBr) <= n.dt) & n.hasArp23Arr[i] == True:
+                    # if bool(poisson(n.kBr * n.dt)) == True & n.hasArp23Arr[i] == True:
                         n.branch(idxBarb) # Branch.
                         n.isWH2LoadedArr[i] = False
+                        n.hasArp23Arr[i] = False
                     else:
                         if n.isTouchingArr[idxBarb] == False:
-                            polProb = poisson(n.kPol * n.dt)
+                            polProb = poisson(n.kWH2Pol * n.dt) # koff for actin-WH2 is 3.0 /s
                         else:
-                            polProb = poisson(n.kPol * n.forceWeight * n.dt)
-                        if bool(polProb) == True & n.isCappedArr[idxBarb] == False:
+                            polProb = poisson(n.kWH2Pol * n.forceWeight * n.dt)
+                        if bool(polProb) == True & n.isCappedArr[idxBarb] == False & n.hasArp23Arr[i] == False:
                             n.elongate(idxBarb) # Elongate.
                             n.isWH2LoadedArr[i] = False
         
