@@ -1,21 +1,21 @@
 # Import libraries
 from numpy import array, copy, flatnonzero, zeros, nan, isnan, pi, cos, sin, mod, int, argmin, append, amax, exp, arctan, abs, logical_and, linspace, sqrt
-from numpy.random import rand, poisson, randn, choice, exponential
+from numpy.random import rand, poisson, randn, choice
 
 class network(object):
-    def __init__(n, profActConc = 5.0, arp23Conc = 50e-3, kBr = 0.3, capConc = 50e-3, extForce = 35.0, totalTime = 10.0):
+    def __init__(n, profActConc = 5.0, arp23Conc = 100e-3, kBr = 1.1, capConc = 100e-3, extForce = 0.0, totalTime = 20.0):
         # Define constants.
         n.L = 1000.0 # Length of leading edge in nanometers
         n.kPol = 4.4 * profActConc # Polymerization rate in subunits per second
         n.kBr = kBr # branch rate in branches per second
-        n.kCap = 2.6 * capConc # cap rate in branches per second
+        n.kCap = 2/3 * 8.0 * capConc # cap rate in branches per second
         n.kActLoad = 2.2 * profActConc # actin loading rate in subunits per second
         n.kArpLoad = 1.0 * arp23Conc # Arp2/3 complex loading rate to NPFs in subunits per second
         n.kTrans = 3.0 # Transfer rate from polyproline to WH2 domain in subunits per second. Assumed this is koff for profilin-actin
         n.kProPol = 3.0
         n.kWH2Pol = 3.0
         n.d = 2.7 # Width of subunit in nanometers
-        n.w = 20 * n.d # Width of branching region.
+        n.w = 10 * n.d # Width of branching region.
         n.muTheta = 70.0 / 180 * pi
         n.muSigma = 5.0 / 180 * pi
         n.extForce = extForce # external force in pN.
@@ -30,18 +30,16 @@ class network(object):
         n.thetaArr = pi * rand(n.N) - pi / 2 # angle of barbed end with respect to x-axis
         n.uArr = n.d * cos(n.thetaArr) # x-coordinate of theta
         n.vArr = n.d * sin(n.thetaArr) # y-coordinate of theta
-        n.xBarbArr = copy(n.xPointArr)
-        n.yBarbArr = copy(n.yPointArr)
-        n.xLead = amax(n.xBarbArr[logical_and(n.yBarbArr <= n.L, n.yBarbArr >= 0)])
+        n.xBarbArr = copy(n.xPointArr) + n.uArr
+        n.yBarbArr = copy(n.yPointArr) + n.vArr
         n.isCappedArr = zeros(n.N, dtype = bool)
-        n.isTouchingArr = n.xLead - n.xBarbArr < n.d
-        n.nTouching = sum(n.isTouchingArr)
-        n.forceWeight = exp(-n.extForce * n.d / 4.114 / n.nTouching)
-        n.nElongations = 0
+        
+        n.xLead = amax(n.xBarbArr[logical_and(n.yBarbArr <= n.L, n.yBarbArr >= 0)])
+        n.forceWeightArr = n.monomergap()
         
         # NPFs.
-        n.nNpfs = 30 # Assuming 19x8-um footprint for WAVE complexes.
-        n.xNpfArr = zeros(n.nNpfs)
+        n.nNpfs = 50 # Assuming 19x8-um footprint for WAVE complexes.
+        n.xNpfArr = n.xLead * zeros(n.nNpfs)
         n.yNpfArr = linspace(0.0, n.L, n.nNpfs)
         n.isWH2LoadedArr = zeros(n.nNpfs, dtype = bool)
         n.isPolProLoadedArr = zeros(n.nNpfs, dtype = bool)
@@ -53,9 +51,9 @@ class network(object):
         for i in range(n.nNpfs):
             iDistanceArr = sqrt((n.xBarbArr - n.xNpfArr[i])**2 + (n.yBarbArr - n.yNpfArr[i])**2)
             if any(iDistanceArr <= n.w):
-                idxAllBarbArr = flatnonzero(iDistanceArr)
-                idxNearBarbArr[i] = choice(idxAllBarbArr)
-                #idxNearBarbArr[i] = argmin(iDistanceArr)
+                #idxAllBarbArr = flatnonzero(iDistanceArr)
+                #idxNearBarbArr[i] = choice(idxAllBarbArr)
+                idxNearBarbArr[i] = argmin(iDistanceArr)
             else:
                 idxNearBarbArr[i] = nan
         return idxNearBarbArr
@@ -86,7 +84,18 @@ class network(object):
     def elongate(n, index):
         n.xBarbArr[index] += n.uArr[index]
         n.yBarbArr[index] += n.vArr[index]
-        n.nElongations += 1
+
+    def monomergap(n):
+        isBehindLeadArr = logical_and(n.yBarbArr <= n.L, n.yBarbArr >= 0)
+        lagArr = n.xLead - n.xBarbArr
+        isTouchingArr = logical_and(lagArr <= n.d, isBehindLeadArr)
+        distanceWeightArr = lagArr / n.d
+        distanceWeightArr[~isTouchingArr] = 1.0
+        forceWeightArr = exp(-n.extForce * n.d * n.uArr / 4.114 / sum(n.uArr[isTouchingArr]))
+        forceWeightArr[~isTouchingArr] = 1.0
+        weightArr = distanceWeightArr * forceWeightArr
+        return weightArr
+        
     def orderparameter(n):
         thetaArr = arctan(n.vArr / n.uArr) / pi * 180
         n10 = sum(abs(thetaArr) <= 10.0)
@@ -95,36 +104,20 @@ class network(object):
         return phi
                 
     def update(n):
+        n.idxNearBarbArr = n.findbarb()
         # Reactions from solution.
         for i in range(n.N):
             if n.isCappedArr[i] == False:
-                if n.isTouchingArr[i] == False:
-                    if bool(poisson(n.kCap * n.dt)) == True:
-                        n.cap(i)
-                        continue
-                    if bool(poisson(n.kPol * n.dt)) == True:
-                        n.elongate(i)
-                else:
-                    if bool(poisson(n.kCap * n.forceWeight * n.dt)) == True:
-                        n.cap(i)
-                        continue
-                    if bool(poisson(n.kPol * n.forceWeight * n.dt)) == True:
-                        n.elongate(i)
+                if bool(poisson(n.kCap * n.forceWeightArr[i] * n.dt)) == True:
+                    n.cap(i)
+                    continue
+                if bool(poisson(n.kPol * n.forceWeightArr[i] * n.dt)) == True:
+                    n.elongate(i)
                         
         # Reactions at NPFs.
-        n.idxNearBarbArr = n.findbarb()
         for i in range(n.nNpfs):
             idxBarb = n.idxNearBarbArr[i]
-            if n.hasArp23Arr[i] == False:
-                n.hasArp23Arr[i] = bool(poisson(n.kArpLoad * n.dt))
-            else:
-                if isnan(idxBarb) == False:
-                    if bool(poisson(0.01 * n.dt)) == True:
-                        n.hasArp23Arr[i] = False
-                else:
-                    if bool(poisson(0.4 * n.dt)) == True:
-                        n.hasArp23Arr[i] = False
-            # Polyproline-dependent processes
+            # Polyproline region
             if n.isPolProLoadedArr[i] == False:
                 n.isPolProLoadedArr[i] = bool(poisson(n.kActLoad * n.dt)) # Load profilin-actin
             else:
@@ -135,39 +128,40 @@ class network(object):
                 if n.isPolProLoadedArr[i] == True:
                     if isnan(idxBarb) == False:
                         idxBarb = int(idxBarb)
-                        if n.isTouchingArr[idxBarb] == False:
-                            polProb = poisson(n.kProPol * n.dt) # koff for actin-profilin is 3.0 /s
-                        else:
-                            polProb = poisson(n.kProPol * n.forceWeight * n.dt)
-                        if bool(polProb) == True & n.isCappedArr[idxBarb] == False & n.hasArp23Arr[i] == False:
-                            n.elongate(idxBarb) # Elongate nearest filament.
-                            n.isPolProLoadedArr[i] = False
-            # WH2-dependent processes
+                        if n.isCappedArr[idxBarb] == False:
+                            if n.hasArp23Arr[i] == False:
+                                polProb = poisson(n.kProPol * n.forceWeightArr[idxBarb] * n.dt)
+                                if bool(polProb) == True:
+                                    n.elongate(idxBarb) # Elongate nearest filament.
+                                    n.isPolProLoadedArr[i] = False
+            # WH2 domain
             if n.isWH2LoadedArr[i] == True:
                 if isnan(idxBarb) == False:
                     idxBarb = int(idxBarb)
-                    if (exponential(1 / n.kBr) <= n.dt) & n.hasArp23Arr[i] == True:
-                    # if bool(poisson(n.kBr * n.dt)) == True & n.hasArp23Arr[i] == True:
-                        n.branch(idxBarb) # Branch.
-                        n.isWH2LoadedArr[i] = False
-                        n.hasArp23Arr[i] = False
-                    else:
-                        if n.isTouchingArr[idxBarb] == False:
-                            polProb = poisson(n.kWH2Pol * n.dt) # koff for actin-WH2 is 3.0 /s
-                        else:
-                            polProb = poisson(n.kWH2Pol * n.forceWeight * n.dt)
-                        if bool(polProb) == True & n.isCappedArr[idxBarb] == False & n.hasArp23Arr[i] == False:
+                    if n.isCappedArr[idxBarb] == False:
+                        polProb = poisson(n.kWH2Pol * n.forceWeightArr[idxBarb] * n.dt)
+                        if bool(polProb) == True:
                             n.elongate(idxBarb) # Elongate.
+                            n.isWH2LoadedArr[i] = False
+            # CA domain
+            if n.hasArp23Arr[i] == False:
+                n.hasArp23Arr[i] = bool(poisson(n.kArpLoad * n.dt))
+            else:
+                if isnan(idxBarb) == False:
+                    idxBarb = int(idxBarb)
+                    if bool(poisson(n.kBr * n.dt)):
+                        n.hasArp23Arr[i] = False
+                        if rand() <= 0.31:
+                            n.branch(idxBarb) # Branch
                             n.isWH2LoadedArr[i] = False
         
         # Update network.
         n.t += n.dt
         n.N = len(n.xBarbArr)
-        n.xLead = max(amax(n.xBarbArr[logical_and(n.yBarbArr <= n.L, n.yBarbArr >= 0)]), n.xLead)
+        isBehindLeadArr = logical_and(n.yBarbArr <= n.L, n.yBarbArr >= 0)
+        n.xLead = max(amax(n.xBarbArr[isBehindLeadArr]), n.xLead)
         n.xNpfArr[:] = n.xLead
-        n.isTouchingArr = n.xLead - n.xBarbArr < n.d
-        n.nTouching = sum(n.isTouchingArr)
-        n.forceWeight = exp(-n.extForce * n.d / 4.114 / n.nTouching)
+        n.forceWeightArr = n.monomergap()
     def simulate(n):
         while n.t <= n.totalTime and sum(~n.isCappedArr) > 0:
             n.update()
