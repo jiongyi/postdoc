@@ -3,12 +3,12 @@ from numpy import array, copy, flatnonzero, zeros, nan, isnan, pi, cos, sin, mod
 from numpy.random import rand, poisson, randn, choice
 
 class network(object):
-    def __init__(n, profActConc = 5.0, arp23Conc = 50e-3, kBr = 1.1, capConc = 50e-3, extForce = 0.0, totalTime = 20.0):
+    def __init__(n, profActConc = 5.0, arp23Conc = 50e-3, kBr = 1.42, capConc = 50e-3, extForce = 0.0, totalTime = 20.0):
         # Define constants.
         n.L = 1000.0 # Length of leading edge in nanometers
         n.kPol = 4.4 * profActConc # Polymerization rate in subunits per second
         n.kBr = kBr # branch rate in branches per second
-        n.kCap = 8.0 * capConc # cap rate in branches per second
+        n.kCap = 3.5 * capConc # cap rate in branches per second
         n.kActLoad = 2.2 * profActConc # actin loading rate in subunits per second
         n.kArpLoad = 1.0 * arp23Conc # Arp2/3 complex loading rate to NPFs in subunits per second
         n.kTrans = 3.0 # Transfer rate from polyproline to WH2 domain in subunits per second. Assumed this is koff for profilin-actin
@@ -146,12 +146,11 @@ class network(object):
                 n.hasArp23Arr[i] = bool(poisson(n.kArpLoad * n.dt))
             else:
                 if isnan(idxBarb) == False:
-                    if rand() >= 0.974:
+                    if rand() <= 0.026:
                         if bool(poisson(n.kBr * n.dt)) == True:
+                            n.branch(idxBarb) # Branch
                             n.hasArp23Arr[i] = False
-                            if rand() <= 0.31:
-                                n.branch(idxBarb) # Branch
-                                n.isWH2LoadedArr[i] = False
+                            n.isWH2LoadedArr[i] = False
 
         # Update network.
         n.t += n.dt
