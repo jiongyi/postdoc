@@ -10,7 +10,7 @@ class network(object):
         n.kBr = kBr # branch rate in branches per second
         n.kCap = 3.5 * capConc # cap rate in branches per second
         n.kActLoad = 2.2 * profActConc # actin loading rate in subunits per second
-        n.kArpLoad = 1.0 * arp23Conc # Arp2/3 complex loading rate to NPFs in subunits per second
+        n.kArpLoad = 160.0 * arp23Conc # Arp2/3 complex loading rate to NPFs in subunits per second
         n.kTrans = 3.0 # Transfer rate from polyproline to WH2 domain in subunits per second. Assumed this is koff for profilin-actin
         n.kProPol = 3.0
         n.kWH2Pol = 3.0
@@ -82,6 +82,15 @@ class network(object):
     def elongate(n, index):
         n.xBarbArr[index] += n.uArr[index]
         n.yBarbArr[index] += n.vArr[index]
+        # Enforce periodic boundary conditions in the y direction.
+        if n.yBarbArr[index] > n.L:
+            n.yBarbArr[index] = n.yBarbArr[index] - n.L
+            n.yPointArr[index] = 0.0
+            n.xPointArr[index] = n.xBarbArr[index]
+        if n.yBarbArr[index] < 0.0:
+            n.yBarbArr[index] = n.yBarbArr[index] + n.L
+            n.yPointArr[index] = n.L
+            n.xPointArr[index] = n.xBarbArr[index]
 
     def monomergap(n):
         isBehindLeadArr = logical_and(n.yBarbArr <= n.L, n.yBarbArr >= 0)
@@ -143,10 +152,10 @@ class network(object):
                             n.isWH2LoadedArr[i] = False
             # CA domain            
             if n.hasArp23Arr[i] == False:
-                n.hasArp23Arr[i] = bool(poisson(n.kArpLoad * n.dt))
+                    n.hasArp23Arr[i] = bool(poisson(n.kArpLoad * n.dt))
             else:
                 if isnan(idxBarb) == False:
-                    if rand() <= 0.026:
+                    if rand() <= 1.0:
                         if bool(poisson(n.kBr * n.dt)) == True:
                             n.branch(idxBarb) # Branch
                             n.hasArp23Arr[i] = False
