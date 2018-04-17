@@ -44,14 +44,16 @@ class network(object):
         n.isWH2LoadedArr = zeros(n.nNpfs, dtype = bool)
         n.isPolProLoadedArr = zeros(n.nNpfs, dtype = bool)
         n.hasArp23Arr = zeros(n.nNpfs, dtype = bool)
+        n.isArp23ClosedArr = zeros(n.nNpfs, dtype = bool)
         
     def findbarb(n):
         # Index active barbed ends.
         idxNearBarbArr = zeros(n.nNpfs)
         for i in range(n.nNpfs):
             iDistanceArr = sqrt((n.xBarbArr - n.xNpfArr[i])**2 + (n.yBarbArr - n.yNpfArr[i])**2)
-            if any(iDistanceArr <= n.w):
-                idxNearBarbArr[i] = argmin(iDistanceArr)
+            isNearbyArr = iDistanceArr <= n.w
+            if any(isNearbyArr):
+                idxNearBarbArr[i] = choice(flatnonzero(isNearbyArr))
             else:
                 idxNearBarbArr[i] = nan
         return idxNearBarbArr
@@ -96,13 +98,9 @@ class network(object):
         isBehindLeadArr = logical_and(n.yBarbArr <= n.L, n.yBarbArr >= 0)
         lagArr = n.xLead - n.xBarbArr
         isTouchingArr = logical_and(lagArr <= n.d, isBehindLeadArr)
-        #distanceWeightArr = lagArr / n.d
-        #distanceWeightArr[~isTouchingArr] = 1.0
         forceWeightArr = exp(-n.extForce * n.d * n.uArr / 4.114 / sum(n.uArr[isTouchingArr]))
         forceWeightArr[~isTouchingArr] = 1.0
-        #weightArr = distanceWeightArr * forceWeightArr
-        weightArr = forceWeightArr
-        return weightArr
+        return forceWeightArr
         
     def orderparameter(n):
         thetaArr = arctan(n.vArr / n.uArr) / pi * 180
@@ -116,10 +114,10 @@ class network(object):
         # Reactions at barbed ends.
         for i in range(n.N):
             if n.isCappedArr[i] == False:
-                if bool(poisson(n.kCap * n.forceWeightArr[i] * n.dt)) == True:
+                if rand() < (n.kCap * n.forceWeightArr[i] * n.dt):
                     n.cap(i)
                     continue
-                if bool(poisson(n.kPol * n.forceWeightArr[i] * n.dt)) == True:
+                if rand() < (n.kPol * n.forceWeightArr[i] * n.dt):
                     n.elongate(i)
                         
         # Reactions at NPFs.
@@ -129,37 +127,44 @@ class network(object):
                 idxBarb = int(idxBarb)
             # Polyproline region
             if n.isPolProLoadedArr[i] == False:
-                n.isPolProLoadedArr[i] = bool(poisson(n.kActLoad * n.dt)) # Load profilin-actin
+                n.isPolProLoadedArr[i] = rand() < (n.kActLoad * n.dt) # Load profilin-actin
             else:
                 if n.isWH2LoadedArr[i] == False:
-                    if bool(poisson(n.kTrans * n.dt)) == True:
+                    if rand() < (n.kTrans * n.dt):
                         n.isPolProLoadedArr[i] = False
                         n.isWH2LoadedArr[i] = True # Transfer actin monomer to WH2 domain.
                 else:
                     if isnan(idxBarb) == False:
                         if n.isCappedArr[idxBarb] == False:
-                            polProb = poisson(n.kProPol * n.forceWeightArr[idxBarb] * n.dt)
-                            if bool(polProb) == True:
+                            polProb = n.kProPol * n.forceWeightArr[idxBarb] * n.dt
+                            if rand() < polProb:
                                 n.elongate(idxBarb) # Elongate nearest filament.
                                 n.isPolProLoadedArr[i] = False
             # WH2 domain
             if n.isWH2LoadedArr[i] == True:
                 if isnan(idxBarb) == False:
                     if n.isCappedArr[idxBarb] == False:
-                        polProb = poisson(n.kWH2Pol * n.forceWeightArr[idxBarb] * n.dt)
-                        if bool(polProb) == True:
+                        polProb = n.kWH2Pol * n.forceWeightArr[idxBarb] * n.dt
+                        if rand() < polProb:
                             n.elongate(idxBarb) # Elongate.
                             n.isWH2LoadedArr[i] = False
             # CA domain            
             if n.hasArp23Arr[i] == False:
-                    n.hasArp23Arr[i] = bool(poisson(n.kArpLoad * n.dt))
+                if rand() < (n.kArpLoad * n.dt):
+                # if bool(poisson(n.kArpLoad * n.dt)) == True:
+                    n.hasArp23Arr[i] = True
+                    if rand() <= 1.0:
+                        n.isArp23ClosedArr[i] = True
             else:
                 if isnan(idxBarb) == False:
-                    if rand() <= 1.0:
-                        if bool(poisson(n.kBr * n.dt)) == True:
-                            n.branch(idxBarb) # Branch
+                    if n.isArp23ClosedArr[i] == True:
+                        if rand() < (n.kBr * n.dt):
+                        #if bool(poisson(n.kBr * n.dt)) == True:
                             n.hasArp23Arr[i] = False
-                            n.isWH2LoadedArr[i] = False
+                            n.isArp23ClosedArr[i] = False
+                            if rand() <= 0.31:
+                                n.branch(idxBarb) # Branch
+                                n.isWH2LoadedArr[i] = False
 
         # Update network.
         n.t += n.dt
