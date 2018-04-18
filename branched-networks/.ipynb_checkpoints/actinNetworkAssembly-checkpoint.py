@@ -84,6 +84,7 @@ class network(object):
     def elongate(n, index):
         n.xBarbArr[index] += n.uArr[index]
         n.yBarbArr[index] += n.vArr[index]
+        """
         # Enforce periodic boundary conditions in the y direction.
         if n.yBarbArr[index] > n.L:
             n.yBarbArr[index] = n.yBarbArr[index] - n.L
@@ -93,6 +94,7 @@ class network(object):
             n.yBarbArr[index] = n.yBarbArr[index] + n.L
             n.yPointArr[index] = n.L
             n.xPointArr[index] = n.xBarbArr[index]
+        """
 
     def monomergap(n):
         isBehindLeadArr = logical_and(n.yBarbArr <= n.L, n.yBarbArr >= 0)
@@ -119,53 +121,58 @@ class network(object):
                     continue
                 if rand() < (n.kPol * n.forceWeightArr[i] * n.dt):
                     n.elongate(i)
-                        
-        # Reactions at NPFs.
+                    
+        # Reactions at NPFs
         for i in range(n.nNpfs):
             idxBarb = n.idxNearBarbArr[i]
             if isnan(idxBarb) == False:
                 idxBarb = int(idxBarb)
-            # Polyproline region
-            if n.isPolProLoadedArr[i] == False:
-                n.isPolProLoadedArr[i] = rand() < (n.kActLoad * n.dt) # Load profilin-actin
-            else:
-                if n.isWH2LoadedArr[i] == False:
-                    if rand() < (n.kTrans * n.dt):
-                        n.isPolProLoadedArr[i] = False
-                        n.isWH2LoadedArr[i] = True # Transfer actin monomer to WH2 domain.
-                else:
-                    if isnan(idxBarb) == False:
-                        if n.isCappedArr[idxBarb] == False:
-                            polProb = n.kProPol * n.forceWeightArr[idxBarb] * n.dt
-                            if rand() < polProb:
-                                n.elongate(idxBarb) # Elongate nearest filament.
-                                n.isPolProLoadedArr[i] = False
-            # WH2 domain
-            if n.isWH2LoadedArr[i] == True:
-                if isnan(idxBarb) == False:
-                    if n.isCappedArr[idxBarb] == False:
-                        polProb = n.kWH2Pol * n.forceWeightArr[idxBarb] * n.dt
-                        if rand() < polProb:
-                            n.elongate(idxBarb) # Elongate.
-                            n.isWH2LoadedArr[i] = False
-            # CA domain            
-            if n.hasArp23Arr[i] == False:
-                if rand() < (n.kArpLoad * n.dt):
-                # if bool(poisson(n.kArpLoad * n.dt)) == True:
-                    n.hasArp23Arr[i] = True
-                    if rand() <= 1.0:
-                        n.isArp23ClosedArr[i] = True
-            else:
+            # CA domain
+            if n.hasArp23Arr[i] == True:
                 if isnan(idxBarb) == False:
                     if n.isArp23ClosedArr[i] == True:
                         if rand() < (n.kBr * n.dt):
-                        #if bool(poisson(n.kBr * n.dt)) == True:
+                            print("NPF let go")
                             n.hasArp23Arr[i] = False
                             n.isArp23ClosedArr[i] = False
                             if rand() <= 0.31:
-                                n.branch(idxBarb) # Branch
+                                # Branch.
+                                n.branch(idxBarb)
                                 n.isWH2LoadedArr[i] = False
-
+            elif n.hasArp23Arr[i] == False:
+                if rand() < (n.kArpLoad * n.dt):
+                    # Load Arp2/3 complex.
+                    n.hasArp23Arr[i] = True
+                    if rand() <= 0.023:
+                        n.isArp23ClosedArr[i] = True
+            # Polyproline region
+            if n.isPolProLoadedArr[i] == True:
+                if isnan(idxBarb) == False:
+                    if n.isCappedArr[idxBarb] == False:
+                        if rand() < (n.kProPol * n.forceWeightArr[idxBarb] * n.dt):
+                            # Elongate
+                            n.elongate(idxBarb)
+                            n.isPolProLoadedArr[i] = False
+            elif n.isPolProLoadedArr[i] == False:
+                # Load monomer.
+                n.isPolProLoadedArr[i] = rand() < (n.kActLoad * n.dt)
+            
+            # WH2 domain
+            if n.isWH2LoadedArr[i] == True:
+                if n.hasArp23Arr[i] == False:
+                    if isnan(idxBarb) == False:
+                        if n.isCappedArr[idxBarb] == False:
+                            if rand() < (n.kWH2Pol * n.forceWeightArr[idxBarb] * n.dt):
+                                # Elongate
+                                n.elongate(idxBarb)
+                                n.isWH2LoadedArr[i] = False
+            elif n.isWH2LoadedArr[i] == False:
+                if n.isPolProLoadedArr[i] == True:
+                    if rand() < (n.kTrans * n.dt):
+                        # Transfer monomer.
+                        n.isPolProLoadedArr[i] = False
+                        n.isWH2LoadedArr[i] = True
+                        
         # Update network.
         n.t += n.dt
         n.N = len(n.xBarbArr)
@@ -174,5 +181,5 @@ class network(object):
         n.xNpfArr[:] = n.xLead
         n.forceWeightArr = n.monomergap()
     def simulate(n):
-        while n.t <= n.totalTime and sum(~n.isCappedArr) > 0:
+        while n.t <= n.totalTime:
             n.update()
