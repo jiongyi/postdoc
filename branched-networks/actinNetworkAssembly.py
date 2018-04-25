@@ -132,7 +132,6 @@ class network(object):
                 if isnan(idxBarb) == False:
                     if n.isArp23ClosedArr[i] == True:
                         if rand() < (n.kBr * n.dt):
-                            print("NPF let go")
                             n.hasArp23Arr[i] = False
                             n.isArp23ClosedArr[i] = False
                             if rand() <= 0.31:
@@ -143,7 +142,8 @@ class network(object):
                 if rand() < (n.kArpLoad * n.dt):
                     # Load Arp2/3 complex.
                     n.hasArp23Arr[i] = True
-                    if rand() <= 0.023:
+                    if rand() <= 1.0:
+                    # if rand() <= 0.023:
                         n.isArp23ClosedArr[i] = True
             # Polyproline region
             if n.isPolProLoadedArr[i] == True:
