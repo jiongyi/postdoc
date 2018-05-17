@@ -1,6 +1,6 @@
 # Import libraries
 from numpy import array, copy, sort, flatnonzero, zeros, pi, cos, sin, mod, argmin, append, amax, exp, arctan, logical_and, linspace, sqrt
-from numpy.random import rand, randn, choice
+from numpy.random import rand, randn
 
 class network(object):
     def __init__(n, kBr = 20.0, kCap = 0.05, noFilFront = 2, totalTime = 20.0):
@@ -39,13 +39,13 @@ class network(object):
             xLastFront = xSortedArr[-1 - n.noFilFront]
             isBehindArr = n.xBarbArr < xLastFront
             isAheadArr = n.xBarbArr >= (xLastFront - n.w)
-            return flatnonzero(logical_and(isBehindArr, isAheadArr))
+            return flatnonzero(logical_and(~n.isCappedArr, logical_and(isBehindArr, isAheadArr)))
                     
     def cap(n, index):
         n.isCappedArr[index] = True
     
     def branch(n, index):
-        theta = choice([-1, 1]) * n.muTheta + n.muSigma * randn()
+        theta = n.muTheta + n.muSigma * randn()
         u = n.uArr[index]
         v = n.vArr[index]
         uNew = u * cos(theta) - v * sin(theta)
@@ -63,6 +63,7 @@ class network(object):
         n.uArr = append(n.uArr, uNew)
         n.vArr = append(n.vArr, vNew)
         n.isCappedArr = append(n.isCappedArr, False)
+        n.N += 1
         
     def elongate(n, index):
         n.xBarbArr[index] += (n.uArr[index] * n.kPol * n.dt)
@@ -98,9 +99,8 @@ class network(object):
                    
         # Update network.
         n.t += n.dt
-        n.N = len(n.xBarbArr)
         n.xLead = amax(n.xBarbArr)
         
     def simulate(n):
-        while n.t <= n.totalTime:
+        while n.t <= n.totalTime and sum(~n.isCappedArr) > 0:
             n.update()
