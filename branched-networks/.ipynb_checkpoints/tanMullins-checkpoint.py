@@ -84,7 +84,6 @@ class network(object):
     def elongate(n, index):
         n.xBarbArr[index] += n.uArr[index]
         n.yBarbArr[index] += n.vArr[index]
-        """
         # Enforce periodic boundary conditions in the y direction.
         if n.yBarbArr[index] > n.L:
             n.yBarbArr[index] = n.yBarbArr[index] - n.L
@@ -94,7 +93,6 @@ class network(object):
             n.yBarbArr[index] = n.yBarbArr[index] + n.L
             n.yPointArr[index] = n.L
             n.xPointArr[index] = n.xBarbArr[index]
-        """
 
     def monomergap(n):
         isBehindLeadArr = logical_and(n.yBarbArr <= n.L, n.yBarbArr >= 0)
