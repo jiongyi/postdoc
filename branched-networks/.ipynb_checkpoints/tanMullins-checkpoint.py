@@ -12,10 +12,10 @@ class network(object):
         n.kActLoad = 2.2 * profActConc # actin loading rate in subunits per second
         n.kArpLoad = 160.0 * arp23Conc # Arp2/3 complex loading rate to NPFs in subunits per second
         n.kTrans = 3.0 # Transfer rate from polyproline to WH2 domain in subunits per second. Assumed this is koff for profilin-actin
-        n.kProPol = 3.0
-        n.kWH2Pol = 3.0
+        n.kProPol = 12.0
+        n.kWH2Pol = 6.0
         n.d = 2.7 # Width of subunit in nanometers
-        n.w = 10 * n.d # Width of branching region.
+        n.w = 1.5 * n.d # Width of branching region.
         n.muTheta = 70.0 / 180 * pi
         n.muSigma = 5.0 / 180 * pi
         n.extForce = extForce # external force in pN.
@@ -69,9 +69,11 @@ class network(object):
         # Make sure branch points towards the leading edge.
         if uNew > 0:
             vNew = u * sin(theta) + v * cos(theta)
+            n.thetaArr = append(n.thetaArr, theta)
         else:
             uNew = u * cos(theta) + v * sin(theta)
             vNew = -u * sin(theta) + v * cos(theta)
+            n.thetaArr = append(n.thetaArr, -theta)
         # Add pointed end to arrays.
         n.xPointArr = append(n.xPointArr, n.xBarbArr[index])
         n.yPointArr = append(n.yPointArr, n.yBarbArr[index])
@@ -114,9 +116,10 @@ class network(object):
         # Reactions at barbed ends.
         for i in range(n.N):
             if n.isCappedArr[i] == False:
-                if rand() < (n.kCap * n.forceWeightArr[i] * n.dt):
-                    n.cap(i)
-                    continue
+                if i in n.idxNearBarbArr:
+                    if rand() < (n.kCap * n.forceWeightArr[i] * n.dt):
+                        n.cap(i)
+                        continue
                 if rand() < (n.kPol * n.forceWeightArr[i] * n.dt):
                     n.elongate(i)
                     
