@@ -1,11 +1,10 @@
 # Import libraries
-from numpy import array, copy, flatnonzero, zeros, nan, isnan, pi, cos, sin, mod, int, argmin, append, amax, exp, arctan, abs, logical_and, linspace, sqrt
+from numpy import array, copy, flatnonzero, zeros, ones, nan, isnan, pi, cos, sin, mod, int, argmin, append, amax, exp, arctan, abs, logical_and, linspace, sqrt
 from numpy.random import rand, poisson, randn, choice
 
 class network(object):
-    def __init__(n, npf_density = 50.0, elongation_rate = 6.0, arp23_activation_rate = 6.0e-2, capping_rate = 0.08, total_time = 20.0):
+    def __init__(n, elongation_rate = 6.0, arp23_activation_rate = 6.0e-2, capping_rate = 0.08, total_time = 20.0):
         # Copy parameters
-        n.npf_density = npf_density * 1e-3
         n.elongation_rate = elongation_rate
         n.arp23_activation_rate = arp23_activation_rate
         n.capping_rate = capping_rate
@@ -29,6 +28,7 @@ class network(object):
         n.y_barbed_row = copy(n.y_pointed_row) + n.v_row
         n.is_capped_row = zeros(n.no_filaments, dtype = bool)
         n.edge_position = amax(n.x_barbed_row)
+        n.force_weight_row = ones(n.no_filaments)
     
     def elongate(n, index):
         n.x_barbed_row[index] += n.u_row[index]
@@ -63,27 +63,32 @@ class network(object):
         n.u_row = append(n.u_row, u_new)
         n.v_row = append(n.v_row, v_new)
         n.is_capped_row = append(n.is_capped_row, False)
+        n.force_weight_row = append(n.force_weight_row, 1.0)
         
     def cap(n, index):
         n.is_capped_row[index] = True
         
+    def compute_force_weight(n):
+        delta_x_row = n.edge_position - n.x_barbed_row
+        n.force_weight_row = 1 - exp(-delta_x_row / 0.54)
+        
     def update(n):
         for i in range(n.no_filaments):
             # Calculate reaction probabilities.
-            if n.is_capped_row[i] == True or ((n.edge_position - n.x_barbed_row[i]) <= n.MONOMER_WIDTH):
+            if n.is_capped_row[i] == True:
                 elongation_probability = 0.0
             else:
-                elongation_probability = n.elongation_rate * n.TIME_INTERVAL
+                elongation_probability = n.elongation_rate * n.force_weight_row[i] * n.TIME_INTERVAL
             
             if (n.edge_position - n.x_barbed_row[i]) <= n.MONOMER_WIDTH:
                 branching_probability = n.arp23_activation_rate * n.TIME_INTERVAL
             else:
                 branching_probability = 0.0
             
-            if n.is_capped_row[i] == True or ((n.edge_position - n.x_barbed_row[i]) <= n.MONOMER_WIDTH):
+            if n.is_capped_row[i] == True:
                 capping_probability = 0.0
             else:
-                capping_probability = n.capping_rate * n.TIME_INTERVAL
+                capping_probability = n.capping_rate * n.force_weight_row[i] * n.TIME_INTERVAL
             
             if rand() < elongation_probability:
                 n.elongate(i)
@@ -96,6 +101,7 @@ class network(object):
         n.time += n.TIME_INTERVAL
         n.edge_position = amax(n.x_barbed_row)
         n.no_filaments = len(n.x_pointed_row)
+        n.compute_force_weight()
         
     def simulate(n):
         while n.time <= n.total_time and (sum(~n.is_capped_row) > 0):
