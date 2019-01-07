@@ -40,11 +40,29 @@ def extended_depth_field(z_3d):
     ext_depth_field_2d = ext_depth_field_2d.reshape((no_rows, no_cols))
     return gaussian(ext_depth_field_2d)
 
+def open_reconstruction(raw_2d, struct_2d):
+    eroded_2d = erosion(raw_2d, struct_2d)
+    opened_2d = reconstruction(eroded_2d, raw_2d, selem = struct_2d)
+    return opened_2d
+
 def tophat_reconstruction(raw_2d, struct_2d):
     eroded_2d = erosion(raw_2d, struct_2d)
     opened_2d = reconstruction(eroded_2d, raw_2d, selem = struct_2d)
     tophat_2d = raw_2d - opened_2d
     return tophat_2d
+
+def compute_region_mean_std(raw_2d, bw_2d):
+    label_2d, no_regions = label(bw_2d, return_num = True)
+    no_rows, no_cols = raw_2d.shape
+    mean_2d = zeros((no_rows, no_cols))
+    std_2d = zeros((no_rows, no_cols))
+    for i in range(1, no_regions + 1):
+        i_bw_2d = bw_2d == i
+        i_region_intensities_row = raw_2d[i_bw_2d].flatten()
+        mean_2d[i_bw_2d] = mean(i_region_intensities_row)
+        std_2d[i_bw_2d] = std(i_region_intensities_row)
+    std_2d[~bw_2d] = 1.0
+    return mean_2d, std_2d
 
 def segment_puncta(tif_file_path_str):
     # Load images.
@@ -62,21 +80,32 @@ def segment_puncta(tif_file_path_str):
     gauss_lambda3_2d = gaussian(lambda3_2d, sigma = 3)
     bw_lambda3_2d = gauss_lambda3_2d > threshold_otsu(gauss_lambda3_2d)
     bw_lambda3_2d = remove_small_objects(bw_lambda3_2d, 81)
-    # Enhance contrast.
-    equal_lambda1_2d = equalize_adapthist(lambda1_2d)
-    equal_lambda2_2d = equalize_adapthist(lambda2_2d)
-    # Apply tophat filter.
-    tophat_lambda1_2d = tophat_reconstruction(equal_lambda1_2d, disk(4))
-    tophat_lambda2_2d = tophat_reconstruction(equal_lambda2_2d, disk(4))
-    # Generate SNR images.
-    snr_lambda1_2d = tophat_lambda1_2d - mean(tophat_lambda1_2d[bw_lambda3_2d])
-    snr_lambda1_2d /= std(snr_lambda1_2d[bw_lambda3_2d])
-    snr_lambda2_2d = tophat_lambda2_2d - mean(tophat_lambda2_2d[bw_lambda3_2d])
-    snr_lambda2_2d /= std(snr_lambda2_2d[bw_lambda3_2d])
-    snr_lambda3_2d = (lambda3_2d - mean(lambda3_2d[~bw_lambda3_2d])) / std(lambda3_2d[~bw_lambda3_2d])
+
+    # Apply open filter.
+    open_lambda1_2d = open_reconstruction(lambda1_2d, disk(8))
+    open_lambda2_2d = open_reconstruction(lambda2_2d, disk(8))
+    
+    mean_lambda1_2d, std_lambda1_2d = compute_region_mean_std(open_lambda1_2d, bw_lambda3_2d)
+    mean_lambda2_2d, std_lambda2_2d = compute_region_mean_std(open_lambda2_2d, bw_lambda3_2d)
+    
+    snr_lambda1_2d = lambda1_2d - mean_lambda1_2d
+    snr_lambda1_2d /= std_lambda1_2d
+    snr_lambda1_2d[snr_lambda1_2d < 0] = 0.0
+    snr_lambda1_2d[~bw_lambda3_2d] = 0.0
+    
+    snr_lambda2_2d = lambda2_2d - mean_lambda2_2d
+    snr_lambda2_2d /= std_lambda2_2d
+    snr_lambda2_2d[snr_lambda2_2d < 0] = 0.0
+    snr_lambda2_2d[~bw_lambda3_2d] = 0.0
+    
+    snr_lambda3_2d = lambda3_2d - mean(lambda3_2d[~bw_lambda3_2d])
+    snr_lambda3_2d /= std(lambda3_2d[~bw_lambda3_2d])
+    snr_lambda3_2d[snr_lambda3_2d < 0] = 0.0
+    snr_lambda3_2d[~bw_lambda3_2d] = 0.0
+
     # Segment puncta in the other two channels.
-    bw_lambda1_2d = snr_lambda1_2d > 3
-    bw_lambda2_2d = snr_lambda2_2d > 3
+    bw_lambda1_2d = snr_lambda1_2d >= 3
+    bw_lambda2_2d = snr_lambda2_2d >= 3
     bw_lambda1_2d = remove_small_objects(bw_lambda1_2d, 13)
     bw_lambda2_2d = remove_small_objects(bw_lambda2_2d, 13)
     bw_lambda1_2d[~bw_lambda3_2d] = False
@@ -159,11 +188,11 @@ def compile_csv_files(search_path_str):
                             all_csv_dict[key].append(row[key])
     return all_csv_dict
             
-def save_processed_images(tif_file_path_str, lambda1_2d, lambda2_2d, lambda3_2d, bw_lambda1_2d, bw_lambda2_2d, bw_lambda3_2d):
-    norm_lambda1_2d = lambda1_2d - min(lambda1_2d.flatten())
-    norm_lambda2_2d = lambda2_2d - min(lambda2_2d.flatten())
-    norm_lambda3_2d = lambda3_2d - min(lambda3_2d.flatten())
-        
+def save_processed_images(tif_file_path_str, lambda1_2d, lambda2_2d, lambda3_2d, bw_lambda1_2d, bw_lambda2_2d, bw_lambda3_2d):    
+    norm_lambda1_2d = copy(lambda1_2d)
+    norm_lambda2_2d = copy(lambda2_2d)
+    norm_lambda3_2d = copy(lambda3_2d)
+               
     perim_lambda1_2d = find_boundaries(bw_lambda1_2d)
     perim_lambda2_2d = find_boundaries(bw_lambda2_2d)
     perim_lambda3_2d = find_boundaries(bw_lambda3_2d)
@@ -202,8 +231,10 @@ def plot_quantification(compiled_csv_dict):
     lambda1_flux_row = array(compiled_csv_dict['lambda1_flux'])
     lambda2_flux_row = array(compiled_csv_dict['lambda2_flux'])
     no_lambda12_regions_row = array(compiled_csv_dict['no_overlap_regions'])
-    data_frame = DataFrame(data = {'pH2AX': lambda1_flux_row / lambda3_areas_row,
-                                   '53BP1': lambda2_flux_row / lambda3_areas_row})
+    lambda1_flux_density_row = lambda1_flux_row / lambda3_areas_row
+    lambda2_flux_density_row = lambda2_flux_row / lambda3_areas_row
+    data_frame = DataFrame(data = {'pH2AX': lambda1_flux_density_row,
+                                   '53BP1': lambda2_flux_density_row})
     fig_obj = figure()
     axes_obj = boxplot(data = data_frame)
     axes_obj = swarmplot(data = data_frame)
