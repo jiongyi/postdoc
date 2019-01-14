@@ -1,7 +1,7 @@
 from os import walk
 from os.path import join,split
 import fnmatch
-from numpy import zeros, argmax, arange, mean, std, array, copy, stack
+from numpy import zeros, argmax, arange, mean, std, array, copy, stack, median
 from skimage.filters import sobel, gaussian, threshold_otsu
 from skimage.morphology import erosion, reconstruction, disk, remove_small_objects
 from skimage import img_as_float, img_as_uint
@@ -13,6 +13,7 @@ import csv
 from matplotlib.pyplot import figure
 from seaborn import swarmplot, boxplot
 from pandas import DataFrame
+from sklearn.utils import resample
 
 # Define constants.
 NO_PIXELS_2_UM2 = 0.10185185185**2
@@ -248,3 +249,11 @@ def batch_quantification(folder_name_str):
         extract_puncta_properties(lambda1_2d, lambda2_2d, lambda3_2d, bw_lambda1_2d, bw_lambda2_2d, bw_lambda3_2d, tif_file_paths_str[i])
         save_processed_images(tif_file_paths_str[i], lambda1_2d, lambda2_2d, lambda3_2d, bw_lambda1_2d, bw_lambda2_2d, bw_lambda3_2d)
     return 0
+
+def bootstrap_median(x_row):
+    no_iterations = 1000
+    medians_row = zeros(no_iterations)
+    for i in range(no_iterations):
+        i_boot_row = resample(x_row)
+        medians_row[i] = median(i_boot_row)
+    return std(medians_row)
