@@ -1,7 +1,7 @@
 from os import walk
 from os.path import join,split
 import fnmatch
-from numpy import zeros, argmax, arange, mean, std, array, copy, stack, median
+from numpy import zeros, argmax, arange, mean, std, array, copy, stack, median, percentile, min, max, linspace, argmin, abs
 from skimage.filters import sobel, gaussian, threshold_otsu
 from skimage.morphology import erosion, reconstruction, disk, remove_small_objects
 from skimage import img_as_float, img_as_uint
@@ -10,10 +10,11 @@ from skimage.measure import label, regionprops
 from skimage.segmentation import find_boundaries
 from skimage.exposure import equalize_adapthist
 import csv
-from matplotlib.pyplot import figure
+from matplotlib.pyplot import figure, subplots
 from seaborn import swarmplot, boxplot
 from pandas import DataFrame
 from sklearn.utils import resample
+from scipy.stats import gaussian_kde
 
 # Define constants.
 NO_PIXELS_2_UM2 = 0.10185185185**2
@@ -251,9 +252,15 @@ def batch_quantification(folder_name_str):
     return 0
 
 def bootstrap_median(x_row):
+    no_total = len(x_row)
+    no_positive = sum(x_row > 0)
     no_iterations = 1000
     medians_row = zeros(no_iterations)
     for i in range(no_iterations):
         i_boot_row = resample(x_row)
-        medians_row[i] = median(i_boot_row)
-    return std(medians_row)
+        i_no_positive = sum(i_boot_row > 0)
+        medians_row[i] = i_no_positive * median(i_boot_row[i_boot_row > 0]) / no_total
+    weighted_median = no_positive * median(x_row[x_row > 0]) / no_total
+    bounds_row = abs(weighted_median - percentile(medians_row, [2.5, 97.5]))
+    return weighted_median, bounds_row
+    
