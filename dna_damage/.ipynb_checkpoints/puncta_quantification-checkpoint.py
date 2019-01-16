@@ -84,8 +84,8 @@ def segment_puncta(tif_file_path_str):
     bw_lambda3_2d = remove_small_objects(bw_lambda3_2d, 81)
 
     # Apply open filter.
-    open_lambda1_2d = open_reconstruction(lambda1_2d, disk(8))
-    open_lambda2_2d = open_reconstruction(lambda2_2d, disk(8))
+    open_lambda1_2d = open_reconstruction(lambda1_2d, disk(4))
+    open_lambda2_2d = open_reconstruction(lambda2_2d, disk(4))
     
     mean_lambda1_2d, std_lambda1_2d = compute_region_mean_std(open_lambda1_2d, bw_lambda3_2d)
     mean_lambda2_2d, std_lambda2_2d = compute_region_mean_std(open_lambda2_2d, bw_lambda3_2d)
@@ -106,8 +106,8 @@ def segment_puncta(tif_file_path_str):
     snr_lambda3_2d[~bw_lambda3_2d] = 0.0
 
     # Segment puncta in the other two channels.
-    bw_lambda1_2d = snr_lambda1_2d >= 3
-    bw_lambda2_2d = snr_lambda2_2d >= 3
+    bw_lambda1_2d = snr_lambda1_2d >= 2
+    bw_lambda2_2d = snr_lambda2_2d >= 2
     bw_lambda1_2d = remove_small_objects(bw_lambda1_2d, 13)
     bw_lambda2_2d = remove_small_objects(bw_lambda2_2d, 13)
     bw_lambda1_2d[~bw_lambda3_2d] = False
@@ -129,7 +129,7 @@ def extract_puncta_properties(lambda1_2d, lambda2_2d, lambda3_2d, bw_lambda1_2d,
     with open(tif_file_path_str[:-4] + '_lambda3_quant.csv', 'w') as csv_file:
         field_names_str = ['file_name', 'nuclear_region', 'mean_intensity',
                            'region_size', 'no_lambda1_regions', 'no_lambda2_regions',
-                           'lambda1_flux', 'lambda2_flux', 'no_overlap_regions']
+                           'lambda1_flux', 'lambda2_flux', 'overlap_flux_fraction']
         writer = csv.DictWriter(csv_file, fieldnames = field_names_str)
         writer.writeheader()
         root_path_str, file_path_str = split(tif_file_path_str)
@@ -141,33 +141,46 @@ def extract_puncta_properties(lambda1_2d, lambda2_2d, lambda3_2d, bw_lambda1_2d,
             i_label_lambda12_2d, i_no_lambda12_regions = label(bw_lambda1_2d * bw_lambda2_2d * i_bw_lambda3_2d, return_num = True)
             i_lambda1_regionprops_list = regionprops(i_label_lambda1_2d, fg_lambda1_2d)
             i_lambda2_regionprops_list = regionprops(i_label_lambda2_2d, fg_lambda2_2d)
-            i_lambda12_regionprops_list = regionprops(i_label_lambda12_2d)
+            i_lambda12_regionprops_list = regionprops(i_label_lambda12_2d, fg_lambda1_2d + fg_lambda2_2d)
             i_lambda1_region_areas_row = array([x.area for x in i_lambda1_regionprops_list]) * NO_PIXELS_2_UM2
             i_lambda2_region_areas_row = array([x.area for x in i_lambda2_regionprops_list]) * NO_PIXELS_2_UM2
+            i_lambda12_region_areas_row = array([x.area for x in i_lambda12_regionprops_list]) * NO_PIXELS_2_UM2
             i_lambda1_region_intensities_row = array([x.mean_intensity for x in i_lambda1_regionprops_list])
             i_lambda2_region_intensities_row = array([x.mean_intensity for x in i_lambda2_regionprops_list])
+            i_lambda12_region_intensities_row = array([x.mean_intensity for x in i_lambda12_regionprops_list])
             i_lambda1_region_flux_row = i_lambda1_region_areas_row * i_lambda1_region_intensities_row
             if len(i_lambda1_region_flux_row) == 0:
                 i_lambda1_region_flux_row = array([0])
             i_lambda2_region_flux_row = i_lambda2_region_areas_row * i_lambda2_region_intensities_row
             if len(i_lambda2_region_flux_row) == 0:
                 i_lambda2_region_flux_row = array([0])
+            i_lambda12_region_flux_row = i_lambda12_region_areas_row * i_lambda12_region_intensities_row
+            if len(i_lambda12_region_flux_row) == 0:
+                i_lambda2_region_flux_row = array([0])
+            i_lambda1_total_flux = sum(i_lambda1_region_flux_row)
+            i_lambda2_total_flux = sum(i_lambda2_region_flux_row)
+            i_lambda12_overlap_flux = sum(i_lambda12_region_flux_row)
+            i_lambda12_total_flux = i_lambda1_total_flux + i_lambda2_total_flux
+            if i_lambda12_total_flux == 0:
+                i_overlap_flux_fraction = 0.0
+            else:
+                i_overlap_flux_fraction = i_lambda12_overlap_flux / i_lambda12_total_flux
             writer.writerow({'file_name': file_path_str,
                              'nuclear_region': str(i),
                              'mean_intensity': str(lambda3_regionprops_list[i].mean_intensity),
                              'region_size': str(lambda3_regionprops_list[i].area * NO_PIXELS_2_UM2),
                              'no_lambda1_regions': str(i_no_lambda1_regions),
                              'no_lambda2_regions': str(i_no_lambda2_regions), 
-                             'lambda1_flux': str(sum(i_lambda1_region_flux_row)),
-                             'lambda2_flux': str(sum(i_lambda2_region_flux_row)),
-                             'no_overlap_regions': str(i_no_lambda12_regions)})
+                             'lambda1_flux': str(i_lambda1_total_flux),
+                             'lambda2_flux': str(i_lambda2_total_flux),
+                             'overlap_flux_fraction': str(i_overlap_flux_fraction)})
             
 
 def compile_csv_files(search_path_str):            
     csv_file_paths_str = []
     all_csv_dict = {'file_name': [], 'nuclear_region': [], 'mean_intensity': [], 'region_size': [], 
                   'no_lambda1_regions': [], 'no_lambda2_regions': [], 'lambda1_flux': [], 
-                  'lambda2_flux': [], 'no_overlap_regions': []}
+                  'lambda2_flux': [], 'overlap_flux_fraction': []}
     search_str = '*_lambda3_quant.csv'
     for (folder_paths_str, subfolder_names_str, file_names_str) in walk(search_path_str):
         for i_file_names_str in file_names_str:
@@ -175,7 +188,7 @@ def compile_csv_files(search_path_str):
                 csv_file_paths_str.append(join(folder_paths_str, i_file_names_str))
     with open(search_path_str + '/compiled_lambda3_quant.csv', 'w') as csv_write_file:
         field_names_str = ['file_name', 'nuclear_region', 'mean_intensity', 'region_size',
-                           'no_lambda1_regions', 'no_lambda2_regions', 'lambda1_flux', 'lambda2_flux', 'no_overlap_regions']
+                           'no_lambda1_regions', 'no_lambda2_regions', 'lambda1_flux', 'lambda2_flux', 'overlap_flux_fraction']
         writer = csv.DictWriter(csv_write_file, fieldnames = field_names_str)
         writer.writeheader()
         for i in range(len(csv_file_paths_str)):
@@ -224,25 +237,6 @@ def save_processed_images(tif_file_path_str, lambda1_2d, lambda2_2d, lambda3_2d,
     imsave(tif_file_path_str[:-4] + '_three_channel.tif', img_as_uint(rgb_2d))
     return 0
 
-def plot_quantification(compiled_csv_dict):
-    # Extract values.
-    lambda3_areas_row = array(compiled_csv_dict['region_size'])
-    lambda3_intensities_row = array(compiled_csv_dict['mean_intensity'])
-    no_lambda1_regions_row = array(compiled_csv_dict['no_lambda1_regions'])
-    no_lambda2_regions_row = array(compiled_csv_dict['no_lambda2_regions'])
-    lambda1_flux_row = array(compiled_csv_dict['lambda1_flux'])
-    lambda2_flux_row = array(compiled_csv_dict['lambda2_flux'])
-    no_lambda12_regions_row = array(compiled_csv_dict['no_overlap_regions'])
-    lambda1_flux_density_row = lambda1_flux_row / lambda3_areas_row
-    lambda2_flux_density_row = lambda2_flux_row / lambda3_areas_row
-    data_frame = DataFrame(data = {'pH2AX': lambda1_flux_density_row,
-                                   '53BP1': lambda2_flux_density_row})
-    fig_obj = figure()
-    axes_obj = boxplot(data = data_frame)
-    axes_obj = swarmplot(data = data_frame)
-    axes_obj.set_ylabel('Flux density (/$\mu m^2$)')
-    return axes_obj, data_frame
-
 def batch_quantification(folder_name_str):
     tif_file_paths_str = find_tif_files(folder_name_str)
     for i in range(len(tif_file_paths_str)):
@@ -257,10 +251,36 @@ def bootstrap_median(x_row):
     no_iterations = 1000
     medians_row = zeros(no_iterations)
     for i in range(no_iterations):
-        i_boot_row = resample(x_row)
-        i_no_positive = sum(i_boot_row > 0)
-        medians_row[i] = i_no_positive * median(i_boot_row[i_boot_row > 0]) / no_total
+        i_x_row = resample(x_row)
+        i_no_positive = sum(i_x_row > 0)
+        medians_row[i] = i_no_positive * median(i_x_row[i_x_row > 0]) / no_total
     weighted_median = no_positive * median(x_row[x_row > 0]) / no_total
     bounds_row = abs(weighted_median - percentile(medians_row, [2.5, 97.5]))
     return weighted_median, bounds_row
     
+def compute_medians(dict_list):
+    no_dict = len(dict_list)
+    median_lambda1_flux_density_row = zeros(no_dict)
+    median_lambda2_flux_density_row = zeros(no_dict)
+    median_no_overlaps_density_row = zeros(no_dict)
+    bounds_lambda1_flux_density_2d = zeros((no_dict, 2))
+    bounds_lambda2_flux_density_2d = zeros((no_dict, 2))
+    bounds_no_overlaps_density_2d = zeros((no_dict, 2))
+    
+    for i in range(no_dict):
+        i_region_area_row = dict_list[i]['region_size']
+        i_lambda1_flux_row = dict_list[i]['lambda1_flux']
+        i_lambda2_flux_row = dict_list[i]['lambda2_flux']
+        i_no_overlaps_density_row = array(dict_list[i]['overlap_flux_fraction'])
+        i_lambda1_flux_density_row = array(i_lambda1_flux_row) / i_region_area_row
+        i_lambda2_flux_density_row = array(i_lambda2_flux_row) / i_region_area_row
+        median_lambda1_flux_density_row[i], i_ci_row = bootstrap_median(i_lambda1_flux_density_row)
+        bounds_lambda1_flux_density_2d[i, 0] = i_ci_row[0]
+        bounds_lambda1_flux_density_2d[i, 1] = i_ci_row[1]
+        median_lambda2_flux_density_row[i], i_ci_row = bootstrap_median(i_lambda2_flux_density_row)
+        bounds_lambda2_flux_density_2d[i, 0] = i_ci_row[0]
+        bounds_lambda2_flux_density_2d[i, 1] = i_ci_row[1]
+        median_no_overlaps_density_row[i], i_ci_row = bootstrap_median(i_no_overlaps_density_row)
+        bounds_no_overlaps_density_2d[i, 0] = i_ci_row[0]
+        bounds_no_overlaps_density_2d[i, 1] = i_ci_row[1]
+    return median_lambda1_flux_density_row, bounds_lambda1_flux_density_2d, median_lambda2_flux_density_row, bounds_lambda2_flux_density_2d, median_no_overlaps_density_row, bounds_no_overlaps_density_2d
