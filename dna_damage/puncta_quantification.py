@@ -3,7 +3,9 @@ from os.path import join,split
 import fnmatch
 from numpy import zeros, argmax, arange, mean, std, array, copy, stack, median, percentile, min, max, linspace, argmin, abs
 from skimage.filters import sobel, gaussian, threshold_otsu
-from skimage.morphology import erosion, reconstruction, disk, remove_small_objects
+from skimage.morphology import erosion, reconstruction, disk, remove_small_objects, watershed
+from scipy.ndimage import distance_transform_edt
+from skimage.feature import peak_local_max
 from skimage import img_as_float, img_as_uint
 from skimage.io import imread, imsave
 from skimage.measure import label, regionprops
@@ -66,6 +68,14 @@ def compute_region_mean_std(raw_2d, bw_2d):
     std_2d[~bw_2d] = 1.0
     return mean_2d, std_2d
 
+def distance_watershed(bw_2d):
+    distance_2d = distance_transform_edt(bw_2d)
+    local_max_2d = peak_local_max(distance_2d, indices = False, footprint = disk(1), labels = bw_2d)
+    markers_2d = label(local_max_2d)
+    watershed_labels_2d = watershed(-distance_2d, markers_2d, mask = bw_2d)
+    bw_watershed_2d = watershed_labels_2d > 0
+    return bw_watershed_2d
+
 def segment_puncta(tif_file_path_str):
     # Load images.
     z_lambda_4d = img_as_float(imread(tif_file_path_str))
@@ -112,6 +122,8 @@ def segment_puncta(tif_file_path_str):
     bw_lambda2_2d = remove_small_objects(bw_lambda2_2d, 13)
     bw_lambda1_2d[~bw_lambda3_2d] = False
     bw_lambda2_2d[~bw_lambda3_2d] = False
+    bw_lambda1_2d = distance_watershed(bw_lambda1_2d)
+    bw_lambda2_2d = distance_watershed(bw_lambda2_2d)
     return lambda1_2d, lambda2_2d, lambda3_2d, bw_lambda1_2d, bw_lambda2_2d, bw_lambda3_2d
 
 def extract_puncta_properties(lambda1_2d, lambda2_2d, lambda3_2d, bw_lambda1_2d, bw_lambda2_2d, bw_lambda3_2d, tif_file_path_str):
