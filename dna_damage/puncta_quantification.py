@@ -82,8 +82,8 @@ def segment_puncta(tif_file_path_str):
     # Split channels.
     no_channels, no_slices, no_rows, no_cols = z_lambda_4d.shape
     lambda1_3d = z_lambda_4d[1, :, :]
-    lambda2_3d = z_lambda_4d[2, :, :]
-    lambda3_3d = z_lambda_4d[0, :, :]
+    lambda2_3d = z_lambda_4d[0, :, :]
+    lambda3_3d = z_lambda_4d[2, :, :]
     # Generate extended-depth-of-field images.
     lambda1_2d = extended_depth_field(lambda1_3d)
     lambda2_2d = extended_depth_field(lambda2_3d)
