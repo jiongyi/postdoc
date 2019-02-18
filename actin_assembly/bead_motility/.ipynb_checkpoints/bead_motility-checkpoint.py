@@ -1,70 +1,61 @@
 from os import walk
 from os.path import join, split
 import fnmatch
-from numpy import zeros, argmax, arange, max, stack, mean, std
-from skimage.filters import sobel, gaussian
-from skimage import img_as_float, img_as_uint
+from skimage import img_as_uint
 from skimage.io import imread, imsave
-from skimage.filters import threshold_isodata
-from skimage.feature import canny
-from skimage.morphology import disk, erosion, reconstruction
+from skimage.morphology import erosion, reconstruction, disk
+from skimage.filters import threshold_otsu
+from numpy import mean, array, copy, stack, append
+from skimage.measure import label, regionprops
+from skimage.segmentation import find_boundaries
+from skimage.exposure import rescale_intensity
+
+MICRON_PER_PIXEL = 0.16
+DIAMETER_THRESHOLD = 2.0
 
 def find_tif_files(folder_name_str):
-    tif_file_paths_str = []
+    tif_file_path_list = []
     search_str = '*ome.tif'
-    for (dir_path_str, dir_names_str, file_names_str) in walk(folder_name_str):
-        for i_file_names_str in file_names_str:
-            if fnmatch.fnmatch(i_file_names_str, search_str):
-                tif_file_paths_str.append(join(dir_path_str, i_file_names_str))
-    return tif_file_paths_str
+    for (dir_name_str, sub_dir_name_list, file_name_list) in walk(folder_name_str):
+        for i_file_name in file_name_list:
+            if fnmatch.fnmatch(i_file_name, search_str):
+                tif_file_path_list.append(join(dir_name_str, i_file_name))
+    return tif_file_path_list
 
-def extended_depth_field(stack_xyz):
-    no_slices, no_rows, no_cols = stack_xyz.shape
-    sobel_xyz = zeros((no_slices, no_rows, no_cols))
-    for i in range(no_slices):
-        sobel_xyz[i, :, :] = sobel(stack_xyz[i, :, :])
-    idx_max_xy = argmax(sobel_xyz, axis = 0)
-    stack_xyz = stack_xyz.reshape((no_slices, -1))
-    stack_xyz = stack_xyz.transpose()
-    ext_depth_field_xy = stack_xyz[arange(len(stack_xyz)), idx_max_xy.ravel()]
-    ext_depth_field_xy = ext_depth_field_xy.reshape((no_rows, no_cols))
-    gaussian_xy = gaussian(ext_depth_field_xy)
-    return gaussian_xy
+def tophat_reconstruction(raw_mat, elem_mat):
+    eroded_mat = erosion(raw_mat, elem_mat)
+    opened_mat = reconstruction(eroded_mat, raw_mat)
+    tophat_mat = raw_mat - opened_mat
+    return tophat_mat
 
-def z_project(tif_file_path_str):
-    wzxy = img_as_float(imread(tif_file_path_str))
-    no_channels, no_slices, no_rows, no_cols = wzxy.shape
-    z_project_wxy = zeros((no_channels, no_rows, no_cols))
-    for i in range(no_channels):
-        i_channel_xyz = wzxy[i, :, :]
-        i_z_project_xy = max(i_channel_xyz, axis = 0)
-        
-        z_project_wxy[i] = i_z_project_xy
-    return z_project_wxy
-
-def open_reconstruction(raw_xy, struct_xy):
-    eroded_xy = erosion(raw_xy, struct_xy)
-    opened_xy = reconstruction(eroded_xy, raw_xy, selem = struct_xy)
-    return opened_xy
-
-def binarize_data(tif_file_path_str, wxy):
-    no_channels, no_rows, no_cols = wxy.shape
-    bw_wxy = zeros((no_channels, no_rows, no_cols), dtype = bool)
-    for i in range(no_channels):
-        i_gaussian_xy = gaussian(wxy[i], sigma = 1)
-        i_opened_xy = open_reconstruction(i_gaussian_xy, disk(4))
-        bw_wxy[i] = canny(wxy[i] / max(wxy[i]), sigma = 2)
-        i_rgb_xy = stack((wxy[i], wxy[i], wxy[i]))
-        i_rgb_xy[:, bw_wxy[i]] = 0.0
-        i_rgb_xy[i, bw_wxy[i]] = 1.0
-        imsave(tif_file_path_str[:-4] + '_C' + str(i) + '_z_project.tif', img_as_uint(i_rgb_xy))
-    return bw_wxy
+def binarize_npf(file_path_str):
+    mmstack = imread(file_path_str)
+    lambda_470_mat = mmstack[0, :, :]
+    tophat_mat = tophat_reconstruction(lambda_470_mat, disk(3))
+    bw_mat = tophat_mat > threshold_otsu(tophat_mat)
+    label_mat = label(bw_mat)
+    mean_background_int = mean(lambda_470_mat[~bw_mat])
+    properties_list = regionprops(label_mat, lambda_470_mat - mean_background_int)
+    diameter_row = 0.5 * MICRON_PER_PIXEL * array([x.major_axis_length + x.minor_axis_length for x in properties_list])
+    is_large_row = diameter_row > DIAMETER_THRESHOLD
+    intensity_row = array([x.mean_intensity for x in properties_list])
+    return intensity_row[is_large_row]
     
-def batch_analysis(folder_name_str):
-    tif_file_paths_str = find_tif_files(folder_name_str)
-    no_files = len(tif_file_paths_str)
+    # Save images.
+    rescaled_mat = rescale_intensity(lambda_470_mat, out_range = (0.0, 1.0))
+    perim_mat = find_boundaries(bw_mat)
+    zeros_mat = copy(rescaled_mat)
+    zeros_mat[perim_mat] = 0.0
+    ones_mat = copy(rescaled_mat)
+    ones_mat[perim_mat] = 1.0
+    rgb_mat = stack((zeros_mat, ones_mat, zeros_mat), axis = -1)
+    imsave(file_path_str[:-4] + '_segmentation.tif', img_as_uint(rgb_mat))
+    
+def measure_npf_density(folder_name_str):
+    file_path_list = find_tif_files(folder_name_str)
+    no_files = len(file_path_list)
+    npf_intensity_row = array([])
     for i in range(no_files):
-        i_z_project_wxy = z_project(tif_file_paths_str[i])
-        i_bw_wxy = binarize_data(tif_file_paths_str[i], i_z_project_wxy)
-        
-        
+        i_intensity_row = binarize_npf(file_path_list[i])
+        npf_intensity_row = append(npf_intensity_row, i_intensity_row)
+    return npf_intensity_row
