@@ -2,7 +2,7 @@ from numpy import pi, zeros, cos, sin, max, append, array, exp
 from numpy.random import rand, randn
 
 class network(object):
-    def __init__(self, no_filaments = 200, tether_rate = 10.0, elong_rate = 100.0, branch_rate = 1.0, cap_rate = 0.1):
+    def __init__(self, no_filaments = 200, tether_rate = 1.0, elong_rate = 6.17, branch_rate = 2.0, cap_rate = 0.03):
         # Copy parameter values.
         self.init_no_filaments = no_filaments
         self.tether_rate = tether_rate
@@ -47,7 +47,8 @@ class network(object):
         self.tether_bond_length_row = self.x_leading_edge - self.x_barbed_row
         self.is_proximal_row[self.tether_bond_length_row <= self.MONOMER_WIDTH] = True
         self.is_proximal_row[self.tether_bond_length_row > self.MONOMER_WIDTH] = False
-        self.tether_bond_length_row[~self.is_proximal_row + ~self.is_tethered_row] = 0.0
+        self.is_proximal_row[self.is_tethered_row] = True
+        self.tether_bond_length_row[~self.is_proximal_row | ~self.is_tethered_row] = 0.0
         self.tether_force_row = self.is_tethered_row * self.STIFF_COEFF * self.tether_bond_length_row
         self.tether_force_weight_row = exp(self.tether_force_row / self.TETHER_FORCE)
 
@@ -118,10 +119,10 @@ class network(object):
                         if rand() <= 0.01:
                             self.branch(i)
                         continue
-                elif self.is_capped_row[i]:
-                    continue
                 elif rand() <= (self.tether_rate * self.TIME_INTERVAL):
                     self.tether(i)
+                    continue
+                elif self.is_capped_row[i]:
                     continue
                 elif rand() <= (self.ratchet_force_weight * self.cap_rate * self.TIME_INTERVAL):
                     self.cap(i)
