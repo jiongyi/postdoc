@@ -29,23 +29,20 @@ class network(object):
         self.is_capped_row = zeros(self.init_no_filaments, dtype = bool)
         self.x_leading_edge = max(self.x_barbed_row)
         self.is_proximal_row = zeros(self.init_no_filaments, dtype = bool)
-        self.ratchet_weight_row = ones(self.init_no_filaments)
+        self.elongation_force = 0.0
 
     # Define functions.
     def update_proximity(self):
         distance_row = self.x_leading_edge - self.x_barbed_row
         self.is_proximal_row[distance_row <= self.MONOMER_WIDTH] = True
         self.is_proximal_row[distance_row > self.MONOMER_WIDTH] = False
-
-    def update_ratchet_weight(self):
+        
+    def update_slip_weight(self):
         no_proximal = sum(self.is_proximal_row)
-        no_proximal_free = sum(self.is_proximal_row[~self.is_capped_row])
-        if no_proximal_free == 0:
-            self.ratchet_weight_row[:] = 1.0
-        else:
-            average_force = 1.0 * self.MONOMER_WIDTH
-            self.ratchet_weight_row = exp(-average_force * self.u_row / 4.114)
-        self.ratchet_weight_row[~self.is_proximal_row] = 1.0
+        average_force = self.elongation_force / no_proximal
+        self.slip_weight = exp(average_force / 10.0)
+        print(self.slip_weight)
+        self.elongation_force = 0.0
 
     def cap(self, index):
         self.is_capped_row[index] = True
@@ -70,8 +67,8 @@ class network(object):
         self.v_row = append(self.v_row, v_new)
         self.is_capped_row = append(self.is_capped_row, False)
         self.is_proximal_row = append(self.is_proximal_row, True)
-        self.ratchet_weight_row = append(self.ratchet_weight_row, 1.0)
         self.no_filaments += 1
+        self.no_monomers_added = 0
 
     def elongate(self, index):
         self.x_barbed_row[index] += self.u_row[index]
@@ -91,19 +88,20 @@ class network(object):
         for i in range(self.no_filaments):
             if self.is_capped_row[i]:
                 if self.is_proximal_row[i]:
-                    if rand() <= (self.branch_rate * self.TIME_INTERVAL):
+                    if rand() <= (self.slip_weight * self.branch_rate * self.TIME_INTERVAL):
                         self.branch(i)
                         continue
                 else:
                     continue
             elif self.is_proximal_row[i]:
-                if rand() <= (self.branch_rate * self.TIME_INTERVAL):
+                if rand() <= (self.slip_weight * self.branch_rate * self.TIME_INTERVAL):
                     self.branch(i)
                     continue
-                elif rand() <= (self.ratchet_weight_row[i] * self.elong_rate * self.TIME_INTERVAL):
+                elif rand() <= (self.elong_rate * self.TIME_INTERVAL):
                     self.elongate(i)
+                    self.elongation_force += 4.114 / self.MONOMER_WIDTH * self.u_row[i]
                     continue
-                elif rand() <= (self.ratchet_weight_row[i] * self.cap_rate * self.TIME_INTERVAL):
+                elif rand() <= (self.cap_rate * self.TIME_INTERVAL):
                     self.cap(i)
                     continue
             elif rand() <= (self.elong_rate * self.TIME_INTERVAL):
@@ -116,10 +114,10 @@ class network(object):
         self.time += self.TIME_INTERVAL
         self.x_leading_edge = max(self.x_barbed_row)
         self.update_proximity()
-        self.update_ratchet_weight()
+        self.update_slip_weight()
 
     def simulate(self, total_time):
         self.update_proximity()
-        self.update_ratchet_weight()
+        self.update_slip_weight()
         while self.time <= total_time and sum(~self.is_capped_row) > 0:
             self.update()
