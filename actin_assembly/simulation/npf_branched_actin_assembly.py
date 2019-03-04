@@ -56,11 +56,8 @@ class network(object):
         self.is_capped_row = append(self.is_capped_row, False)
         self.index_proximal_npf_row = append(self.index_proximal_npf_row, nan)
         self.no_filaments += 1
-
-    def elongate(self, index):
-        self.x_barbed_row[index] += self.u_row[index]
-        self.y_barbed_row[index] += self.v_row[index]
-        # Enforce periodic boundary conditions in the y direction.
+        
+    def enforce_boundary_conditions(self, index):
         if self.y_barbed_row[index] > self.LEADING_EDGE_WIDTH:
             self.y_barbed_row[index] -= self.LEADING_EDGE_WIDTH
             self.y_pointed_row[index] = 0.0
@@ -69,6 +66,25 @@ class network(object):
             self.y_barbed_row[index] += self.LEADING_EDGE_WIDTH
             self.y_pointed_row[index] = self.LEADING_EDGE_WIDTH
             self.x_pointed_row[index] = self.x_barbed_row[index]
+        
+        
+    def diffuse_barbed_ends(self):
+        for i in range(self.no_filaments):
+            # Check if tethered.
+            if any(isin(i, self.index_proximal_npf_row)):
+                if self.npf_state_mat[i, 1] == -1:
+                    continue
+            else:
+                rand_disp = 0.0 * self.MONOMER_LENGTH * randn()
+                self.y_barbed_row[i] += rand_disp
+                self.y_pointed_row[i]+= rand_disp
+                self.enforce_boundary_conditions(i)
+            
+
+    def elongate(self, index):
+        self.x_barbed_row[index] += self.u_row[index]
+        self.y_barbed_row[index] += self.v_row[index]
+        self.enforce_boundary_conditions(index)
 
     def cap(self, index):
         self.is_capped_row[index] = True
@@ -269,6 +285,7 @@ class network(object):
                         continue
         self.time += self.TIME_INTERVAL
         self.x_leading_edge = max(self.x_barbed_row)
+        self.diffuse_barbed_ends()
         self.update_proximity()
 
     def simulate(self, total_time):
