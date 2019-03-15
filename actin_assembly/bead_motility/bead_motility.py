@@ -34,6 +34,28 @@ def make_rgb_overlay(gray_mat, bw_mat, rgb_color_row):
     rgb_mat[bw_mat, 1] = green_scale * max_type
     rgb_mat[bw_mat, 2] = blue_scale * max_type
     return rgb_mat
+
+def measure_npf_density(file_path_str, save_images = False):
+    # Load micromanager stack.
+    mm_stack = imread(file_path_str)
+    # Binarize npf-coated bead surface using Canny edge detector.
+    npf_mat = mm_stack
+    npf_rescaled_mat = rescale_intensity(npf_mat)
+    bw_mat = binary_fill_holes(canny(npf_rescaled_mat, sigma = 0.3))
+    bw_mat = remove_small_objects(bw_mat, min_size = sum(disk(6)))
+    bw_mat ^= erosion(bw_mat, disk(3))
+    # Measure npf intensity.
+    label_mat, no_labels = label(bw_mat, return_num = True)
+    mean_background_int = mean(npf_mat[~bw_mat])
+    properties_list = regionprops(label_mat, npf_mat - mean_background_int)
+    diameter_row = 0.5 * MICRON_PER_PIXEL * array([x.major_axis_length + x.minor_axis_length for x in properties_list])
+    is_large_row = diameter_row > DIAMETER_THRESHOLD
+    npf_intensity_row = array([x.mean_intensity for x in properties_list])
+    # Save images.
+    if save_images == True:
+        npf_rgb_mat = make_rgb_overlay(npf_rescaled_mat, bw_mat, [0.0, 1.0, 0.0])
+        imsave(file_path_str[:-4] + '_npf_segmentation.tif', img_as_uint(npf_rgb_mat))
+    return npf_intensity_row
     
 def measure_actin_density(file_path_str, save_images = False):
     # Load micromanager stack.
@@ -92,3 +114,12 @@ def batch_measure_actin_density(folder_name_str, save_images = False):
         npf_intensity_row = append(npf_intensity_row, i_intensity_row)
         actin_intensity_row = append(actin_intensity_row, i_actin_intensity_row)
     return npf_intensity_row, actin_intensity_row
+
+def batch_measure_npf_density(folder_name_str, save_images = False):
+    file_path_list = find_tif_files(folder_name_str)
+    no_files = len(file_path_list)
+    npf_intensity_row = array([])
+    for i in range(no_files):
+        i_intensity_row = measure_npf_density(file_path_list[i], save_images)
+        npf_intensity_row = append(npf_intensity_row, i_intensity_row)
+    return npf_intensity_row
