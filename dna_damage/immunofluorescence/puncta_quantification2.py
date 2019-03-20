@@ -2,10 +2,13 @@ from os import walk
 from os.path import join, split
 from fnmatch import fnmatch
 from numpy import zeros, argmax, arange, stack, sum, mean, std, copy, array
-from skimage.io import imread
+from skimage import img_as_uint, dtype_limits
+from skimage.io import imread, imsave
 from skimage.filters import gaussian, sobel, threshold_otsu, threshold_isodata
 from skimage.morphology import disk, erosion, reconstruction, remove_small_objects
+from skimage.segmentation import find_boundaries
 from skimage.measure import label, regionprops
+from skimage.exposure import rescale_intensity
 from pandas import DataFrame
 
 # Define constants.
@@ -38,6 +41,27 @@ def subtract_background(raw_mat, pixel_radius):
     opened_mat = reconstruction(eroded_mat, raw_mat)
     subtracted_mat = raw_mat - opened_mat
     return subtracted_mat
+
+def open_reconstruction(raw_mat, pixel_radius):
+    struct_mat = disk(pixel_radius)
+    eroded_mat = erosion(raw_mat, struct_mat)
+    opened_mat = reconstruction(eroded_mat, raw_mat)
+    return opened_mat
+
+def segment_puncta(raw_mat, bw_lambda1_mat):
+    label_lambda1_mat, no_lambda1_regions = label(bw_lambda1_mat, return_num = True)
+    opened_mat = open_reconstruction(raw_mat, 5)
+    bw_puncta_mat = zeros(raw_mat.shape, dtype = bool)
+    for i in range(1, no_lambda1_regions + 1):
+        i_bw_mat = label_lambda1_mat == i
+        i_mean_opened = mean(opened_mat[i_bw_mat])
+        i_std_opened = std(opened_mat[i_bw_mat] - i_mean_opened)
+        i_cut_off = i_mean_opened + 3 * i_std_opened
+        i_threshold = max((threshold_otsu(opened_mat[i_bw_mat]), i_cut_off))
+        i_bw_puncta_mat = opened_mat >= i_threshold
+        i_bw_puncta_mat[~i_bw_mat] = False
+        bw_puncta_mat[i_bw_puncta_mat] = True
+    return bw_puncta_mat
 
 def express_as_snr(gray_mat, bw_mat):
     offset_mat = gray_mat - mean(gray_mat[~bw_mat])
@@ -82,6 +106,33 @@ def get_region_properties(gaussian_lambda_stack_mat, bw_lambda_stack_mat):
         lambda3_regionprops_list.append(i_lambda3_regionprops_list)
     return lambda1_regionprops_list, lambda2_regionprops_list, lambda3_regionprops_list
 
+def save_segmentation(root_file_name, gaussian_lambda_stack_mat, bw_lambda_stack_mat):
+    red_mat = rescale_intensity(gaussian_lambda_stack_mat[:, :, 2])
+    green_mat = rescale_intensity(gaussian_lambda_stack_mat[:, :, 1])
+    blue_mat = rescale_intensity(gaussian_lambda_stack_mat[:, :, 0])
+    rgb_stack_mat = stack((red_mat, green_mat, blue_mat), axis = -1)
+
+    bw_red_mat = find_boundaries(bw_lambda_stack_mat[:, :, 2])
+    bw_green_mat = find_boundaries(bw_lambda_stack_mat[:, :, 1])
+    bw_blue_mat = find_boundaries(bw_lambda_stack_mat[:, :, 0])
+
+    (min_dtype, max_dtype) = dtype_limits(red_mat)
+    overlay_red_mat = copy(red_mat) / max_dtype
+    overlay_red_mat[bw_red_mat] = 1.0
+    overlay_green_mat = copy(green_mat) / max_dtype
+    overlay_green_mat[bw_green_mat] = 1.0
+    overlay_blue_mat = copy(blue_mat) / max_dtype
+    overlay_blue_mat[bw_blue_mat] = 1.0
+
+    overlay_red_stack_mat = stack((overlay_red_mat, bw_red_mat, bw_red_mat), axis = -1)
+    overlay_green_stack_mat = stack((bw_green_mat, overlay_green_mat, bw_green_mat), axis = -1)
+    overlay_blue_stack_mat = stack((bw_blue_mat, bw_blue_mat, overlay_blue_mat), axis = -1)
+
+    imsave(root_file_name[:-4] + '_bw_561.tif', img_as_uint(overlay_red_stack_mat))
+    imsave(root_file_name[:-4] + '_bw_488.tif', img_as_uint(overlay_green_stack_mat))
+    imsave(root_file_name[:-4] + '_bw_405.tif', img_as_uint(overlay_blue_stack_mat))
+    imsave(root_file_name[:-4] + '_extended.tif', img_as_uint(rgb_stack_mat))
+
 def segment_stack(stack_file_path):
     mm_stack = imread(stack_file_path)
     no_channels, no_slices, no_rows, no_columns = mm_stack.shape
@@ -97,8 +148,10 @@ def segment_stack(stack_file_path):
     gaussian_lambda3_mat = gaussian(extended_lambda3_mat, sigma = 2)
     subtracted_lambda2_mat = subtract_background(gaussian_lambda2_mat, 5)
     subtracted_lambda3_mat = subtract_background(gaussian_lambda3_mat, 5)
-    bw_lambda2_mat = subtracted_lambda2_mat >= threshold_isodata(subtracted_lambda2_mat[bw_lambda1_mat])
-    bw_lambda3_mat = subtracted_lambda3_mat >= threshold_isodata(subtracted_lambda3_mat[bw_lambda1_mat])
+    bw_lambda2_mat = segment_puncta(gaussian_lambda2_mat, bw_lambda1_mat)
+    bw_lambda3_mat = segment_puncta(gaussian_lambda3_mat, bw_lambda1_mat)
+    # bw_lambda2_mat = subtracted_lambda2_mat >= threshold_isodata(subtracted_lambda2_mat[bw_lambda1_mat])
+    # bw_lambda3_mat = subtracted_lambda3_mat >= threshold_isodata(subtracted_lambda3_mat[bw_lambda1_mat])
     # Remove small objects.
     bw_lambda2_mat[~bw_lambda1_mat] = False
     bw_lambda3_mat[~bw_lambda1_mat] = False
@@ -108,3 +161,10 @@ def segment_stack(stack_file_path):
     gaussian_lambda_stack_mat = stack((gaussian_lambda1_mat, gaussian_lambda2_mat, gaussian_lambda3_mat), axis = -1)
     bw_lambda_stack_mat = stack((bw_lambda1_mat, bw_lambda2_mat, bw_lambda3_mat), axis = -1)
     return gaussian_lambda_stack_mat, bw_lambda_stack_mat
+
+def batch_quantify_puncta(folder_name):
+    mm_stack_file_name_list = find_tif_files(folder_name)
+    no_files = len(mm_stack_file_name_list)
+    for i in range(no_files):
+        i_gaussian_lambda_stack_mat, i_bw_lambda_stack_mat = segment_stack(mm_stack_file_name_list[i])
+        save_segmentation(mm_stack_file_name_list[i], i_gaussian_lambda_stack_mat, i_bw_lambda_stack_mat)
