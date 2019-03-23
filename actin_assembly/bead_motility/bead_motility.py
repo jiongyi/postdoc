@@ -39,7 +39,7 @@ def measure_npf_density(file_path_str, save_images = False):
     # Load micromanager stack.
     mm_stack = imread(file_path_str)
     # Binarize npf-coated bead surface using Canny edge detector.
-    npf_mat = mm_stack
+    npf_mat = mm_stack[0, :, :]
     npf_rescaled_mat = rescale_intensity(npf_mat)
     bw_mat = binary_fill_holes(canny(npf_rescaled_mat, sigma = 0.3))
     bw_mat = remove_small_objects(bw_mat, min_size = sum(disk(6)))
@@ -97,7 +97,7 @@ def measure_actin_density(file_path_str, save_images = False):
             if all(i_bw_actin_mat == False):
                 actin_intensity_row[i - 1] = mean_actin_back_au
             else:
-                actin_intensity_row[i - 1] = mean(actin_mat[i_bw_actin_mat])
+                actin_intensity_row[i - 1] = mean(actin_mat[i_bw_actin_mat]) - mean_actin_back_au
                 bw_actin_mat[i_bw_search_mat & bw_otsu_mat] = True
         if save_images == True:
             actin_rgb_mat = make_rgb_overlay(actin_rescaled_mat, bw_actin_mat, [1.0, 0.0, 0.0])
