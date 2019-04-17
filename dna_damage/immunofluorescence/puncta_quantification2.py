@@ -56,7 +56,7 @@ def segment_puncta(raw_mat, bw_lambda1_mat):
         i_bw_mat = label_lambda1_mat == i
         i_mean_opened = mean(opened_mat[i_bw_mat])
         i_std_opened = std(opened_mat[i_bw_mat] - i_mean_opened)
-        i_cut_off = i_mean_opened + 3 * i_std_opened
+        i_cut_off = i_mean_opened + 0 * i_std_opened
         i_threshold = max((threshold_otsu(opened_mat[i_bw_mat]), i_cut_off))
         i_bw_puncta_mat = opened_mat >= i_threshold
         i_bw_puncta_mat[~i_bw_mat] = False
@@ -141,7 +141,7 @@ def segment_stack(stack_file_path):
     extended_lambda2_mat = extend_depth_field(mm_stack[1, :, :, :])
     extended_lambda3_mat = extend_depth_field(mm_stack[2, :, :, :])
     # Segment nucleus.
-    gaussian_lambda1_mat = gaussian(extended_lambda1_mat, sigma = 3)
+    gaussian_lambda1_mat = gaussian(extended_lambda1_mat, sigma = 6)
     bw_lambda1_mat = gaussian_lambda1_mat >= threshold_otsu(gaussian_lambda1_mat)
     # Segment puncta.
     gaussian_lambda2_mat = gaussian(extended_lambda2_mat, sigma = 2)
