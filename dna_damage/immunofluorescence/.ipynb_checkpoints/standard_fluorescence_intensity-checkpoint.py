@@ -32,6 +32,13 @@ def extend_depth_field(z_stack_mat):
     extended_mat = extended_mat.reshape((no_rows, no_columns))
     return extended_mat
 
+def tophat_reconstruction(raw_mat, px_radius):
+    eroded_mat = erosion(raw_mat, disk(px_radius))
+    opened_mat = reconstruction(eroded_mat, raw_mat)
+    tophat_mat = raw_mat - opened_mat
+    tophat_mat[tophat_mat < 0] = 0.0
+    return tophat_mat
+
 def save_segmentation(root_file_name, gaussian_lambda_stack_mat, bw_lambda_stack_mat):
     red_mat = rescale_intensity(gaussian_lambda_stack_mat[:, :, 2])
     green_mat = rescale_intensity(gaussian_lambda_stack_mat[:, :, 1])
@@ -123,13 +130,14 @@ def batch_get_ph2ax_regionprops(folder_name):
         i_extended_mat = imread(extended_mat_file_name_list[i])
         i_bw_lambda1_mat = imread(extended_mat_file_name_list[i][:-4] + '_bw_lambda1.tif') > 0
         i_bw_lambda2_mat = imread(extended_mat_file_name_list[i][:-4] + '_bw_lambda2.tif') > 0
-        i_bw_mat = i_bw_lambda1_mat & i_bw_lambda2_mat
-        i_ph2ax_regionprops_list = regionprops(label(i_bw_mat), i_extended_mat[:, :, 1])
-        i_dapi_regionprops_list = regionprops(label(i_bw_lambda1_mat))
-        i_ph2ax_area_row = array([x.area for x in i_ph2ax_regionprops_list])
-        i_ph2ax_intensity_row = array([x.mean_intensity for x in i_ph2ax_regionprops_list])
-        i_ph2ax_flux = sum(i_ph2ax_area_row * i_ph2ax_intensity_row) / sum(array([x.area for x in i_dapi_regionprops_list]))
-        ph2ax_flux_row = append(ph2ax_flux_row, i_ph2ax_flux)
+        label_lambda1_mat, no_labels = label(i_bw_lambda1_mat, return_num = True)
+        for j in range(1, no_labels + 1):
+            j_bw_lambda1_mat = i_bw_lambda1_mat == j
+            j_ph2ax_regionprops_list = regionprops(label(i_bw_lambda2_mat & j_bw_lambda1_mat), i_extended_mat[:, :, 1])
+            j_ph2ax_area_row = array([x.area for x in j_ph2ax_regionprops_list])
+            j_ph2ax_intensity_row = array([x.mean_intensity for x in j_ph2ax_regionprops_list])
+            j_ph2ax_flux = sum(j_ph2ax_area_row * j_ph2ax_intensity_row) / sum(i_extended_mat[:, :, 0][j_bw_lambda1_mat])
+            ph2ax_flux_row = append(ph2ax_flux_row, j_ph2ax_flux)
     return ph2ax_flux_row
 
 def batch_get_dna_rp_regionprops(folder_name):
@@ -140,17 +148,16 @@ def batch_get_dna_rp_regionprops(folder_name):
         i_extended_mat = imread(extended_mat_file_name_list[i])
         i_bw_lambda1_mat = imread(extended_mat_file_name_list[i][:-4] + '_bw_lambda1.tif') > 0
         i_bw_lambda3_mat = imread(extended_mat_file_name_list[i][:-4] + '_bw_lambda3.tif') > 0
-        i_bw_mat = i_bw_lambda1_mat & i_bw_lambda3_mat
-        i_dna_rp_regionprops_list = regionprops(label(i_bw_mat), i_extended_mat[:, :, 2])
-        i_dapi_regionprops_list = regionprops(label(i_bw_lambda1_mat))
-        i_dna_rp_area_row = array([x.area for x in i_dna_rp_regionprops_list])
-        i_dna_rp_intensity_row = array([x.mean_intensity for x in i_dna_rp_regionprops_list])
-        i_dna_rp_flux = sum(i_dna_rp_area_row * i_dna_rp_intensity_row) / sum(array([x.area for x in i_dapi_regionprops_list]))
-        dna_rp_flux_row = append(dna_rp_flux_row, i_dna_rp_flux)
+        label_lambda1_mat, no_labels = label(i_bw_lambda1_mat, return_num = True)
+        for j in range(1, no_labels + 1):
+            j_bw_lambda1_mat = i_bw_lambda1_mat == j
+            j_dna_rp_regionprops_list = regionprops(label(i_bw_lambda3_mat & j_bw_lambda1_mat), i_extended_mat[:, :, 2])
+            j_dna_rp_area_row = array([x.area for x in j_dna_rp_regionprops_list])
+            j_dna_rp_intensity_row = array([x.mean_intensity for x in j_dna_rp_regionprops_list])
+            j_dna_rp_flux = sum(j_dna_rp_area_row * j_dna_rp_intensity_row) / sum(i_extended_mat[:, :, 0][j_bw_lambda1_mat])
+            dna_rp_flux_row = append(dna_rp_flux_row, j_dna_rp_flux)
     return dna_rp_flux_row
     
-    
-
 def batch_standardize_intensity(folder_name):
     mm_stack_file_name_list = find_tif_files(folder_name, '*.ome.tif')
     no_files = len(mm_stack_file_name_list)
@@ -169,16 +176,6 @@ def batch_standardize_intensity(folder_name):
         max_intensity_mat[i, 1] = max(i_mm_stack[1, :, :, :])
         max_intensity_mat[i, 2] = max(i_mm_stack[2, :, :, :])
         max_intensity_mat[i, 3] = max(i_mm_stack[3, :, :, :])
-        
-        mean_intensity_mat[i, 0] = mean(i_mm_stack[0, :, :, :])
-        mean_intensity_mat[i, 1] = mean(i_mm_stack[1, :, :, :])
-        mean_intensity_mat[i, 2] = mean(i_mm_stack[2, :, :, :])
-        mean_intensity_mat[i, 3] = mean(i_mm_stack[3, :, :, :])
-        
-        std_intensity_mat[i, 0] = std(i_mm_stack[0, :, :, :])
-        std_intensity_mat[i, 1] = std(i_mm_stack[1, :, :, :])
-        std_intensity_mat[i, 2] = std(i_mm_stack[2, :, :, :])
-        std_intensity_mat[i, 3] = std(i_mm_stack[3, :, :, :])
     for i in range(no_files):
         i_mm_stack = imread(mm_stack_file_name_list[i])
         # Rescale.
@@ -186,13 +183,10 @@ def batch_standardize_intensity(folder_name):
         rescaled_lambda2_stack = i_mm_stack[1, :, :] - min(min_intensity_mat[:, 1])
         rescaled_lambda3_stack = i_mm_stack[2, :, :] - min(min_intensity_mat[:, 2])
         rescaled_lambda4_stack = i_mm_stack[3, :, :] - min(min_intensity_mat[:, 3])
-        
         rescaled_lambda1_stack /= max(max_intensity_mat[:, 0])
         rescaled_lambda2_stack /= max(max_intensity_mat[:, 1])
         rescaled_lambda3_stack /= max(max_intensity_mat[:, 2])
         rescaled_lambda4_stack /= max(max_intensity_mat[:, 3])
-        
-        
         # Extend depth of field.
         extended_lambda1_mat = extend_depth_field(rescaled_lambda1_stack)
         extended_lambda2_mat = extend_depth_field(rescaled_lambda2_stack)
@@ -203,7 +197,11 @@ def batch_standardize_intensity(folder_name):
         gaussian_lambda2_mat = gaussian(extended_lambda2_mat, sigma = 2)
         gaussian_lambda3_mat = gaussian(extended_lambda3_mat, sigma = 2)
         gaussian_lambda4_mat = gaussian(extended_lambda4_mat, sigma = 2)
+        
+        # Subtract background.
+        tophat_lambda2_mat = tophat_reconstruction(gaussian_lambda2_mat, 5)
+        tophat_lambda3_mat = tophat_reconstruction(gaussian_lambda3_mat, 5)
         # Save images.
-        lambda_stack = stack((gaussian_lambda1_mat, gaussian_lambda2_mat, gaussian_lambda3_mat, gaussian_lambda4_mat), axis = -1)
+        lambda_stack = stack((gaussian_lambda1_mat, tophat_lambda2_mat, tophat_lambda3_mat, gaussian_lambda4_mat), axis = -1)
         imsave(mm_stack_file_name_list[i][:-4] + '_extended.tif', img_as_uint(lambda_stack))
         
