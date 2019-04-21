@@ -8,6 +8,7 @@ from skimage import img_as_uint, img_as_bool
 from skimage.morphology import remove_small_objects, erosion, reconstruction, disk
 from skimage.measure import label, regionprops
 from pandas import DataFrame, read_csv, concat
+from seaborn import boxplot
 
 # Define constants.
 PIXEL_AREA_2_UM2 = 0.10185185185**2
@@ -193,3 +194,30 @@ def batch_extend_depth_field(folder_name):
             imsave(mm_stack_file_name_list[i][:-4] + '_extended.tif', img_as_uint(i_extended_mat))
         except:
             print("Failed to analyze" + mm_stack_file_name_list[i])
+            
+def compare_ph2ax_flux_density(a_df, a_label, b_df, b_label):
+    a_ph2ax_flux_density_row = a_df['pH2AX flux'] / a_df['DAPI area']
+    b_ph2ax_flux_density_row = b_df['pH2AX flux'] / b_df['DAPI area']
+    ph2ax_flux_density_df = DataFrame.from_dict(data = {a_label: a_ph2ax_flux_density_row, b_label: b_ph2ax_flux_density_row}, orient = 'index')
+    boxplot_handle = boxplot(data = ph2ax_flux_density_df.transpose())
+    boxplot_handle.tick_params(labelsize = 16)
+    boxplot_handle.set_ylabel('pH2AX flux density', fontsize = 16)
+    return boxplot_handle
+
+def compare_dna_rp_flux_density(a_df, a_label, b_df, b_label):
+    a_dna_rp_flux_density_row = a_df['DNA RP flux'] / a_df['DAPI area']
+    b_dna_rp_flux_density_row = b_df['DNA RP flux'] / b_df['DAPI area']
+    dna_rp_flux_density_df = DataFrame.from_dict(data = {a_label: a_dna_rp_flux_density_row, b_label: b_dna_rp_flux_density_row}, orient = 'index')
+    boxplot_handle = boxplot(data = dna_rp_flux_density_df.transpose())
+    boxplot_handle.tick_params(labelsize = 16)
+    boxplot_handle.set_ylabel('DNA RP flux density', fontsize = 16)
+    return boxplot_handle
+    
+def compare_repair_positive_flux(a_df, a_label, b_df, b_label):
+    a_repair_positive_flux_density_row = a_df['Fraction DNA RP flux']
+    b_repair_positive_flux_density_row = b_df['Fraction DNA RP flux']
+    repair_positive_flux_density_df = DataFrame.from_dict(data = {a_label: a_repair_positive_flux_density_row, b_label: b_repair_positive_flux_density_row}, orient = 'index')
+    boxplot_handle = boxplot(data = repair_positive_flux_density_df.transpose())
+    boxplot_handle.tick_params(labelsize = 16)
+    boxplot_handle.set_ylabel('Fractional repair flux density', fontsize = 16)
+    return boxplot_handle
