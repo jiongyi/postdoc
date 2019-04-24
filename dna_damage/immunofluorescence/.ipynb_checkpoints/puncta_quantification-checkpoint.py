@@ -1,14 +1,14 @@
 from os import walk
 from os.path import join, split
 from fnmatch import fnmatch
-from numpy import zeros, argmax, arange, mean, std, array, sum
+from numpy import zeros, argmax, arange, mean, std, array, sum, median, percentile
 from skimage.filters import sobel, gaussian, threshold_otsu
 from skimage.io import imread, imsave
 from skimage import img_as_uint, img_as_bool
 from skimage.morphology import remove_small_objects, erosion, reconstruction, disk
 from skimage.measure import label, regionprops
 from pandas import DataFrame, read_csv, concat
-from seaborn import boxplot
+from seaborn import boxplot, swarmplot
 
 # Define constants.
 PIXEL_AREA_2_UM2 = 0.10185185185**2
@@ -202,6 +202,10 @@ def compare_ph2ax_flux_density(a_df, a_label, b_df, b_label):
     boxplot_handle = boxplot(data = ph2ax_flux_density_df.transpose())
     boxplot_handle.tick_params(labelsize = 16)
     boxplot_handle.set_ylabel('pH2AX flux density', fontsize = 16)
+    print("Mean A:" + str(mean(a_ph2ax_flux_density_row)))
+    print("Stdev A:" + str(std(a_ph2ax_flux_density_row)))
+    print("Mean B:" + str(mean(b_ph2ax_flux_density_row)))
+    print("Stdev B:" + str(std(b_ph2ax_flux_density_row)))
     return boxplot_handle
 
 def compare_dna_rp_flux_density(a_df, a_label, b_df, b_label):
@@ -211,6 +215,10 @@ def compare_dna_rp_flux_density(a_df, a_label, b_df, b_label):
     boxplot_handle = boxplot(data = dna_rp_flux_density_df.transpose())
     boxplot_handle.tick_params(labelsize = 16)
     boxplot_handle.set_ylabel('DNA RP flux density', fontsize = 16)
+    print("Mean A:" + str(mean(a_dna_rp_flux_density_row)))
+    print("Stdev A:" + str(std(a_dna_rp_flux_density_row)))
+    print("Mean B:" + str(mean(b_dna_rp_flux_density_row)))
+    print("Stdev B:" + str(std(b_dna_rp_flux_density_row)))
     return boxplot_handle
     
 def compare_repair_positive_flux(a_df, a_label, b_df, b_label):
@@ -220,4 +228,24 @@ def compare_repair_positive_flux(a_df, a_label, b_df, b_label):
     boxplot_handle = boxplot(data = repair_positive_flux_density_df.transpose())
     boxplot_handle.tick_params(labelsize = 16)
     boxplot_handle.set_ylabel('Fractional repair flux density', fontsize = 16)
+    return boxplot_handle
+
+def compute_boxplot_statistics(df):
+    median_ph2ax_flux = median(df['pH2AX flux'] / df['DAPI area'])
+    ph2ax_quartile_row = percentile(df['pH2AX flux'] / df['DAPI area'], [25, 75])
+    median_dna_rp_flux = median(df['DNA RP flux'] / df['DAPI area'])
+    dna_rp_quartile_row = percentile(df['DNA RP flux'] / df['DAPI area'], [25, 75])
+    return median_ph2ax_flux, ph2ax_quartile_row, median_dna_rp_flux, dna_rp_quartile_row
+
+def compare_dna_rp_foci_density(a_df, a_label, b_df, b_label):
+    a_dna_rp_flux_density_row = a_df['No DNA RP foci'] / a_df['DAPI area']
+    b_dna_rp_flux_density_row = b_df['No DNA RP foci'] / b_df['DAPI area']
+    dna_rp_flux_density_df = DataFrame.from_dict(data = {a_label: a_dna_rp_flux_density_row, b_label: b_dna_rp_flux_density_row}, orient = 'index')
+    boxplot_handle = swarmplot(data = dna_rp_flux_density_df.transpose())
+    boxplot_handle.tick_params(labelsize = 16)
+    boxplot_handle.set_ylabel('DNA RP flux density', fontsize = 16)
+    print("Mean A:" + str(mean(a_dna_rp_flux_density_row)))
+    print("Stdev A:" + str(std(a_dna_rp_flux_density_row)))
+    print("Mean B:" + str(mean(b_dna_rp_flux_density_row)))
+    print("Stdev B:" + str(std(b_dna_rp_flux_density_row)))
     return boxplot_handle
