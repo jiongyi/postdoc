@@ -40,8 +40,8 @@ def measure_npf_density(file_path_str, save_images = False):
     mm_stack = imread(file_path_str)
     # Binarize npf-coated bead surface using Canny edge detector.
     npf_mat = mm_stack[0, :, :]
-    npf_rescaled_mat = rescale_intensity(npf_mat)
-    bw_mat = binary_fill_holes(canny(npf_rescaled_mat, sigma = 0.3))
+    npf_rescaled_mat = rescale_intensity(1.0 * npf_mat)
+    bw_mat = binary_fill_holes(canny(npf_rescaled_mat, sigma = 0.2))
     bw_mat = remove_small_objects(bw_mat, min_size = sum(disk(6)))
     bw_mat ^= erosion(bw_mat, disk(3))
     # Measure npf intensity.
@@ -62,7 +62,7 @@ def measure_actin_density(file_path_str, save_images = False):
     mm_stack = imread(file_path_str)
     # Binarize npf-coated bead surface using Canny edge detector.
     npf_mat = mm_stack[0, :, :]
-    npf_rescaled_mat = rescale_intensity(npf_mat)
+    npf_rescaled_mat = rescale_intensity(1.0 * npf_mat)
     bw_mat = binary_fill_holes(canny(npf_rescaled_mat, sigma = 0.3))
     bw_mat = remove_small_objects(bw_mat, min_size = sum(disk(6)))
     bw_mat ^= erosion(bw_mat, disk(3))
@@ -82,7 +82,7 @@ def measure_actin_density(file_path_str, save_images = False):
     actin_intensity_row = zeros(npf_intensity_row.shape)
     if no_labels >= 1:
         actin_mat = gaussian(mm_stack[1, :, :], sigma = 0.5)
-        actin_rescaled_mat = rescale_intensity(mm_stack[1, :, :])
+        actin_rescaled_mat = rescale_intensity(1.0 * mm_stack[1, :, :])
         mean_actin_back_au = mean(actin_mat)
         std_actin_back_au = std(actin_mat)
         bw_otsu_mat = actin_mat > max(threshold_otsu(actin_mat),
