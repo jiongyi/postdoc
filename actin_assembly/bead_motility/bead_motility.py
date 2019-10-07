@@ -9,7 +9,7 @@ from skimage.morphology import disk, dilation, erosion, remove_small_objects, re
 from skimage.filters import threshold_otsu, gaussian
 from numpy import sum, mean, std, array, empty, vstack, zeros, stack
 from skimage.measure import label, regionprops
-from skimage.segmentation import find_boundaries
+from skimage.segmentation import find_boundaries, clear_border
 
 MICRON_PER_PIXEL = 0.16
 DIAMETER_THRESHOLD = 2.0
@@ -25,15 +25,15 @@ def find_tif_files(folder_name_str):
 
 def read_and_split(file_path_str):
     mm_stack = imread(file_path_str)
-    npf_im = img_as_float(mm_stack[0, :, :])
-    actin_im = img_as_float(mm_stack[1, :, :])
+    npf_im = img_as_float(mm_stack[:, :, 0])
+    actin_im = img_as_float(mm_stack[:, :, 2])
     return npf_im, actin_im
 
 def binarize_npf(npf_im):
     npf_rescaled_im = npf_im / max(npf_im.flatten())
     bw_im = binary_fill_holes(canny(npf_rescaled_im, sigma = 0.1))
     bw_im = remove_small_objects(bw_im, min_size = sum(disk(6)))
-    npf_bw_im = bw_im ^ erosion(bw_im, disk(3))
+    npf_bw_im = clear_border(bw_im ^ erosion(bw_im, disk(3)))
     return npf_bw_im
 
 def measure_npf_fluor(npf_im, npf_bw_im):
@@ -44,7 +44,7 @@ def measure_npf_fluor(npf_im, npf_bw_im):
     return npf_fluor_row
 
 def make_rgb_overlay(gray_im, bw_im, rgb_color_row):
-    gray_im /= max(gray_im.flatten())
+    gray_im = gray_im / max(gray_im.flatten())
     max_type = dtype_limits(gray_im)[1]
     red_scale = rgb_color_row[0]
     green_scale = rgb_color_row[1]
@@ -54,10 +54,6 @@ def make_rgb_overlay(gray_im, bw_im, rgb_color_row):
     rgb_im[bw_im, 1] = green_scale * max_type
     rgb_im[bw_im, 2] = blue_scale * max_type
     return rgb_im
-
-def save_npf_segmentation(file_path_str, npf_im, npf_bw_im):
-    npf_rgb_im = make_rgb_overlay(npf_im, npf_bw_im, [0.0, 1.0, 0.0])
-    imsave(file_path_str[:-4] + '_npf_segmentation.tif', img_as_uint(npf_rgb_im))
 
 def save_segmentation(file_path_str, actin_im, npf_bw_im, tail_axis_bw_im):
     rgb_im = make_rgb_overlay(actin_im, npf_bw_im | tail_axis_bw_im, [0.0, 1.0, 0.0])
@@ -71,12 +67,8 @@ def binarize_actin(actin_im):
     back_std_fluor = std(actin_blurred_im[~actin_bw1_im].flatten())
     threshold2 = back_mean_fluor + 3 * back_std_fluor
     threshold3 = max([threshold1, threshold2])
-    actin_bw2_im = actin_blurred_im > threshold3
+    actin_bw2_im = clear_border(actin_blurred_im > threshold3)
     return actin_bw2_im
-
-def save_actin_segmentation(file_path_str, actin_im, actin_bw_im):
-    actin_rgb_im = make_rgb_overlay(actin_im, actin_bw_im, [1.0, 0.0, 0.0])
-    imsave(file_path_str[:-4] + '_actin_segmentation.tif', img_as_uint(actin_rgb_im))
 
 def measure_comet_props(npf_im, npf_bw_im, actin_im, actin_bw_im):
     npf_label_im, no_beads = label(npf_bw_im, return_num = True)
@@ -90,7 +82,7 @@ def measure_comet_props(npf_im, npf_bw_im, actin_im, actin_bw_im):
         i_npf_fluor *= (2**16 - 1)
         i_bead_actin_bw_im = i_bead_bw_im & actin_bw_im
         i_tail_bw_im = reconstruction(i_bead_actin_bw_im, actin_bw_im)
-        i_tail_axis_bw_im = medial_axis(i_tail_bw_im)
+        i_tail_axis_bw_im = medial_axis(i_tail_bw_im) & ~binary_fill_holes(i_bead_bw_im)
         tail_axis_bw_im[i_tail_axis_bw_im] = True
         i_tail_fluor = mean(actin_im[i_tail_axis_bw_im].flatten()) - actin_back_mean
         i_tail_fluor *= (2**16 - 1)
