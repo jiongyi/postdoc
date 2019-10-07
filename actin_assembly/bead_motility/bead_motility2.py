@@ -26,10 +26,9 @@ def find_tif_files(folder_name_str):
 def read_and_split(file_path_str):
     mm_stack = imread(file_path_str)
     npf_im = img_as_float(mm_stack[:, :, 0])
-    pulse1_im = img_as_float(mm_stack[:, :, 1])
-    actin_im = img_as_float(mm_stack[:, :, 2])
-    pulse2_im = (pulse1_im - actin_im) / (pulse1_im + actin_im)
-    return npf_im, pulse2_im, actin_im
+    pulse_im = img_as_float(mm_stack[:, :, 1])
+    chase_im = img_as_float(mm_stack[:, :, 2])
+    return npf_im, pulse_im, chase_im
 
 def binarize_npf(npf_im):
     npf_rescaled_im = npf_im / max(npf_im.flatten())
@@ -37,13 +36,6 @@ def binarize_npf(npf_im):
     bw_im = remove_small_objects(bw_im, min_size = sum(disk(6)))
     npf_bw_im = clear_border(bw_im ^ erosion(bw_im, disk(3)))
     return npf_bw_im
-
-def measure_npf_fluor(npf_im, npf_bw_im):
-    label_im, no_labels = label(npf_bw_im, return_num = True)
-    mean_background_fluor = mean(npf_bw_im[~npf_bw_im])
-    properties_list = regionprops(label_im, npf_im - mean_background_fluor)
-    npf_fluor_row = array([x.mean_intensity for x in properties_list]) * (2**16 - 1)
-    return npf_fluor_row
 
 def make_rgb_overlay(gray_im, bw_im, rgb_color_row):
     gray_im = gray_im / max(gray_im.flatten())
@@ -70,27 +62,32 @@ def binarize_actin(actin_im):
     threshold2 = back_mean_fluor + 3 * back_std_fluor
     threshold3 = max([threshold1, threshold2])
     actin_bw2_im = clear_border(actin_blurred_im > threshold3)
-    return actin_bw2_im
+    actin_bw3_im = binary_fill_holes(actin_bw2_im)
+    return actin_bw3_im
 
-def measure_comet_props(npf_im, npf_bw_im, actin_im, actin_bw_im):
+def measure_comet_props(npf_im, npf_bw_im, pulse_im, chase_im, actin_bw_im):
     npf_label_im, no_beads = label(npf_bw_im, return_num = True)
     npf_back_mean = mean(npf_im[~npf_bw_im].flatten())
-    actin_back_mean = mean(actin_im[~actin_bw_im].flatten())
+
+    pulse2_im = (pulse_im - chase_im) / (pulse_im + chase_im)
+    pulse2_bw_im = binarize_actin(pulse2_im)
+
+    chase_back_mean = mean(chase_im[~actin_bw_im].flatten())
     comet_props_mat = empty((1, 3))
-    tail_axis_bw_im = zeros(actin_im.shape, dtype = bool)
+    tail_axis_bw_im = zeros(actin_bw_im.shape, dtype = bool)
     for i in range(1, no_beads + 1):
-        i_bead_bw_im = npf_label_im == i
+        i_bead_bw_im = binary_fill_holes(npf_label_im == i)
         i_npf_fluor = mean(npf_im[i_bead_bw_im].flatten()) - npf_back_mean
         i_npf_fluor *= (2**16 - 1)
         i_bead_actin_bw_im = i_bead_bw_im & actin_bw_im
         i_tail_bw_im = reconstruction(i_bead_actin_bw_im, actin_bw_im)
-        i_tail_axis_bw_im = medial_axis(convex_hull_image(i_tail_bw_im))
-        i_tail_axis_bw_im = i_tail_axis_bw_im & ~binary_fill_holes(i_bead_bw_im)
+        i_tail_axis_bw_im = medial_axis(i_tail_bw_im)
+        i_tail_axis_bw_im = i_tail_axis_bw_im & ~i_bead_bw_im
+        i_tail_axis_bw_im = i_tail_axis_bw_im & ~pulse2_bw_im
         i_tail_length = sum(i_tail_axis_bw_im.flatten()) * MICRON_PER_PIXEL
         tail_axis_bw_im[i_tail_axis_bw_im] = True
-        i_tail_fluor = mean(actin_im[i_tail_axis_bw_im].flatten()) - actin_back_mean
+        i_tail_fluor = mean(chase_im[i_tail_axis_bw_im].flatten()) - chase_back_mean
         i_tail_fluor *= (2**16 - 1)
-        # i_tail_length = sum(i_tail_axis_bw_im.flatten()) * MICRON_PER_PIXEL
         comet_props_mat = vstack((comet_props_mat, [[i_npf_fluor, i_tail_fluor, i_tail_length]]))
     return comet_props_mat[1:], tail_axis_bw_im
 
@@ -99,14 +96,12 @@ def batch_analysis(folder_path_str):
     no_files = len(file_path_list)
     comet_props_mat = empty((1, 3))
     for i in range(no_files):
-        i_npf_im, i_pulse_im, i_actin_im = read_and_split(file_path_list[i])
+        i_npf_im, i_pulse_im, i_chase_im = read_and_split(file_path_list[i])
         i_npf_bw_im = binarize_npf(i_npf_im)
-        i_pulse_bw_im = binarize_actin(i_pulse_im)
-        i_actin_bw_im = binarize_actin(i_actin_im)
-        i_actin_bw_im = i_actin_bw_im & ~i_pulse_bw_im
+        i_actin_bw_im = binarize_actin(0.5 * i_pulse_im + 0.5 * i_chase_im)
         i_actin_label_im, i_no_labels = label(i_actin_bw_im, return_num = True)
         if i_no_labels > 0:
-            i_comet_props_mat, i_tail_axis_bw_im = measure_comet_props(i_npf_im, i_npf_bw_im, i_actin_im, i_actin_bw_im)
+            i_comet_props_mat, i_tail_axis_bw_im = measure_comet_props(i_npf_im, i_npf_bw_im, i_pulse_im, i_chase_im, i_actin_bw_im)
             comet_props_mat = vstack((comet_props_mat, i_comet_props_mat))
-            save_segmentation(file_path_list[i], i_actin_im, i_npf_bw_im, i_tail_axis_bw_im)
+            save_segmentation(file_path_list[i], i_chase_im, i_npf_bw_im, i_tail_axis_bw_im)
     return comet_props_mat[1:]
