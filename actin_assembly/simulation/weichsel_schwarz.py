@@ -46,6 +46,8 @@ class network(object):
     
     def branch(n, index):
         theta = n.muTheta + n.muSigma * randn()
+        if rand() < 0.5:
+            theta *= -1.0
         u = n.uArr[index]
         v = n.vArr[index]
         uNew = u * cos(theta) - v * sin(theta)

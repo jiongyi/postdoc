@@ -1,12 +1,12 @@
-`# Import libraries
+# Import libraries
 from numpy import array, copy, sort, flatnonzero, zeros, pi, cos, sin, mod, argmin, append, amax, exp, arctan, logical_and, linspace, sqrt
 from numpy.random import rand, randn
 
 class network(object):
-    def __init__(n, kBr = 20.0, kCap = 0.05, noFilFront = 2, totalTime = 20.0):
+    def __init__(n, kBr = 40 * 3/100, kCap = 0.5, noFilFront = 2, totalTime = 60.0):
         # Define constants.
         n.L = 1000.0 # Length of leading edge in nanometers
-        n.kPol = 900 # Elongation rate in nanometers per second
+        n.kPol = 40 # Elongation rate in subunits per second
         n.kBr = kBr # branch rate in branches per second
         n.kCap = kCap # cap rate in branches per second
         n.d = 2.7 # Width of subunit in nanometers
@@ -29,7 +29,9 @@ class network(object):
         n.yBarbArr = copy(n.yPointArr) + n.vArr
         n.isCappedArr = zeros(n.N, dtype = bool)
         n.xLead = amax(n.xBarbArr)
+        n.no_monomers = 0
 
+    '''
     def findbarb(n):
         # Index active barbed ends.
         if n.noFilFront >= sum(~n.isCappedArr):
@@ -40,12 +42,19 @@ class network(object):
             isBehindArr = n.xBarbArr < xLastFront
             isAheadArr = n.xBarbArr >= (xLastFront - n.w)
             return flatnonzero(logical_and(~n.isCappedArr, logical_and(isBehindArr, isAheadArr)))
-                    
+    '''
+
+    def findbarb(n):
+        isBehindArr = (n.xLead - n.xBarbArr) <= n.w
+        return flatnonzero(logical_and(~n.isCappedArr, isBehindArr))
+
     def cap(n, index):
         n.isCappedArr[index] = True
-    
+
     def branch(n, index):
         theta = n.muTheta + n.muSigma * randn()
+        if rand() < 0.5:
+            theta *= -1.0
         u = n.uArr[index]
         v = n.vArr[index]
         uNew = u * cos(theta) - v * sin(theta)
@@ -64,10 +73,10 @@ class network(object):
         n.vArr = append(n.vArr, vNew)
         n.isCappedArr = append(n.isCappedArr, False)
         n.N += 1
-        
+
     def elongate(n, index):
-        n.xBarbArr[index] += (n.uArr[index] * n.kPol * n.dt)
-        n.yBarbArr[index] += (n.vArr[index] * n.kPol * n.dt)
+        n.xBarbArr[index] += n.d * n.uArr[index]
+        n.yBarbArr[index] += n.d * n.vArr[index]
         # Enforce periodic boundary conditions in the y direction.
         if n.yBarbArr[index] > n.L:
             n.yBarbArr[index] = n.yBarbArr[index] - n.L
@@ -77,30 +86,28 @@ class network(object):
             n.yBarbArr[index] = n.yBarbArr[index] + n.L
             n.yPointArr[index] = n.L
             n.xPointArr[index] = n.xBarbArr[index]
-                
+        n.no_monomers += 1
+            
     def update(n):
         # Find active barbed ends.
         n.idxActiveBarbArr = n.findbarb()
-        # Normalize branching rate.
-        kBrCurrent = n.kBr / len(n.idxActiveBarbArr)
-        if len(n.idxActiveBarbArr) > 0:
-            # Iterate over active barbed ends.
-            for idx in n.idxActiveBarbArr:
-                if n.isCappedArr[idx]:
-                    continue
-                else:
-                    # Elongate deterministically.
+        for idx in range(n.N):
+            if n.isCappedArr[idx]:
+                continue
+            elif rand() <= (n.kCap * n.dt):
+                n.cap(idx)
+            elif idx in n.idxActiveBarbArr:
+                if rand() <= (n.kBr * n.dt * len(n.idxActiveBarbArr)):
+                    n.branch(idx)
+                elif rand() <= (n.kPol * n.dt):
                     n.elongate(idx)
-                    # Check branching.
-                    if rand() <= (kBrCurrent * n.dt):
-                        n.branch(idx)
-                    elif rand() <= (n.kCap * n.dt):
-                        n.cap(idx)
-                   
+            elif rand() <= (10.0 * n.dt):
+                n.elongate(idx)
+
         # Update network.
         n.t += n.dt
         n.xLead = amax(n.xBarbArr)
-        
+
     def simulate(n):
         while n.t <= n.totalTime and sum(~n.isCappedArr) > 0:
             n.update()

@@ -1,4 +1,4 @@
-# Import libraries
+`# Import libraries
 from numpy import array, copy, sort, flatnonzero, zeros, pi, cos, sin, mod, argmin, append, amax, exp, arctan, logical_and, linspace, sqrt
 from numpy.random import rand, randn
 
@@ -46,6 +46,8 @@ class network(object):
     
     def branch(n, index):
         theta = n.muTheta + n.muSigma * randn()
+        if rand() < 0.5:
+            theta *= -1.0
         u = n.uArr[index]
         v = n.vArr[index]
         uNew = u * cos(theta) - v * sin(theta)

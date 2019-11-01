@@ -3,7 +3,7 @@ from numpy import array, copy, sort, flatnonzero, zeros, pi, cos, sin, mod, argm
 from numpy.random import rand, randn
 
 class network(object):
-    def __init__(n, kBr = 40 * 3/100, kCap = 0.05, noFilFront = 2, totalTime = 60.0):
+    def __init__(n, kBr = 40 * 3/100, kCap = 0.5, noFilFront = 2, totalTime = 60.0):
         # Define constants.
         n.L = 1000.0 # Length of leading edge in nanometers
         n.kPol = 40 # Elongation rate in subunits per second
@@ -29,6 +29,7 @@ class network(object):
         n.yBarbArr = copy(n.yPointArr) + n.vArr
         n.isCappedArr = zeros(n.N, dtype = bool)
         n.xLead = amax(n.xBarbArr)
+        n.no_monomers = 0
 
     '''
     def findbarb(n):
@@ -85,33 +86,23 @@ class network(object):
             n.yBarbArr[index] = n.yBarbArr[index] + n.L
             n.yPointArr[index] = n.L
             n.xPointArr[index] = n.xBarbArr[index]
-
+        n.no_monomers += 1
+            
     def update(n):
         # Find active barbed ends.
         n.idxActiveBarbArr = n.findbarb()
-        if len(n.idxActiveBarbArr) > 0:
-            # Iterate over active barbed ends.
-            for idx in n.idxActiveBarbArr:
-                if n.isCappedArr[idx]:
-                    if rand() <= (n.kBr * n.dt):
-                        n.branch(idx)
-                else:
-                    # Check elongation.
-                    if rand() <= (n.kPol * n.dt):
-                        n.elongate(idx)
-                    # Check branching.
-                    elif rand() <= (n.kBr * n.dt):
-                        n.branch(idx)
-                    # Check capping.
-                    elif rand() <= (n.kCap * n.dt):
-                        n.cap(idx)
         for idx in range(n.N):
             if n.isCappedArr[idx]:
                 continue
-            elif rand() <= (10.0 * n.dt):
-                n.elongate(idx)
             elif rand() <= (n.kCap * n.dt):
                 n.cap(idx)
+            elif idx in n.idxActiveBarbArr:
+                if rand() <= (n.kBr * n.dt * len(n.idxActiveBarbArr)):
+                    n.branch(idx)
+                elif rand() <= (n.kPol * n.dt):
+                    n.elongate(idx)
+            elif rand() <= (10.0 * n.dt):
+                n.elongate(idx)
 
         # Update network.
         n.t += n.dt
