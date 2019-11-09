@@ -1,4 +1,4 @@
-from numpy import pi, zeros, cos, sin, copy, amax, flatnonzero, append, exp, sum, arctan, linspace
+from numpy import pi, zeros, cos, sin, copy, amax, flatnonzero, append, exp, sum, arctan, array, histogram, nan, abs
 from numpy.random import rand, randn
 from matplotlib.pyplot import subplots
 from matplotlib.animation import FFMpegWriter
@@ -155,10 +155,19 @@ class network(object):
         network_axes_hand.set_ylabel("L (nm)", fontsize = 12)
         return network_fig_hand, network_axes_hand
     
+    def compute_alpha_order(self):
+        self.alpha_row = arctan(self.v_row / self.u_row)[200:] / pi * 180
+        counts_0 = 1.0 * sum(abs(self.alpha_row) <= 17.5)
+        counts_35 = 1.0 * sum(abs(self.alpha_row - 35.0) <= 17.5)
+        if counts_0 + counts_35 == 0:
+            self.alpha_order_param = nan
+        else:
+            self.alpha_order_param = (counts_0 - counts_35)/ (counts_0 + counts_35)
+            
     def plot_alpha_distribution(self):
         alpha_fig_hand, alpha_axes_hand = subplots()
-        alpha_row = arctan(self.v_row / self.u_row)[200:]
-        alpha_axes_hand.hist(alpha_row / pi * 180, bins = linspace(-90, 90, 20))
+        self.alpha_row = arctan(self.v_row / self.u_row)[200:]
+        alpha_axes_hand.hist(self.alpha_row / pi * 180, bins = array([-90.0, -80.0, -52.5, -17.5, 17.5, 52.5, 80.0, 90.0]))
         alpha_axes_hand.set_xlabel("Filament orientation", fontsize = 12)
         alpha_axes_hand.set_ylabel("Counts", fontsize = 12)
         return alpha_fig_hand, alpha_axes_hand
