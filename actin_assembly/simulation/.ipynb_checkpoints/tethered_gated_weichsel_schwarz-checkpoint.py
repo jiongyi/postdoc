@@ -28,6 +28,7 @@ class network(object):
         self.spring_constant = 1.0
         # Initialize simulation.
         self.no_filaments = 200
+        self.no_monomers = 0
         self.time = 0.0
         self.time_interval = 1e-3
         self.x_point_row = zeros(self.no_filaments)
@@ -89,6 +90,7 @@ class network(object):
         self.is_capped_row = append(self.is_capped_row, False)
         self.is_tethered_row = append(self.is_tethered_row, True)
         self.no_filaments += 1
+        self.no_monomers += 1
                 
     def elongate(self, index):
         self.x_barb_row[index] += (self.monomer_width * self.u_row[index])
@@ -102,6 +104,7 @@ class network(object):
             self.y_barb_row[index] = self.y_barb_row[index] + self.leading_edge_width
             self.y_point_row[index] = self.leading_edge_width
             self.x_point_row[index] = self.x_barb_row[index]
+        self.no_monomers += 1
                         
     def update(self):
         self.find_active_barb()
@@ -158,7 +161,7 @@ class network(object):
     def compute_alpha_order(self):
         self.alpha_row = arctan(self.v_row / self.u_row)[200:] / pi * 180
         counts_0 = 1.0 * sum(abs(self.alpha_row) <= 17.5)
-        counts_35 = 1.0 * sum(abs(self.alpha_row - 35.0) <= 17.5)
+        counts_35 = 0.5 * sum(abs(self.alpha_row - 35.0) <= 17.5) + 0.5 * sum(abs(self.alpha_row + 35.0) <= 17.5)
         if counts_0 + counts_35 == 0:
             self.alpha_order_param = nan
         else:
