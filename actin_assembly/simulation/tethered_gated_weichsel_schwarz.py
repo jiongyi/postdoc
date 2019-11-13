@@ -63,7 +63,11 @@ class network(object):
         else:
             self.mean_load = 0.0
             self.loaded_net_elongation_rate_const = copy(self.net_elongation_rate_const)
-        
+        # Incorporate angle dependence.
+        self.alpha_row = arctan(self.v_row / self.u_row) / pi * 180
+        self.alpha_elongation_rate_const_row = self.loaded_net_elongation_rate_const + (self.net_elongation_rate_const - self.loaded_net_elongation_rate_const) / 90.0 * self.alpha_row
+        self.alpha_cap_rate_const_row = self.loaded_cap_rate_const + (self.cap_rate_const - self.loaded_cap_rate_const) / 90.0 * self.alpha_row
+        self.alpha_nucleation_rate_const_row = self.nucleation_rate_const / cos(self.alpha_row / 180.0 * pi)
     def cap(self, index):
         self.is_capped_row[index] = True
                 
@@ -118,15 +122,19 @@ class network(object):
             elif i_filament in self.index_active_row:
                 # Barbed end is at the membrane.
                 if self.is_capped_row[i_filament]:
-                    if rand() <= (self.nucleation_rate_const * self.time_interval):
+                    #if rand() <= (self.nucleation_rate_const * self.time_interval):
+                    if rand() <= (self.alpha_nucleation_rate_const_row[i_filament] * self.time_interval):
                         self.nucleate(i_filament)
                     continue
-                if rand() <= (self.loaded_cap_rate_const * self.time_interval):
+                #if rand() <= (self.loaded_cap_rate_const * self.time_interval):
+                if rand() <= (self.alpha_cap_rate_const_row[i_filament] * self.time_interval):
                     self.cap(i_filament)
                     continue
-                elif rand() <= (self.loaded_net_elongation_rate_const * self.time_interval):
+                #elif rand() <= (self.loaded_net_elongation_rate_const * self.time_interval):
+                elif rand() <= (self.alpha_elongation_rate_const_row[i_filament] * self.time_interval):
                     self.elongate(i_filament)
-                elif rand() <= (self.nucleation_rate_const * self.time_interval):
+                #elif rand() <= (self.nucleation_rate_const * self.time_interval):
+                elif rand() <= (self.alpha_nucleation_rate_const_row[i_filament] * self.time_interval):
                     self.nucleate(i_filament)
             elif self.is_capped_row[i_filament]:
                 continue
@@ -157,11 +165,11 @@ class network(object):
         network_axes_hand.set_xlabel("x (nm)", fontsize = 12)
         network_axes_hand.set_ylabel("L (nm)", fontsize = 12)
         return network_fig_hand, network_axes_hand
-    
+        
     def compute_alpha_order(self):
-        self.alpha_row = arctan(self.v_row / self.u_row)[200:] / pi * 180
-        counts_0 = 1.0 * sum(abs(self.alpha_row) <= 17.5)
-        counts_35 = 0.5 * sum(abs(self.alpha_row - 35.0) <= 17.5) + 0.5 * sum(abs(self.alpha_row + 35.0) <= 17.5)
+        new_alpha_row = self.alpha_row[200:]
+        counts_0 = 1.0 * sum(abs(new_alpha_row) <= 17.5)
+        counts_35 = 0.5 * sum(abs(new_alpha_row - 35.0) <= 17.5) + 0.5 * sum(abs(new_alpha_row + 35.0) <= 17.5)
         if counts_0 + counts_35 == 0:
             self.alpha_order_param = nan
         else:
@@ -169,8 +177,8 @@ class network(object):
             
     def plot_alpha_distribution(self):
         alpha_fig_hand, alpha_axes_hand = subplots()
-        self.alpha_row = arctan(self.v_row / self.u_row)[200:]
-        alpha_axes_hand.hist(self.alpha_row / pi * 180, bins = array([-90.0, -80.0, -52.5, -17.5, 17.5, 52.5, 80.0, 90.0]))
+        new_alpha_row = self.alpha_row[200:]
+        alpha_axes_hand.hist(new_alpha_row, bins = array([-87.5, -52.5, -17.5, 17.5, 52.5, 87.5]))
         alpha_axes_hand.set_xlabel("Filament orientation", fontsize = 12)
         alpha_axes_hand.set_ylabel("Counts", fontsize = 12)
         return alpha_fig_hand, alpha_axes_hand
