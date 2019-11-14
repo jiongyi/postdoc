@@ -170,10 +170,11 @@ class network(object):
         new_alpha_row = self.alpha_row[200:]
         counts_0 = 1.0 * sum(abs(new_alpha_row) <= 17.5)
         counts_35 = 0.5 * sum(abs(new_alpha_row - 35.0) <= 17.5) + 0.5 * sum(abs(new_alpha_row + 35.0) <= 17.5)
-        if counts_0 + counts_35 == 0:
+        counts_70 = 0.5 * sum(abs(new_alpha_row - 70.0) <= 17.5) + 0.5 * sum(abs(new_alpha_row + 70.0) <= 17.5)
+        if counts_0 + counts_35 + counts_70 == 0:
             self.alpha_order_param = nan
         else:
-            self.alpha_order_param = (counts_0 - counts_35)/ (counts_0 + counts_35)
+            self.alpha_order_param = (0.5 * counts_0 + 0.5 * counts_70 - counts_35)/ (0.5 * counts_0 + 0.5 * counts_70 + counts_35)
             
     def plot_alpha_distribution(self):
         alpha_fig_hand, alpha_axes_hand = subplots()
