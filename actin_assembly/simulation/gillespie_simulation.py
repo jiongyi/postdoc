@@ -1,6 +1,6 @@
-from numpy import pi, sin, cos, hstack, vstack, sign, sqrt, sum, zeros, ones, array, log, cumsum, histogram, reshape, min, pad, full, nan
+from numpy import pi, sin, cos, hstack, vstack, sign, sqrt, sum, zeros, ones, array, log, cumsum, reshape, min, pad, full, searchsorted
 from scipy.spatial.distance import cdist
-from numpy.random import rand, randn
+from numpy.random import rand, randn, choice
 from mpl_toolkits.mplot3d import Axes3D
 from matplotlib.pyplot import figure
 
@@ -124,7 +124,6 @@ class network(object):
         self.index_end2npf_tether_row = hstack((self.index_end2npf_tether_row, -1))
         self.tether_force_row = hstack((self.tether_force_row, 0.0))
         self.no_ends += 1
-        self.elongate(self.no_ends)
             
     def cap(self, index):
         self.is_capped_row[index] = True
@@ -140,7 +139,7 @@ class network(object):
         
     def calculate_transition_rates(self):
         # Compute end-to-npf distance matrix.
-        distance_end2npf_mat = cdist(self.end_position_mat, self.npf_position_mat)
+        distance_end2npf_mat = cdist(self.end_position_mat, self.npf_position_mat) + self.monomer_length
         # Compute elongation rates.
         elongation_rate_mat = zeros((self.no_ends, 1 + self.no_npfs))
         elongation_rate_mat[:, 0] = self.elongation_rate
@@ -184,15 +183,12 @@ class network(object):
         # Switch to nonzero space.
         nonzero_transition_rate_row_row, nonzero_transition_rate_col_row = self.transition_rate_mat.nonzero()
         nonzero_transition_rate_row = self.transition_rate_mat[nonzero_transition_rate_row_row, nonzero_transition_rate_col_row]
-        cum_transition_rate_row = cumsum(hstack((0, nonzero_transition_rate_row)))
-        count_row, _ = histogram(random_rate, cum_transition_rate_row)
-        random_transition_nonzero_index = count_row.nonzero()[0][0] # Only one element.
+        random_transition_nonzero_index = choice(nonzero_transition_rate_row.size, p = nonzero_transition_rate_row / total_rate)
         index_row = nonzero_transition_rate_row_row[random_transition_nonzero_index]
         index_col = nonzero_transition_rate_col_row[random_transition_nonzero_index]
         if index_row < self.no_ends:
-            bin_edge_row = cumsum(hstack((0, 1, self.no_npfs, self.no_npfs, 1, 1, 0)))
-            count_row, _ = histogram(index_col, bin_edge_row)
-            index_bin = count_row.nonzero()[0][0]
+            bin_edge_row = cumsum([0, 1, self.no_npfs, self.no_npfs, 1, 1])
+            index_bin = searchsorted(bin_edge_row, index_col, side = 'right') - 1
             if index_bin == 0:
                 self.elongate(index_row)
                 self.no_monomers_sol += 1
@@ -228,13 +224,16 @@ class network(object):
         self.no_monomers_sol = 0
         self.no_monomers_npf = 0
         i_percent = 0.1
+        no_iterations = 0
         while (self.current_time <= self.total_time) and (sum(~self.is_capped_row) >= 1):
             self.gillespie_step()
             if self.current_time >= self.total_time * (i_percent):
                 print(i_percent * 100)
                 i_percent += 0.1
+            no_iterations += 1
         self.network_height = max(self.end_position_mat[:, 2])
         self.normalized_network_growth_rate = self.network_height / (self.monomer_length * self.elongation_rate * self.current_time)
+        print(no_iterations)
         print(self.normalized_network_growth_rate)
     
     def display_network(self):
