@@ -61,6 +61,9 @@ class network(object):
         self.npf_position_mat[:, 1] -= 0.5
         self.npf_position_mat[:, 2] = 0.0
         self.npf_state_mat = zeros((self.no_npfs, 4), dtype = bool)
+        
+        self.no_monomers_npf = 0
+        self.no_monomers_sol = 0
                 
     def elongate(self, index):
         self.end_position_mat[index] = self.end_position_mat[index] + self.monomer_length * self.end_orientation_mat[index]
@@ -137,6 +140,47 @@ class network(object):
         self.end_position_mat[index_end, 0] = self.npf_position_mat[index_npf, 0]
         self.end_position_mat[index_end, 1] = self.npf_position_mat[index_npf, 1]
         
+        
+    def calculate_transition_rates2(self):
+        # Compute end-to-npf distance matrix.
+        end2npf_distance_mat = cdist(self.end_position_mat, self.npf_position_mat) + 0.1 * self.monomer_length
+        # Compute elongation rates.
+        actin_solution_rate_col = full((self.no_ends, 1), self.elongation_rate)
+        actin_npf_rate_mat = self.actin_unloading_rate + 6 * self.actin_diff_coeff / end2npf_distance_mat
+        actin_npf_rate_mat[:, self.npf_state_mat[:, 0] == False] = False
+        elongation_rate_mat = hstack((actin_solution_rate_col, actin_npf_rate_mat))
+        elongation_rate_mat[self.is_capped_row, :] = 0.0
+        elongation_rate_mat[self.is_tethered_row, :] = 0.0
+        
+        # Compute arp23-tethering rates.
+        arp23_tethering_rate_mat = 6 * self.actin_diff_coeff / end2npf_distance_mat * 1e-3
+        arp23_tethering_rate_mat[:, self.npf_state_mat[:, 2] == False] = 0.0
+        arp23_tethering_rate_mat[:, self.npf_state_mat[:, 3] == True] = 0.0
+        # Compute branching rates.
+        branching_rate_col = zeros((self.no_ends, 1))
+        if any(self.is_tethered_row) >= 0:    
+            branching_rate_col[self.is_tethered_row, 0] = self.arp23_branching_rate * (self.npf_state_mat[self.index_end2npf_tether_row[self.is_tethered_row], 0] == True)
+        # Compute capping rates.
+        capping_rate_col = zeros((self.no_ends, 1))
+        capping_rate_col[self.is_capped_row == False, :] = self.capping_rate
+        end_transition_rate_mat = hstack((elongation_rate_mat, arp23_tethering_rate_mat, 
+                                         branching_rate_col, capping_rate_col))
+        
+        # NPF transition rates.
+        wh2_loading_rate_col = zeros((self.no_npfs, 1))
+        wh2_loading_rate_col[self.npf_state_mat[:, 0] == False, 0] = self.actin_loading_rate
+        wh2_unloading_rate_col = zeros((self.no_npfs, 1))
+        wh2_unloading_rate_col[self.npf_state_mat[:, 0] == True, 0] = self.actin_unloading_rate
+        arp23_loading_rate_col = zeros((self.no_npfs, 1))
+        arp23_loading_rate_col[self.npf_state_mat[:, 2] == False, 0] = self.arp23_loading_rate
+        arp23_unloading_rate_col = zeros((self.no_npfs, 1))
+        arp23_unloading_rate_col[self.npf_state_mat[:, 2] == True, 0] = self.arp23_unloading_rate
+        arp23_unloading_rate_col[self.npf_state_mat[:, 3] == True, 0] = 0.0
+        npf_transition_rate_mat = hstack((wh2_loading_rate_col, wh2_unloading_rate_col, 
+                                         arp23_loading_rate_col, arp23_unloading_rate_col))
+        npf_transition_rate_mat = pad(npf_transition_rate_mat, ((0, 0), (0, end_transition_rate_mat.shape[1] - npf_transition_rate_mat.shape[1])))
+        self.transition_rate_mat = vstack((end_transition_rate_mat, npf_transition_rate_mat))
+        
     def calculate_transition_rates(self):
         # Compute end-to-npf distance matrix.
         distance_end2npf_mat = cdist(self.end_position_mat, self.npf_position_mat) + self.monomer_length
@@ -149,7 +193,8 @@ class network(object):
         elongation_rate_mat[:, hstack((False, self.npf_state_mat[:, 0] == 0))] = 0
         # Compute arp23-tethering rates.
         arp23_tethering_rate_mat = (distance_end2npf_mat**2 / 6 / self.actin_diff_coeff * 1e3)**(-1)
-        arp23_tethering_rate_mat[:, self.npf_state_mat[:, 2] == 0] = 0
+        arp23_tethering_rate_mat[:, self.npf_state_mat[:, 2] == False] = 0.0
+        arp23_tethering_rate_mat[:, self.npf_state_mat[:, 3] == True] = 0.0
         # Compute branching rates.
         branching_rate_col = zeros((self.no_ends, 1))
         if any(self.is_tethered_row) >= 0:    
@@ -221,8 +266,6 @@ class network(object):
             self.end_position_mat[~self.is_tethered_row, 2] -= min_end_z
         
     def simulate(self):
-        self.no_monomers_sol = 0
-        self.no_monomers_npf = 0
         i_percent = 0.1
         no_iterations = 0
         while (self.current_time <= self.total_time) and (sum(~self.is_capped_row) >= 1):
