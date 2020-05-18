@@ -22,7 +22,7 @@ class Network(object):
         
         # Initialize variables.
         self.pointed_position_mat = zeros((150, 2))
-        self.pointed_position_mat[:, 0] = -rand(150)
+        self.pointed_position_mat[:, 0] = -self.branching_region_width * rand(150)
         self.pointed_position_mat[:, 1] = rand(150) - 0.5
         self.barbed_position_mat = copy(self.pointed_position_mat)
         self.filament_orientation_row = pi * rand(150) - 0.5 * pi
