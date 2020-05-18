@@ -8,7 +8,7 @@ def numba_nonzero(row):
     return row.nonzero()
 
 class Network(object):
-    def __init__(self, branching_rate_const = 0.5, capping_rate_const = 1.0, total_time = 20.0):
+    def __init__(self, branching_rate_const = 1.0, capping_rate_const = 1.0, total_time = 20.0):
         # Copy argument values.
         self.elongation_rate_const = 141.0 # in nm/ms
         self.branching_rate_const = branching_rate_const
@@ -42,12 +42,11 @@ class Network(object):
         u = cos(self.filament_orientation_row[filament_index])
         v = sin(self.filament_orientation_row[filament_index])
         u_new = u * cos(random_theta) - v * sin(random_theta)
-        # Force direction to be towards the leading edge.
         if u_new > 0:
             v_new = u * sin(random_theta) + v * cos(random_theta)
         else:
             u_new = u * cos(random_theta) + v * sin(random_theta)
-            v_new = -u * sin(random_theta) + v *  cos(random_theta)
+            v_new = -u * sin(random_theta) + v * cos(random_theta)
         # Add new filament to arrays.
         self.pointed_position_mat  = vstack((self.pointed_position_mat, array(self.barbed_position_mat[filament_index, :])))
         self.barbed_position_mat = vstack((self.barbed_position_mat, array(self.barbed_position_mat[filament_index, :])))
@@ -63,17 +62,17 @@ class Network(object):
     def metropolis_step(self):
         for index in self.active_in_region_index:
             # Capping
-            if poisson(self.capping_rate_const * self.time_interval) == True:
+            if bool(poisson(self.capping_rate_const * self.time_interval)) == True:
                 self.cap(index)
                 continue
             # Branching
-            if poisson(self.branching_rate_const * self.time_interval) == True:
+            if bool(poisson(self.branching_rate_const * self.time_interval)) == True:
                 self.branch(index)
             # Elongation
-            if poisson(self.elongation_rate_const * self.time_interval) == True:
+            if bool(poisson(self.elongation_rate_const * self.time_interval)) == True:
                 self.elongate(index)
         self.current_time += self.time_interval
-        self.leading_edge_position += self.elongation_rate_const * self.monomer_width * self.time_interval
+        self.leading_edge_position += self.elongation_rate_const * self.monomer_width * self.time_interval * exp(-0.3 * self.monomer_width / 4.114 / self.active_in_region_index.size * 1e3)
                             
     def simulate(self):
         self.catalog_filaments()
@@ -103,7 +102,7 @@ class Network(object):
     
     def plot_orientation(self):
         fig_hand, axes_hand = subplots()
-        axes_hand.hist(180 * self.filament_orientation_row[200:] / pi, [-90, -87.5, -52.5, -17.5, 17.5, 52.5, 87.5, 90])
+        axes_hand.hist(180 * self.filament_orientation_row[self.active_in_region_index] / pi, [-90, -87.5, -52.5, -17.5, 17.5, 52.5, 87.5, 90])
         return fig_hand, axes_hand
 
         
