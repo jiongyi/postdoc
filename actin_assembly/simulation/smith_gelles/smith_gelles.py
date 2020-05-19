@@ -34,13 +34,14 @@ class Network(object):
         self.npf_position_mat[:, 1] -= 0.5
         self.npf_state_mat = zeros((self.num_npfs, 3))
         
-        self.barbed_position_mat = rand(200, 2)
+        self.num_ends = 200
+        self.barbed_position_mat = rand(self.num_ends, 2)
         self.barbed_position_mat[:, 0] *= self.monomer_width
         self.barbed_position_mat[:, 1] -= 0.5
-        self.filament_orientation_row = pi * rand(200) - 0.5 * pi
-        self.is_capped_row = zeros(200, dtype = bool)
-        self.is_tethered_row = zeros(200, dtype = bool)
-        self.barbed2npf_index = full(200, -1)
+        self.filament_orientation_row = pi * rand(self.num_ends) - 0.5 * pi
+        self.is_capped_row = zeros(self.num_ends, dtype = bool)
+        self.is_tethered_row = zeros(self.num_ends, dtype = bool)
+        self.barbed2npf_index = full(self.num_ends, -1)
         
         self.leading_edge_position = 0.0
         self.current_time = 0.0
@@ -74,10 +75,5 @@ class Network(object):
     def cap(self, filament_index):
         self.is_capped_row[filament_index] = True
         
-    def tether_network(self):
-        distance_mat = cdist(self.barbed_position_mat, self.npf_position_mat)
-        tether_barbed_index, tether_npf_index = (distance_mat <= self.monomer_width).nonzero()
-        for i in range(tether_barbed_index.size):
-            if self.is_tethered_row[tether_barbed_index[i]] == False and self.npf_state_mat[tether_npf_index[i],0] == 0 or self.npf_state_mat[tether_npf_index[i], 1] == 1:
-                self.is_tethered_row[tether_barbed_index[i]] == True
-                self.npf_state_mat[]
+    def calculate_transition_rates(self):
+        self.transition_rate_mat = zeros((self.num_npfs, 2))
