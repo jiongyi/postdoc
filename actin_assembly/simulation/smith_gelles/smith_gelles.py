@@ -1,108 +1,79 @@
-from numpy import linspace, pi, cos, sin, newaxis, zeros, fill, mod, sign, randn, hstack, vstack, all
-from numpy.random import rand
+from numpy import zeros, full, hstack, vstack, array, copy, sin, cos, pi, mod, argpartition, logical_and, exp, log, arctan, sign, abs, linspace
+from numpy.random import rand, randn, choice, poisson
 from scipy.spatial.distance import cdist
+from numba import jit
+from matplotlib.pyplot import subplots
+
+@jit(nopython=True)
+def numba_nonzero(row):
+    return row.nonzero()
 
 class Network(object):
-    def __init__(self):
-        self.monomer_width = 2.7e-3 # in microns
-        self.stiff_coeff = 1.0 # in pN/nm.
-        self.leading_edge_pos = 0.0
-        self.branching_region_width = 2 * self.monomer_width
+    def __init__(self, 
+                 actin_conc = 5.0, 
+                 arp23_conc = 50e-3, 
+                 cp_conc = 200e-3, 
+                 npf_density = 1000.0, 
+                 total_time = 20.0):
+        # Calculate and set rate constants.
+        self.elongation_rate = 11 * actin_conc
+        self.capping_rate = (42.0 / 63.0)**(1/3) * 11 * cp_conc
+        self.actin_loading_rate = 5.5 * actin_conc * (42.0 / (42.0 + 11.0))**(1/3)
+        self.actin_unloading_rate = 3.0
+        self.arp23_loading_rate = 11 * arp23_conc * (42.0 / 220.0)**(1/3)
+        self.arp23_unloading_rate = 10.0
+        self.arp23_untethering_rate = 1.0 # 8-s lifetime on WCA from three-color paper.
+        
+        # Define constants.
+        self.monomer_width = 2.7 # in nm
+        
+        # Initialize variables.
+        self.num_npfs = int(npf_density)
+        self.npf_position_mat = rand(self.num_npfs, 2)
+        self.npf_position_mat[:, 0] = 0.0
+        self.npf_position_mat[:, 1] -= 0.5
+        self.npf_state_mat = zeros((self.num_npfs, 3))
+        
         self.num_ends = 200
-        self.num_npfs = 1000
-
-        self.npf_pos_mat = array([
-                                  zeros(self.num_npfs)[:, newaxis],
-                                  linspace(-0.5, 0.5, self.num_npfs)[:, newaxis]
-                                  ])
-        # only WH2 and CA domains for now.
-        self.npf_state_mat = zeros((self.num_npfs, 2))
-
-        self.barbed_pos_mat = rand(self.num_ends, 2)
-        self.barbed_pos_mat[:, 0] *= -self.branching_region_width
-        self.barbed_pos_mat[:, 1] -= 0.5
-        random_barbed_orientation_row = pi * (rand(self.num_ends) - 0.5)
-        self.barbed_uv_mat = self.monomer_width *
-                             array([
-                                    cos(random_barbed_orientation_row[:, newaxis]),
-                                    sin(random_barbed_orientation_row[:, newaxis])
-                                   ])
-        self.is_capped_row = zeros(self.num_ends, dtype=bool)
-        self.tether_index = fill(self.num_ends, -1)
-        self.tether_force_row = zeros(self.num_ends)
-        self.barbed2npf_index = fill(self.num_ends, -1)
-
-    def elongate(self, end_index):
-        self.barbed_pos_mat[end_index, :] = mod(
-                                                self.barbed_pos_mat[end_index, :] +
-                                                self.barbed_uv_mat[end_index, :],
-                                                -0.5 * sign(self.barbed_uv_mat[end_index, :])
-                                                )
-    def tether(self, end_index, npf_index, domain_index):
-        self.tether_index[end_index] = domain_index
-        self.barbed2npf_index[end_index] = npf_index
-        self.tether_force_row[end_index] = self.stiff_coeff *
-                                           (self.leading_edge_pos -
-                                           self.end_pos_mat[end_index, 0])
-        self.npf_state_mat[npf_index, domain_index] = -1
-
-    def untether(self, end_index):
-        this_npf_index = self.barbed2npf_index[end_index]
-        if self.tether_index[end_index] == 0:
-            self.npf_state_mat[this_npf_index, 0] = 0 # Leave WH2 empty.
-        elif self.tether_index[end_index] == 1:
-            self.npf_state_mat[this_npf_index, 1] = 1 # Leave Arp2/3 on CA.
-        self.tether_index[end_index] = -1
-        self.barbed2npf_index[end_index] = -1
-        self.tether_force_row[end_index] = 0.0
-
-    def branch(self, end_index):
+        self.barbed_position_mat = rand(self.num_ends, 2)
+        self.barbed_position_mat[:, 0] *= self.monomer_width
+        self.barbed_position_mat[:, 1] -= 0.5
+        self.filament_orientation_row = pi * rand(self.num_ends) - 0.5 * pi
+        self.is_capped_row = zeros(self.num_ends, dtype = bool)
+        self.is_tethered_row = zeros(self.num_ends, dtype = bool)
+        self.barbed2npf_index = full(self.num_ends, -1)
+        
+        self.leading_edge_position = 0.0
+        self.current_time = 0.0
+        self.total_time = total_time
+                     
+    def elongate(self, filament_index):
+        self.barbed_position_mat[filament_index, 0] += self.monomer_width * cos(self.filament_orientation_row[filament_index])
+        self.barbed_position_mat[filament_index, 1] += self.monomer_width * sin(self.filament_orientation_row[filament_index])
+        self.barbed_position_mat[filament_index, 1] = mod(self.barbed_position_mat[filament_index, 1], 
+                                                          -0.5 * sign(self.barbed_position_mat[filament_index, 1]))
+    
+    def branch(self, filament_index):
         random_theta = pi * (70 + 5 * randn()) / 180
-        if rand() >= 0.5:
+        if rand() < 0.5:
             random_theta *= -1
-        u = self.barbed_uv_mat[end_index, 0]
-        v = self.barbed_uv_mat[end_index, 1]
+        u = cos(self.filament_orientation_row[filament_index])
+        v = sin(self.filament_orientation_row[filament_index])
         u_new = u * cos(random_theta) - v * sin(random_theta)
         if u_new > 0:
             v_new = u * sin(random_theta) + v * cos(random_theta)
         else:
             u_new = u * cos(random_theta) + v * sin(random_theta)
             v_new = -u * sin(random_theta) + v * cos(random_theta)
-
-        self.num_ends += 1
-        self.barbed_pos_mat = vstack((self.barbed_pos_mat,
-                                      self.barbed_pos_mat[end_index]))
-        self.barbed_uv_mat = vstack((self.barbed_uv_mat,
-                                     array([u_new, v_new])))
+        # Add new filament to arrays.
+        self.barbed_position_mat = vstack((self.barbed_position_mat, array(self.barbed_position_mat[filament_index, :])))
+        self.filament_orientation_row = hstack((self.filament_orientation_row, arctan(v_new / u_new)))
         self.is_capped_row = hstack((self.is_capped_row, False))
-        self.tether_index = hstack((self.tether_index, -1))
-        self.tether_force_row = hstack((self.tether_force_row, 0.0))
-        self.barbed2npf_index = hstack((self.barbed2npf_index, -1))
-
-    def cap(self, end_index):
-        self.is_capped_row[end_index] = True
-
-    def metropolis_step():
-        for i in range(self.num_ends):
-            i_end2npf_dist_row = cdist(self.barbed_pos_mat[i, :], self.npf_pos_mat)
-            i_min_dist = i_end2npf_dist_row.min()
-            if i_min_dist <= self.monomer_width:
-                i_nearest_npf_index = i_end2npf_dist_row.argmin()
-                if all(self.npf_state_mat[i_nearest_npf_index, :] = [0, 1]):
-                    
-        for j in range(self.num_npfs):
-            j_npf_state_row = self.npf_state_mat[j, :]
-            if j_npf_state_row[0] == 0:
-                if exp(-self.wh2_loading_rate * self.time_interval) < rand():
-                    self.npf_state_mat[j, 0] = 1
-            elif j_npf_state_row[0] == 1:
-                if exp(-self.wh2_unloading_rate * self.time_interval) < rand():
-                    self.npf_state_mat[j, 0] = 0
-            if j_npf_state_row[1] == 0:
-                if exp(-self.ca_loading_rate * self.time_interval) < rand():
-                    self.npf_state_mat[j, 1] = 1
-            elif j_npf_state_row[1] == 1:
-                if exp(-self.ca_unloading_rate * self.time_interval) < rand():
-                    self.npf_state_mat[j, 1] = 0
-
-    def simulate():
+        self.is_tethered_row = hstack((self.is_tethered_row, False))
+        self.barbed2end_index = hstack((self.barbed2end_index, -1))
+    
+    def cap(self, filament_index):
+        self.is_capped_row[filament_index] = True
+        
+    def calculate_transition_rates(self):
+        self.transition_rate_mat = zeros((self.num_npfs, 2))
