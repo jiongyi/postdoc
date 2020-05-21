@@ -1,39 +1,41 @@
-from numpy import pi, sin, cos, hstack, vstack, sign, sqrt, sum, zeros, ones, array, log, cumsum, reshape, min, pad, full, searchsorted
+from numba import jit
+from numpy import pi, sin, cos, hstack, vstack, sign, sqrt, sum, zeros, ones, array, log, cumsum, reshape, min, pad, full, searchsorted, unravel_index, logical_and, meshgrid
 from scipy.spatial.distance import cdist
 from numpy.random import rand, randn, choice
 from mpl_toolkits.mplot3d import Axes3D
 from matplotlib.pyplot import figure
 
+# Helper function
+@jit(nopython=True)
+def nonzero_numba(mat):
+    return mat.nonzero()
+
 # Define network class.
 class network(object):
-    def __init__(self, 
-                 actin_conc = 5.0, 
-                 arp23_conc = 50.0e-3, 
-                 cp_conc = 200.0e-3, 
-                 npf_density = 1000.0, 
+    def __init__(self,
+                 actin_conc = 5.0,
+                 arp23_conc = 50.0e-3,
+                 cp_conc = 200.0e-3,
+                 npf_density = 1000.0,
                  total_time = 20.0):
-        
+
         # Calculate and set rate constants.
         self.elongation_rate = 11 * actin_conc
         self.capping_rate = (42.0 / 63.0)**(1/3) * 11 * cp_conc
         self.actin_loading_rate = 5.5 * actin_conc * (42.0 / (42.0 + 11.0))**(1/3)
-        self.actin_transfer_rate = 1.0 # PPR to WH2. Have no idea how fast this should be.
         self.arp23_loading_rate = 11 * arp23_conc * (42.0 / 220.0)**(1/3)
-        self.arp23_unloading_rate = 10.0**-1 # 8-s lifetime on WCA from three-color paper.
-        self.arp23_branching_rate = 0.7**-1 # 0.7-s lifetime from three-color paper.
-                
+        self.arp23_unloading_rate = 10.0
+        self.arp23_untethering_rate = 1.0 # 8-s lifetime on WCA from three-color paper.
+
         # Declare constants.
         self.square_length = 1.0 # in microns
         self.monomer_length = 2.7e-3 # in microns.
         self.mu_theta = 70 / 180 * pi # mean angle at branches, in radians
         self.mu_sigma = 5 / 180 * pi # variance of angle at branches, in radians
-        
-        self.tether_stiff_coeff = 1.0 * 10**3
-        self.tether_force_scale = 10.0
-        
+
         self.current_time = 0.0 # in seconds
         self.total_time = total_time # Copy argument value.
-        
+
         self.actin_unloading_rate = 3.0 # Based on Zalevsky's paper.
         self.actin_diff_coeff = 1.0 # in square microns per second. 3-30 according to bionumbers.
 
@@ -46,14 +48,13 @@ class network(object):
         self.end_position_mat[:, 2] += self.monomer_length
         azi_angle_col = 2 * pi * rand(self.no_ends, 1)
         polar_angle_col = 0.5 * pi * (1 + rand(self.no_ends, 1))
-        self.end_orientation_mat = hstack((sin(polar_angle_col) * cos(azi_angle_col), 
-                                           sin(polar_angle_col) * sin(azi_angle_col), 
+        self.end_orientation_mat = hstack((sin(polar_angle_col) * cos(azi_angle_col),
+                                           sin(polar_angle_col) * sin(azi_angle_col),
                                            cos(polar_angle_col)))
         self.is_capped_row = zeros(self.no_ends, dtype = bool)
         self.is_tethered_row = zeros(self.no_ends, dtype = bool)
         self.index_end2npf_tether_row = full(self.no_ends, -1)
-        self.tether_force_row = zeros(self.no_ends)
-        
+
         # Initialize NPFs.
         self.no_npfs = int(npf_density)
         self.npf_position_mat = rand(self.no_npfs, 3)
@@ -61,10 +62,10 @@ class network(object):
         self.npf_position_mat[:, 1] -= 0.5
         self.npf_position_mat[:, 2] = 0.0
         self.npf_state_mat = zeros((self.no_npfs, 4), dtype = bool)
-        
+
         self.no_monomers_npf = 0
         self.no_monomers_sol = 0
-                
+
     def elongate(self, index):
         self.end_position_mat[index] = self.end_position_mat[index] + self.monomer_length * self.end_orientation_mat[index]
         # Enforce periodic boundary conditions.
@@ -72,7 +73,7 @@ class network(object):
             self.end_position_mat[index, 0] -= sign(self.end_position_mat[index, 0]) * self.square_length
         if abs(self.end_position_mat[index, 1]) > 0.5 * self.square_length:
             self.end_position_mat[index, 1] -= sign(self.end_position_mat[index, 1]) * self.square_length
-                 
+
     def branch(self, index):
         def rotation_angle_axis(ux_axis, uy_axis, uz_axis, theta_axis):
             R_11 = cos(theta_axis) + ux_axis**2 * (1 - cos(theta_axis))
@@ -86,15 +87,15 @@ class network(object):
             R_33 = cos(theta_axis) + uz_axis**2 * (1 - cos(theta_axis))
             rotation_mat = array([[R_11, R_12, R_13], [R_21, R_22, R_23], [R_31, R_32, R_33]])
             return rotation_mat
-        
+
         ux_old, uy_old, uz_old = self.end_position_mat[index]
-        
+
         # Find an axis perpendicular to orientation of ended end.
         u_perp_mag = sqrt(2 + (ux_old + uy_old)**2)
         ux_perp_old = 1.0 / u_perp_mag
         uy_perp_old = 1.0 / u_perp_mag
         uz_perp_old = -(ux_old + uy_old) / u_perp_mag
-        
+
         # Perform rotation to find new orientation.
         theta_polar = self.mu_theta + self.mu_sigma * randn()
         theta_azi = 2 * pi * rand()
@@ -102,7 +103,7 @@ class network(object):
         u_new_polar_row = polar_rotation_mat @ array([ux_old, uy_old, uz_old])
         azi_rotation_mat = rotation_angle_axis(ux_old, uy_old, uz_old, theta_azi)
         u_new_row = azi_rotation_mat @ u_new_polar_row
-        
+
         # Do it until it's facing the right way (-z).
         while u_new_row[2] >= 0.0:
             theta_polar = self.mu_theta + self.mu_sigma * randn()
@@ -111,129 +112,83 @@ class network(object):
             u_new_polar_row = polar_rotation_mat @ array([ux_old, uy_old, uz_old])
             azi_rotation_mat = rotation_angle_axis(ux_old, uy_old, uz_old, theta_azi)
             u_new_row = azi_rotation_mat @ u_new_polar_row
-            
-        # Break tether and take arp2/3
-        index_npf = self.index_end2npf_tether_row[index]
-        self.npf_state_mat[index_npf, [0, 2, 3]] = False
-        self.is_tethered_row[index] = False
-        self.tether_force_row[index] = 0.0
-        self.index_end2npf_tether_row[index] = -1
-                        
-        # Add new ended end to relevant arrays.
+
+        # Add new barbed end to relevant arrays.
         self.end_position_mat = vstack((self.end_position_mat, self.end_position_mat[index]))
         self.end_orientation_mat = vstack((self.end_orientation_mat, u_new_row))
         self.is_capped_row = hstack((self.is_capped_row, False))
         self.is_tethered_row = hstack((self.is_tethered_row, False))
         self.index_end2npf_tether_row = hstack((self.index_end2npf_tether_row, -1))
-        self.tether_force_row = hstack((self.tether_force_row, 0.0))
         self.no_ends += 1
-            
+
     def cap(self, index):
         self.is_capped_row[index] = True
-    
+
     def tether(self, index_end, index_npf):
         self.is_tethered_row[index_end] = True
         self.npf_state_mat[index_npf, 3] = True
         self.index_end2npf_tether_row[index_end] = index_npf
-        self.tether_force_row[index_end] = self.tether_stiff_coeff * self.end_position_mat[index_end, 2]
         # Move barbed end to npf.
         self.end_position_mat[index_end, 0] = self.npf_position_mat[index_npf, 0]
         self.end_position_mat[index_end, 1] = self.npf_position_mat[index_npf, 1]
-        
-        
-    def calculate_transition_rates2(self):
-        # Compute end-to-npf distance matrix.
-        end2npf_distance_mat = cdist(self.end_position_mat, self.npf_position_mat) + 0.1 * self.monomer_length
-        # Compute elongation rates.
-        actin_solution_rate_col = full((self.no_ends, 1), self.elongation_rate)
-        actin_npf_rate_mat = self.actin_unloading_rate + 6 * self.actin_diff_coeff / end2npf_distance_mat
-        actin_npf_rate_mat[:, self.npf_state_mat[:, 0] == False] = False
-        elongation_rate_mat = hstack((actin_solution_rate_col, actin_npf_rate_mat))
-        elongation_rate_mat[self.is_capped_row, :] = 0.0
-        elongation_rate_mat[self.is_tethered_row, :] = 0.0
-        
-        # Compute arp23-tethering rates.
-        arp23_tethering_rate_mat = 6 * self.actin_diff_coeff / end2npf_distance_mat * 1e-3
-        arp23_tethering_rate_mat[:, self.npf_state_mat[:, 2] == False] = 0.0
-        arp23_tethering_rate_mat[:, self.npf_state_mat[:, 3] == True] = 0.0
-        # Compute branching rates.
-        branching_rate_col = zeros((self.no_ends, 1))
-        if any(self.is_tethered_row) >= 0:    
-            branching_rate_col[self.is_tethered_row, 0] = self.arp23_branching_rate * (self.npf_state_mat[self.index_end2npf_tether_row[self.is_tethered_row], 0] == True)
-        # Compute capping rates.
-        capping_rate_col = zeros((self.no_ends, 1))
-        capping_rate_col[self.is_capped_row == False, :] = self.capping_rate
-        end_transition_rate_mat = hstack((elongation_rate_mat, arp23_tethering_rate_mat, 
-                                         branching_rate_col, capping_rate_col))
-        
-        # NPF transition rates.
-        wh2_loading_rate_col = zeros((self.no_npfs, 1))
-        wh2_loading_rate_col[self.npf_state_mat[:, 0] == False, 0] = self.actin_loading_rate
-        wh2_unloading_rate_col = zeros((self.no_npfs, 1))
-        wh2_unloading_rate_col[self.npf_state_mat[:, 0] == True, 0] = self.actin_unloading_rate
-        arp23_loading_rate_col = zeros((self.no_npfs, 1))
-        arp23_loading_rate_col[self.npf_state_mat[:, 2] == False, 0] = self.arp23_loading_rate
-        arp23_unloading_rate_col = zeros((self.no_npfs, 1))
-        arp23_unloading_rate_col[self.npf_state_mat[:, 2] == True, 0] = self.arp23_unloading_rate
-        arp23_unloading_rate_col[self.npf_state_mat[:, 3] == True, 0] = 0.0
-        npf_transition_rate_mat = hstack((wh2_loading_rate_col, wh2_unloading_rate_col, 
-                                         arp23_loading_rate_col, arp23_unloading_rate_col))
-        npf_transition_rate_mat = pad(npf_transition_rate_mat, ((0, 0), (0, end_transition_rate_mat.shape[1] - npf_transition_rate_mat.shape[1])))
-        self.transition_rate_mat = vstack((end_transition_rate_mat, npf_transition_rate_mat))
-        
+
+    def untether(self, index_end):
+        index_npf = self.index_end2npf_tether_row[index_end]
+        self.is_tethered_row[index_end] = False
+        self.npf_state_mat[index_npf, 2] = False # Take Arp2/3 with it.
+        self.npf_state_mat[index_npf, 3] = False
+        self.index_end2npf_tether_row[index_end] = -1
+        if self.npf_state_mat[index_npf, 0] == True:
+            self.branch(index_end)
+            self.npf_state_mat[index_npf, 0] == False
+
     def calculate_transition_rates(self):
-        # Compute end-to-npf distance matrix.
-        distance_end2npf_mat = cdist(self.end_position_mat, self.npf_position_mat) + self.monomer_length
+        msd_mat = (cdist(self.end_position_mat, self.npf_position_mat) + 0.1 * self.monomer_length)**2
+        no_ends = self.no_ends
+        no_npfs = self.no_npfs
+        self.transition_rate_mat = zeros((no_ends + no_npfs, 1 + no_npfs + no_npfs + 1 + 1))
         # Compute elongation rates.
-        elongation_rate_mat = zeros((self.no_ends, 1 + self.no_npfs))
-        elongation_rate_mat[:, 0] = self.elongation_rate
-        elongation_rate_mat[:, 1:] = (distance_end2npf_mat**2 / 6 / self.actin_diff_coeff + 1 / self.actin_unloading_rate)**(-1)
-        elongation_rate_mat[self.is_capped_row, :] = 0
-        elongation_rate_mat[self.is_tethered_row, :] = 0
-        elongation_rate_mat[:, hstack((False, self.npf_state_mat[:, 0] == 0))] = 0
-        # Compute arp23-tethering rates.
-        arp23_tethering_rate_mat = (distance_end2npf_mat**2 / 6 / self.actin_diff_coeff * 1e3)**(-1)
-        arp23_tethering_rate_mat[:, self.npf_state_mat[:, 2] == False] = 0.0
-        arp23_tethering_rate_mat[:, self.npf_state_mat[:, 3] == True] = 0.0
-        # Compute branching rates.
-        branching_rate_col = zeros((self.no_ends, 1))
-        if any(self.is_tethered_row) >= 0:    
-            branching_rate_col[self.is_tethered_row, 0] = self.arp23_branching_rate * (self.npf_state_mat[self.index_end2npf_tether_row[self.is_tethered_row], 0] == True)
-        # Compute capping rates.
-        capping_rate_col = zeros((self.no_ends, 1))
-        capping_rate_col[self.is_capped_row == False, :] = self.capping_rate
-        end_transition_rate_mat = hstack((elongation_rate_mat, arp23_tethering_rate_mat, 
-                                         branching_rate_col, capping_rate_col))
-        
+        can_elongate_bool = logical_and(self.is_capped_row == False, self.is_tethered_row == False)
+        #actin_npf_rate_mat = (self.actin_unloading_rate**-1 + msd_mat / 6 / self.actin_diff_coeff)**-1
+        #actin_npf_rate_mat[:, self.npf_state_mat[:, 0] == False] = False
+        self.transition_rate_mat[:no_ends, 0][can_elongate_bool] = self.elongation_rate
+        is_loaded_bool = self.npf_state_mat[:, 0] == True
+        row_grid, col_grid = meshgrid(can_elongate_bool.nonzero()[0], is_loaded_bool.nonzero()[0], indexing = 'ij')
+        self.transition_rate_mat[:no_ends, 1:(no_npfs + 1)][row_grid, col_grid] = (self.actin_unloading_rate**-1 + msd_mat[row_grid, col_grid] / 6 / self.actin_diff_coeff)**-1
+        # Arp2/3 tethering.
+        can_tether_bool = logical_and(self.npf_state_mat[:, 2], self.npf_state_mat[:, 3] == False)
+        self.transition_rate_mat[:no_ends, (no_npfs + 2) : (2 * no_npfs + 2)][:, can_tether_bool] = (6 * self.actin_diff_coeff / msd_mat[:, can_tether_bool]) * 1e-3
+        # self.transition_rate_mat[:no_ends, (no_npfs + 2) : (2 * no_npfs + 2)] = arp23_tethering_rate_mat
+        # Arp23-untethering rates.
+        self.transition_rate_mat[:no_ends, (2 * no_npfs + 1)][self.is_tethered_row == True] = self.arp23_untethering_rate
+        # Capping rates.
+        self.transition_rate_mat[:no_ends, (2 * no_npfs + 2)][self.is_capped_row == False] = self.capping_rate
+
         # NPF transition rates.
-        wh2_loading_rate_col = zeros((self.no_npfs, 1))
-        wh2_loading_rate_col[self.npf_state_mat[:, 0] == False, 0] = self.actin_loading_rate
-        wh2_unloading_rate_col = zeros((self.no_npfs, 1))
-        wh2_unloading_rate_col[self.npf_state_mat[:, 0] == True, 0] = self.actin_unloading_rate
-        arp23_loading_rate_col = zeros((self.no_npfs, 1))
-        arp23_loading_rate_col[self.npf_state_mat[:, 2] == False, 0] = self.arp23_loading_rate
-        arp23_unloading_rate_col = zeros((self.no_npfs, 1))
-        arp23_unloading_rate_col[self.npf_state_mat[:, 2] == True, 0] = self.arp23_unloading_rate
-        arp23_unloading_rate_col[self.npf_state_mat[:, 3] == True, 0] = 0.0
-        npf_transition_rate_mat = hstack((wh2_loading_rate_col, wh2_unloading_rate_col, 
-                                         arp23_loading_rate_col, arp23_unloading_rate_col))
-        npf_transition_rate_mat = pad(npf_transition_rate_mat, ((0, 0), (0, end_transition_rate_mat.shape[1] - npf_transition_rate_mat.shape[1])))
-        self.transition_rate_mat = vstack((end_transition_rate_mat, npf_transition_rate_mat))
-    
+        # Loading WH2 with actin.
+        self.transition_rate_mat[no_ends:, 0][self.npf_state_mat[:, 0] == False] = self.actin_loading_rate
+        # Actin unloading from WH2.
+        self.transition_rate_mat[no_ends:, 1][self.npf_state_mat[:, 0] == True] = self.actin_unloading_rate
+        # Loading CA with Arp2/3
+        self.transition_rate_mat[no_ends:, 2][self.npf_state_mat[:, 2] == False] = self.arp23_loading_rate
+        # Untethered Arp2/3 unloading from CA.
+        self.transition_rate_mat[no_ends:, 3][logical_and(self.npf_state_mat[:, 2] == True, self.npf_state_mat[:, 3] == False)] = self.arp23_unloading_rate
+
     def gillespie_step(self):
-        self.calculate_transition_rates()
-        total_rate = sum(self.transition_rate_mat)
+        #Switch to nonzero space.
+        nonzero_row_mat, nonzero_col_mat = nonzero_numba(self.transition_rate_mat)
+        nonzero_transition_rate_mat = self.transition_rate_mat[nonzero_row_mat, nonzero_col_mat]
+        total_rate = nonzero_transition_rate_mat.sum()
         time_interval = -log(rand()) / total_rate
-        random_rate = total_rate * rand()
-        # Switch to nonzero space.
-        nonzero_transition_rate_row_row, nonzero_transition_rate_col_row = self.transition_rate_mat.nonzero()
-        nonzero_transition_rate_row = self.transition_rate_mat[nonzero_transition_rate_row_row, nonzero_transition_rate_col_row]
-        random_transition_nonzero_index = choice(nonzero_transition_rate_row.size, p = nonzero_transition_rate_row / total_rate)
-        index_row = nonzero_transition_rate_row_row[random_transition_nonzero_index]
-        index_col = nonzero_transition_rate_col_row[random_transition_nonzero_index]
+        transition_probability_row = nonzero_transition_rate_mat.flatten() / total_rate
+        random_nonzero_transition_index = choice(transition_probability_row.size, p = transition_probability_row)
+        #Go back to sparse space.
+        index_row = nonzero_row_mat[random_nonzero_transition_index]
+        index_col = nonzero_col_mat[random_nonzero_transition_index]
+        #index_row, index_col = unravel_index(random_transition_index, self.transition_rate_mat.shape)
         if index_row < self.no_ends:
             bin_edge_row = cumsum([0, 1, self.no_npfs, self.no_npfs, 1, 1])
-            index_bin = searchsorted(bin_edge_row, index_col, side = 'right') - 1
+            index_bin = searchsorted(bin_edge_row > index_col, True) - 1
             if index_bin == 0:
                 self.elongate(index_row)
                 self.no_monomers_sol += 1
@@ -244,7 +199,7 @@ class network(object):
             elif index_bin == 2:
                 self.tether(index_row, index_col - bin_edge_row[index_bin])
             elif index_bin == 3:
-                self.branch(index_row)
+                self.untether(index_row)
             elif index_bin == 4:
                 self.cap(index_row)
         else:
@@ -260,15 +215,18 @@ class network(object):
             elif index_col == 3:
                 # Unload arp2/3 complex.
                 self.npf_state_mat[index_row - self.no_ends, 2] = False
+        # Update time and space.
         self.current_time += time_interval
-        min_end_z = min(self.end_position_mat[~self.is_tethered_row, 2])
-        if min_end_z < 0:
-            self.end_position_mat[~self.is_tethered_row, 2] -= min_end_z
-        
+        if sum(~self.is_tethered_row) > 0:
+            min_end_z = min(self.end_position_mat[~self.is_tethered_row, 2])
+            if min_end_z < 0:
+                self.end_position_mat[~self.is_tethered_row, 2] -= min_end_z
+
     def simulate(self):
         i_percent = 0.1
         no_iterations = 0
         while (self.current_time <= self.total_time) and (sum(~self.is_capped_row) >= 1):
+            self.calculate_transition_rates()
             self.gillespie_step()
             if self.current_time >= self.total_time * (i_percent):
                 print(i_percent * 100)
@@ -278,9 +236,11 @@ class network(object):
         self.normalized_network_growth_rate = self.network_height / (self.monomer_length * self.elongation_rate * self.current_time)
         print(no_iterations)
         print(self.normalized_network_growth_rate)
-    
-    def display_network(self):
+
+    def display(self):
+        arrow_length = 0.1 * self.end_position_mat[:, 2].max()
         fig1_hand = figure()
         axes1_hand = fig1_hand.add_subplot(111, projection = '3d')
-        axes1_hand.quiver(self.end_position_mat[:, 0], self.end_position_mat[:, 1], self.end_position_mat[:, 2], 
-                          self.end_orientation_mat[:, 0], self.end_orientation_mat[:, 1], self.end_orientation_mat[:, 2], length = self.elongation_rate * self.monomer_length / self.capping_rate)
+        axes1_hand.quiver(self.end_position_mat[:, 0], self.end_position_mat[:, 1], self.end_position_mat[:, 2],
+                          self.end_orientation_mat[:, 0], self.end_orientation_mat[:, 1], self.end_orientation_mat[:, 2], length = arrow_length)
+        return fig1_hand, axes1_hand

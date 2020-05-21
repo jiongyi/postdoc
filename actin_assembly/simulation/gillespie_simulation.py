@@ -243,3 +243,4 @@ class network(object):
         axes1_hand = fig1_hand.add_subplot(111, projection = '3d')
         axes1_hand.quiver(self.end_position_mat[:, 0], self.end_position_mat[:, 1], self.end_position_mat[:, 2],
                           self.end_orientation_mat[:, 0], self.end_orientation_mat[:, 1], self.end_orientation_mat[:, 2], length = arrow_length)
+        return fig1_hand, axes1_hand
