@@ -14,9 +14,18 @@ from skimage.segmentation import find_boundaries, clear_border
 MICRON_PER_PIXEL = 0.16
 DIAMETER_THRESHOLD = 2.0
 
-def find_tif_files(folder_name_str):
+def find_470_tif_files(folder_name_str):
     tif_file_path_list = []
-    search_str = '*_000.tif'
+    search_str = '*470 GFP epi_000.tif'
+    for (dir_name_str, sub_dir_name_list, file_name_list) in walk(folder_name_str):
+        for i_file_name in file_name_list:
+            if fnmatch.fnmatch(i_file_name, search_str):
+                tif_file_path_list.append(join(dir_name_str, i_file_name))
+    return tif_file_path_list
+
+def find_550_tif_files(folder_name_str):
+    tif_file_path_list = []
+    search_str = '*550 RFP epi_000.tif'
     for (dir_name_str, sub_dir_name_list, file_name_list) in walk(folder_name_str):
         for i_file_name in file_name_list:
             if fnmatch.fnmatch(i_file_name, search_str):
@@ -32,7 +41,7 @@ def read_and_split(file_path_str):
 
 def binarize_npf(npf_im):
     npf_rescaled_im = npf_im / max(npf_im.flatten())
-    bw_im = binary_fill_holes(canny(npf_rescaled_im, sigma = 0.1))
+    bw_im = binary_fill_holes(canny(npf_rescaled_im, sigma = 0.2))
     bw_im = remove_small_objects(bw_im, min_size = sum(disk(6)))
     npf_bw_im = clear_border(bw_im ^ erosion(bw_im, disk(3)))
     return npf_bw_im
@@ -65,28 +74,32 @@ def binarize_actin(actin_im):
     actin_bw3_im = binary_fill_holes(actin_bw2_im)
     return actin_bw3_im
 
-def measure_comet_props(npf_im, npf_bw_im):
+def measure_comet_props(npf_im, npf_bw_im, actin_im):
     npf_label_im, no_beads = label(npf_bw_im, return_num = True)
-    npf_back_mean = mean(npf_im[~npf_bw_im].flatten())
-
-    comet_props_mat = empty(1)
+    npf_back_mean = mean(npf_im[~binary_fill_holes(npf_bw_im)].flatten())
+    actin_back_mean = mean(actin_im[~binary_fill_holes(npf_bw_im)].flatten())
+    comet_props_mat = empty((1, 2))
     for i in range(1, no_beads + 1):
-        i_bead_bw_im = binary_fill_holes(npf_label_im == i)
+        i_bead_bw_im = npf_label_im == i
         i_npf_fluor = mean(npf_im[i_bead_bw_im].flatten()) - npf_back_mean
         i_npf_fluor *= (2**16 - 1)
-        comet_props_mat = vstack((comet_props_mat, [[i_npf_fluor]]))
+        i_actin_fluor = mean(actin_im[i_bead_bw_im].flatten()) - actin_back_mean
+        i_actin_fluor *= (2**16 - 1)
+        comet_props_mat = vstack((comet_props_mat, [[i_npf_fluor, i_actin_fluor]]))
     return comet_props_mat[1:]
 
 def batch_analysis(folder_path_str):
-    file_path_list = find_tif_files(folder_path_str)
-    no_files = len(file_path_list)
-    comet_props_mat = empty(1)
+    npf_file_path_list = find_470_tif_files(folder_path_str)
+    actin_file_path_list = find_550_tif_files(folder_path_str)
+    no_files = len(npf_file_path_list)
+    comet_props_mat = empty((1, 2))
     for i in range(no_files):
-        i_npf_im = img_as_float(imread(file_path_list[i]))
+        i_npf_im = img_as_float(imread(npf_file_path_list[i]))
+        i_actin_im = img_as_float(imread(actin_file_path_list[i]))
         i_npf_bw_im = binarize_npf(i_npf_im)
         i_npf_label_im, i_no_labels = label(i_npf_bw_im, return_num = True)
         if i_no_labels > 0:
-            i_comet_props_mat = measure_comet_props(i_npf_im, i_npf_bw_im)
+            i_comet_props_mat = measure_comet_props(i_npf_im, i_npf_bw_im, i_actin_im)
             comet_props_mat = vstack((comet_props_mat, i_comet_props_mat))
-            save_segmentation(file_path_list[i], i_npf_im, i_npf_bw_im)
+            save_segmentation(npf_file_path_list[i], i_npf_im, i_npf_bw_im)
     return comet_props_mat[1:]
