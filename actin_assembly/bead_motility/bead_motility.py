@@ -6,9 +6,10 @@ from skimage.io import imread, imsave
 from scipy.ndimage.morphology import binary_fill_holes
 from skimage.morphology import closing, disk, erosion, opening, reconstruction, remove_small_objects, skeletonize
 from skimage.filters import threshold_otsu
-from numpy import array, mean, nan, stack, sum, zeros
+from numpy import array, mean, nan, stack, sum, zeros, linspace, pi, tan, inf
 from skimage.measure import label, regionprops
 from skimage.segmentation import find_boundaries, clear_border
+from skimage.transform import rotate
 from pandas import DataFrame, concat
 
 MICRON_PER_PIXEL = 0.16
@@ -117,7 +118,7 @@ def measure_comet_tail_props(npf_im, pulse_im, chase_im):
                                                'tail_length': tail_length_row})
     bw_stack = stack((npf_bw_im, pulse_bw_im, chase_bw_im, tail_bw_im), axis = -1)
     return comet_tail_props_df, bw_stack
-    
+        
 def batch_analysis(folder_path_str):
     comet_tail_props_df = DataFrame({'npf_fluor': array([]), 'actin_fluor': array([]), 'tail_length': array([])})
     mmstack_file_path_list = find_mmstack_files(folder_path_str)
