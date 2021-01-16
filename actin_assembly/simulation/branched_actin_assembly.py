@@ -1,8 +1,8 @@
-from numpy import pi, zeros, cos, sin, max, append, array, exp
+from numpy import pi, zeros, cos, sin, max, append, array, exp, arctan, abs
 from numpy.random import rand, randn
 
 class network(object):
-    def __init__(self, no_filaments = 200, tether_rate = 1.0, elong_rate = 6.17, branch_rate = 2.0, cap_rate = 0.03):
+    def __init__(self, no_filaments = 200, tether_rate = 0.8, elong_rate = 6.17, branch_rate = 0.1, cap_rate = 0.03):
         # Copy parameter values.
         self.init_no_filaments = no_filaments
         self.tether_rate = tether_rate
@@ -72,6 +72,8 @@ class network(object):
 
     def branch(self, index):
         theta = self.MU_THETA + self.SIGMA_THETA * randn()
+        if rand() >= 0.5:
+            theta *= -1
         u_index = self.u_row[index]
         v_index = self.v_row[index]
         u_new = u_index * cos(theta) - v_index * sin(theta)
@@ -88,6 +90,7 @@ class network(object):
         self.y_barbed_row = append(self.y_barbed_row, self.y_barbed_row[index])
         self.u_row = append(self.u_row, u_new)
         self.v_row = append(self.v_row, v_new)
+        self.theta_row = append(self.theta_row, arctan(v_new / u_new))
         self.is_capped_row = append(self.is_capped_row, False)
         self.is_tethered_row = append(self.is_tethered_row, False)
         self.is_proximal_row = append(self.is_proximal_row, False)
@@ -114,20 +117,21 @@ class network(object):
         for i in range(self.no_filaments):
             if self.is_proximal_row[i]:
                 if self.is_tethered_row[i]:
-                    if rand() <= (self.tether_force_weight_row[i] * self.branch_rate * self.TIME_INTERVAL):
-                        self.break_tether(i)
-                        if rand() <= 0.01:
-                            self.branch(i)
-                        continue
-                elif rand() <= (self.tether_rate * self.TIME_INTERVAL):
+                    if rand() <= (self.tether_force_weight_row[i] * sin(abs(self.theta_row[i])) * self.TIME_INTERVAL):
+                        self.branch(i)
+                    else:
+                        self.elongate(i)
+                    self.break_tether(i)
+                    continue
+                elif rand() <= self.tether_rate:
                     self.tether(i)
                     continue
                 elif self.is_capped_row[i]:
                     continue
-                elif rand() <= (self.ratchet_force_weight * self.cap_rate * self.TIME_INTERVAL):
+                elif rand() <= (self.ratchet_force_weight * self.cap_rate * cos(self.theta_row[i]) * self.TIME_INTERVAL):
                     self.cap(i)
                     continue
-                elif rand() <= (self.ratchet_force_weight * self.elong_rate * self.TIME_INTERVAL):
+                elif rand() <= (self.ratchet_force_weight * self.elong_rate * cos(self.theta_row[i]) * self.TIME_INTERVAL):
                     self.elongate(i)
                     continue
             elif self.is_capped_row[i]:
