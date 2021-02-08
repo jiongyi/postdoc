@@ -5,12 +5,13 @@ from skimage.io import imread, imsave
 from scipy.ndimage.morphology import binary_fill_holes
 from skimage.morphology import closing, disk, square, erosion, dilation, opening, reconstruction, remove_small_objects, \
     medial_axis, thin, skeletonize
+from skimage.graph import route_through_array
 from skan import skeleton_to_csgraph
 from skimage.filters import gaussian, hessian, threshold_isodata, threshold_otsu
 from skimage.exposure import equalize_adapthist
 from skimage.util import invert
 from skimage.color import label2rgb
-from numpy import array, max, stack, zeros, delete, append, ones, abs, convolve, hstack
+from numpy import array, max, stack, zeros, delete, append, ones, abs, convolve, hstack, unravel_index
 from skimage.measure import label, regionprops
 from skimage.segmentation import clear_border, find_boundaries
 from pandas import DataFrame
@@ -37,7 +38,7 @@ def load_stack(file_path_str):
 
 def segment_bead(raw_im):
     gaussian_im = gaussian(raw_im, sigma = 1)
-    bw1_im = gaussian_im > threshold_isodata(gaussian_im)
+    bw1_im = gaussian_im > threshold_otsu(gaussian_im)
     bw2_im = binary_fill_holes(bw1_im)
     bw3_im = clear_border(bw2_im)
     bead_bw_im = remove_small_objects(bw3_im, min_size=disk(6).sum())
@@ -146,13 +147,47 @@ def estimate_comet_tail_props(file_path_str):
 
 
 def skeletonize_comet(bead_bw_im, composite_bw_im):
+    # Add bead binary to smooth out axis.
     medial_bw_im = medial_axis(bead_bw_im | composite_bw_im)
+    # Remove the bead binary and ignore spurious mask(s).
+    medial_bw_im = medial_bw_im & ~bead_bw_im
+    medial_label_im, no_skels = label(medial_bw_im, return_num = True)
+    if no_skels > 1:
+        medial_props_list = regionprops(medial_label_im)
+        skel_size_row = zeros(no_skels)
+        for i in range(no_skels):
+            skel_size_row[i] = medial_props_list[i].area
+        index_largest_skel = skel_size_row.argmax()
+        medial_bw_im = medial_label_im == (index_largest_skel + 1)
     _, _, degrees_mat = skeleton_to_csgraph(medial_bw_im)
-    branches_bw_im = degrees_mat > 2
-    minus_branches_bw_im = medial_bw_im & ~dilation(branches_bw_im, square(7))
-    bw1_im = reconstruction(bead_bw_im & minus_branches_bw_im, minus_branches_bw_im).astype(bool)
-    bw2_im = bw1_im & ~bead_bw_im
-    longest_path_bw_im = remove_small_objects(bw2_im, min_size = 7, connectivity = 2)
+    ends_bw_im = degrees_mat == 1
+    no_ends = ends_bw_im.sum()
+    if no_ends > 2:
+        # Find longest path.
+        cost_mat = zeros((no_ends, no_ends))
+        ends_row_row, ends_col_row = ends_bw_im.nonzero()
+        for i in range(no_ends):
+            for j in range(no_ends):
+                if i != j:
+                    _, ij_cost = route_through_array(~medial_bw_im + 1, [ends_row_row[i], ends_col_row[i]], \
+                                                     [ends_row_row[j], ends_col_row[j]], \
+                                                     fully_connected = True, geometric = True)
+                    cost_mat[i, j] = ij_cost
+        costliest_row, costliest_col = unravel_index(cost_mat.argmax(), cost_mat.shape)
+        costliest_path = route_through_array(~medial_bw_im + 1, \
+                                             [ends_row_row[costliest_row], ends_col_row[costliest_row]], \
+                                             [ends_row_row[costliest_col], ends_col_row[costliest_col]], \
+                                             fully_connected = True)
+        longest_path_bw_im = zeros(medial_bw_im.shape, dtype = bool)
+        for i in range(len(costliest_path[0])):
+            longest_path_bw_im[costliest_path[0][i][0], costliest_path[0][i][1]] = True
+        #branches_bw_im = degrees_mat > 2
+        #minus_branches_bw_im = medial_bw_im & ~dilation(branches_bw_im, square(7))
+        #bw1_im = reconstruction(bead_bw_im & minus_branches_bw_im, minus_branches_bw_im).astype(bool)
+        #bw2_im = bw1_im & ~bead_bw_im
+        #longest_path_bw_im = remove_small_objects(bw2_im, min_size = 7, connectivity = 2)
+    else:
+        longest_path_bw_im = medial_bw_im
     return longest_path_bw_im
 
 def sort_pixel_coords(bead_bw_im, path_bw_im):
@@ -322,7 +357,7 @@ def estimate_comet_tail_props_dev(file_path_str):
                         savefig(file_path_str[:-21] + '_linescan.png')
                         print(i_position_row[i_c2_step_index])
                         print(i_c2_step_quality)
-                    imsave(file_path_str[:-21] + '_skel_segment.jpg', label2rgb(label(i_skeleton_bw_im), image = invert(i_pulse_im), bg_label = 0, colors = ['yellow']))
+                    imsave(file_path_str[:-21] + '_skel_segment.jpg', label2rgb(label(i_skeleton_bw_im), image = invert(i_pulse_im), bg_label = 0, colors = ['yellow']).astype('uint8'))
             else:
                 print("No actin tail.")
             comet_tail_props_df = DataFrame.from_dict({'npf_fluor': npf_fluor_row,
@@ -363,9 +398,9 @@ def batch_analysis_dev(folder_path_str, save_segmentation = False):
             i_bead_overlay_im = label2rgb(label(find_boundaries(i_bead_bw_im)), image = equalize_adapthist(invert(i_c0_im)), bg_label = 0, colors = ['green'])
             i_actin1_overlay_im = label2rgb(label(find_boundaries(i_actin1_bw_im)), image = equalize_adapthist(invert(i_c1_im)), bg_label = 0, colors = ['red'])
             i_actin2_overlay_im = label2rgb(label(find_boundaries(i_actin2_bw_im)), image = equalize_adapthist(invert(i_c2_im)), bg_label = 0, colors = ['magenta'])
-            imsave(mmstack_file_path_list[i][:-21] + '_c0_segment.jpg', i_bead_overlay_im)
-            imsave(mmstack_file_path_list[i][:-21] + '_c1_segment.jpg', i_actin1_overlay_im)
-            imsave(mmstack_file_path_list[i][:-21] + '_c2_segment.jpg', i_actin2_overlay_im)
+            imsave(mmstack_file_path_list[i][:-21] + '_c0_segment.jpg', i_bead_overlay_im.astype('uint8'))
+            imsave(mmstack_file_path_list[i][:-21] + '_c1_segment.jpg', i_actin1_overlay_im.astype('uint8'))
+            imsave(mmstack_file_path_list[i][:-21] + '_c2_segment.jpg', i_actin2_overlay_im.astype('uint8'))
         # Analyze comet tails.
         i_comet_tail_props_df = estimate_comet_tail_props_dev(mmstack_file_path_list[i])
         comet_tail_props_df = comet_tail_props_df.append(i_comet_tail_props_df)
