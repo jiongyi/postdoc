@@ -1,0 +1,536 @@
+[I 11:10:39.622 LabApp] JupyterLab extension loaded from /home/jiongyi/anaconda3/lib/python3.7/site-packages/jupyterlab
+[I 11:10:39.622 LabApp] JupyterLab application directory is /home/jiongyi/anaconda3/share/jupyter/lab
+[I 11:10:39.624 LabApp] Serving notebooks from local directory: /home/jiongyi/github/jupyter/actin_assembly/bead_motility
+[I 11:10:39.624 LabApp] Jupyter Notebook 6.2.0 is running at:
+[I 11:10:39.624 LabApp] http://localhost:8888/?token=0edb2e4d2b7142eebbe26dea8abc3ad6b96bfbbc210845b7
+[I 11:10:39.624 LabApp]  or http://127.0.0.1:8888/?token=0edb2e4d2b7142eebbe26dea8abc3ad6b96bfbbc210845b7
+[I 11:10:39.624 LabApp] Use Control-C to stop this server and shut down all kernels (twice to skip confirmation).
+[C 11:10:39.675 LabApp] 
+    
+    To access the notebook, open this file in a browser:
+        file:///home/jiongyi/.local/share/jupyter/runtime/nbserver-99825-open.html
+    Or copy and paste one of these URLs:
+        http://localhost:8888/?token=0edb2e4d2b7142eebbe26dea8abc3ad6b96bfbbc210845b7
+     or http://127.0.0.1:8888/?token=0edb2e4d2b7142eebbe26dea8abc3ad6b96bfbbc210845b7
+[W 11:10:42.586 LabApp] Could not determine jupyterlab build status without nodejs
+[I 11:14:22.412 LabApp] Saving file at /bead_motility.py
+[I 11:17:01.843 LabApp] Saving file at /bead_motility.py
+[I 11:19:01.872 LabApp] Saving file at /bead_motility.py
+[I 11:19:09.713 LabApp] Saving file at /bead_motility.py
+[I 11:21:09.744 LabApp] Saving file at /bead_motility.py
+[I 11:22:12.673 LabApp] Saving file at /bead_motility.py
+[I 11:25:54.792 LabApp] Saving file at /bead_motility.py
+[I 11:27:54.824 LabApp] Saving file at /bead_motility.py
+[I 11:29:10.361 LabApp] Saving file at /bead_motility.py
+[W 11:29:27.210 LabApp] Notebook Untitled.ipynb is not trusted
+[I 11:29:27.537 LabApp] Kernel started: ee0b86e8-733e-4ebb-a1ee-636eb6fbd256, name: python3
+[I 11:35:10.400 LabApp] Saving file at /bead_motility.py
+[I 11:37:10.436 LabApp] Saving file at /bead_motility.py
+[I 11:39:05.699 LabApp] Saving file at /bead_motility.py
+[I 11:40:48.023 LabApp] Saving file at /bead_motility.py
+[I 11:42:48.057 LabApp] Saving file at /bead_motility.py
+[I 11:44:16.505 LabApp] Saving file at /bead_motility.py
+[I 11:44:25.873 LabApp] Creating new notebook in /
+[I 11:44:26.210 LabApp] Kernel started: f90d5540-8bc3-48ea-8a66-3bc922c661b9, name: python3
+[I 11:46:16.543 LabApp] Saving file at /bead_motility.py
+[I 11:46:20.017 LabApp] Saving file at /bead_motility.py
+[I 11:46:26.114 LabApp] Saving file at /Untitled1.ipynb
+[I 11:46:34.861 LabApp] Saving file at /Untitled1.ipynb
+[I 11:46:37.679 LabApp] Kernel restarted: f90d5540-8bc3-48ea-8a66-3bc922c661b9
+[I 11:46:57.792 LabApp] Saving file at /bead_motility.py
+[I 11:47:02.490 LabApp] Kernel restarted: f90d5540-8bc3-48ea-8a66-3bc922c661b9
+[I 11:47:17.898 LabApp] Saving file at /bead_motility.py
+[I 11:47:22.564 LabApp] Kernel restarted: f90d5540-8bc3-48ea-8a66-3bc922c661b9
+[I 11:48:09.072 LabApp] Saving file at /bead_motility.py
+[I 11:48:14.371 LabApp] Kernel restarted: f90d5540-8bc3-48ea-8a66-3bc922c661b9
+[I 11:48:29.841 LabApp] Saving file at /bead_motility.py
+[I 11:48:34.952 LabApp] Saving file at /Untitled1.ipynb
+[I 11:48:37.848 LabApp] Kernel restarted: f90d5540-8bc3-48ea-8a66-3bc922c661b9
+[I 11:48:49.693 LabApp] Saving file at /bead_motility.py
+[I 11:48:54.629 LabApp] Kernel restarted: f90d5540-8bc3-48ea-8a66-3bc922c661b9
+[I 11:49:14.014 LabApp] Saving file at /bead_motility.py
+[I 11:49:18.970 LabApp] Kernel restarted: f90d5540-8bc3-48ea-8a66-3bc922c661b9
+[I 11:50:34.998 LabApp] Saving file at /Untitled1.ipynb
+[I 11:54:04.650 LabApp] Saving file at /bead_motility.py
+[I 11:54:12.546 LabApp] Kernel restarted: f90d5540-8bc3-48ea-8a66-3bc922c661b9
+[I 11:54:35.054 LabApp] Saving file at /Untitled1.ipynb
+[I 11:56:10.362 LabApp] Saving file at /bead_motility.py
+[I 11:56:35.107 LabApp] Saving file at /Untitled1.ipynb
+[I 11:56:58.893 LabApp] Saving file at /bead_motility.py
+[I 11:57:03.618 LabApp] Kernel restarted: f90d5540-8bc3-48ea-8a66-3bc922c661b9
+[I 11:58:35.348 LabApp] Saving file at /Untitled1.ipynb
+[I 12:00:59.407 LabApp] Saving file at /bead_motility.py
+[I 12:01:14.767 LabApp] Saving file at /bead_motility.py
+[I 12:01:18.965 LabApp] Kernel restarted: f90d5540-8bc3-48ea-8a66-3bc922c661b9
+[I 12:01:36.416 LabApp] Saving file at /bead_motility.py
+[I 12:01:39.248 LabApp] Kernel interrupted: f90d5540-8bc3-48ea-8a66-3bc922c661b9
+[I 12:01:46.340 LabApp] Saving file at /bead_motility.py
+[I 12:01:50.625 LabApp] Kernel restarted: f90d5540-8bc3-48ea-8a66-3bc922c661b9
+[I 12:02:35.417 LabApp] Saving file at /Untitled1.ipynb
+[I 12:03:31.400 LabApp] Saving file at /bead_motility.py
+[I 12:03:37.124 LabApp] Kernel restarted: f90d5540-8bc3-48ea-8a66-3bc922c661b9
+[I 12:04:35.494 LabApp] Saving file at /Untitled1.ipynb
+[I 12:04:37.024 LabApp] Saving file at /bead_motility.py
+[I 12:04:41.713 LabApp] Kernel restarted: f90d5540-8bc3-48ea-8a66-3bc922c661b9
+[I 12:04:55.624 LabApp] Saving file at /bead_motility.py
+[I 12:04:59.801 LabApp] Kernel restarted: f90d5540-8bc3-48ea-8a66-3bc922c661b9
+[I 12:06:07.746 LabApp] Saving file at /bead_motility.py
+[I 12:06:12.305 LabApp] Kernel restarted: f90d5540-8bc3-48ea-8a66-3bc922c661b9
+[I 12:06:35.545 LabApp] Saving file at /Untitled1.ipynb
+[I 12:06:57.927 LabApp] Saving file at /bead_motility.py
+[I 12:07:01.811 LabApp] Kernel interrupted: f90d5540-8bc3-48ea-8a66-3bc922c661b9
+[I 12:07:04.829 LabApp] Kernel restarted: f90d5540-8bc3-48ea-8a66-3bc922c661b9
+[I 12:08:35.597 LabApp] Saving file at /Untitled1.ipynb
+[I 12:08:43.732 LabApp] Saving file at /bead_motility.py
+[I 12:09:04.390 LabApp] Saving file at /bead_motility.py
+[I 12:13:04.426 LabApp] Saving file at /bead_motility.py
+[I 12:13:58.287 LabApp] Saving file at /bead_motility.py
+[I 12:15:58.321 LabApp] Saving file at /bead_motility.py
+[I 12:17:58.358 LabApp] Saving file at /bead_motility.py
+[I 12:18:05.077 LabApp] Saving file at /bead_motility.py
+[I 12:20:05.109 LabApp] Saving file at /bead_motility.py
+[I 12:22:05.143 LabApp] Saving file at /bead_motility.py
+[I 12:24:05.173 LabApp] Saving file at /bead_motility.py
+[I 12:24:05.609 LabApp] Saving file at /bead_motility.py
+[I 12:26:05.642 LabApp] Saving file at /bead_motility.py
+[I 12:26:21.147 LabApp] Saving file at /bead_motility.py
+[I 12:26:33.887 LabApp] Saving file at /bead_motility.py
+[I 12:27:04.388 LabApp] Saving file at /bead_motility.py
+[I 12:27:51.401 LabApp] Saving file at /bead_motility.py
+[I 12:27:56.859 LabApp] Kernel restarted: f90d5540-8bc3-48ea-8a66-3bc922c661b9
+[I 12:28:36.236 LabApp] Saving file at /Untitled1.ipynb
+[W 12:28:56.860 LabApp] Timeout waiting for kernel_info_reply: f90d5540-8bc3-48ea-8a66-3bc922c661b9
+[I 12:29:23.877 LabApp] Kernel interrupted: f90d5540-8bc3-48ea-8a66-3bc922c661b9
+Future exception was never retrieved
+future: <Future finished exception=TimeoutError('Timeout waiting for restart')>
+TimeoutError: Timeout waiting for restart
+[I 12:29:51.437 LabApp] Saving file at /bead_motility.py
+[I 12:29:59.617 LabApp] Saving file at /bead_motility.py
+[I 12:30:27.508 LabApp] Saving file at /bead_motility.py
+[I 12:30:33.266 LabApp] Kernel restarted: f90d5540-8bc3-48ea-8a66-3bc922c661b9
+[I 12:30:36.319 LabApp] Saving file at /Untitled1.ipynb
+[W 12:31:33.267 LabApp] Timeout waiting for kernel_info_reply: f90d5540-8bc3-48ea-8a66-3bc922c661b9
+[I 12:32:36.551 LabApp] Saving file at /Untitled1.ipynb
+[I 12:33:09.855 LabApp] Saving file at /bead_motility.py
+[I 12:33:13.847 LabApp] Kernel restarted: f90d5540-8bc3-48ea-8a66-3bc922c661b9
+[I 12:34:37.386 LabApp] Saving file at /Untitled1.ipynb
+[I 12:36:50.283 LabApp] Saving file at /bead_motility.py
+[I 12:36:55.143 LabApp] Kernel restarted: f90d5540-8bc3-48ea-8a66-3bc922c661b9
+[I 12:37:09.677 LabApp] Kernel interrupted: f90d5540-8bc3-48ea-8a66-3bc922c661b9
+Future exception was never retrieved
+future: <Future finished exception=TimeoutError('Timeout waiting for restart')>
+TimeoutError: Timeout waiting for restart
+[I 12:38:21.545 LabApp] Saving file at /bead_motility.py
+[I 12:38:27.108 LabApp] Kernel restarted: f90d5540-8bc3-48ea-8a66-3bc922c661b9
+[I 12:38:35.216 LabApp] Kernel restarted: f90d5540-8bc3-48ea-8a66-3bc922c661b9
+[I 12:38:37.434 LabApp] Saving file at /Untitled1.ipynb
+[I 12:38:38.658 LabApp] Kernel interrupted: f90d5540-8bc3-48ea-8a66-3bc922c661b9
+[I 12:38:42.315 LabApp] Kernel restarted: f90d5540-8bc3-48ea-8a66-3bc922c661b9
+[I 12:38:50.723 LabApp] Saving file at /bead_motility.py
+[I 12:38:54.877 LabApp] Kernel restarted: f90d5540-8bc3-48ea-8a66-3bc922c661b9
+[I 12:39:23.712 LabApp] Kernel interrupted: f90d5540-8bc3-48ea-8a66-3bc922c661b9
+[I 12:40:37.485 LabApp] Saving file at /Untitled1.ipynb
+[I 12:40:50.758 LabApp] Saving file at /bead_motility.py
+[I 12:42:50.794 LabApp] Saving file at /bead_motility.py
+[I 12:43:13.012 LabApp] Saving file at /bead_motility.py
+[I 12:43:36.690 LabApp] Saving file at /bead_motility.py
+[I 12:43:58.387 LabApp] Saving file at /bead_motility.py
+[I 12:45:52.142 LabApp] Saving file at /bead_motility.py
+[I 12:47:52.176 LabApp] Saving file at /bead_motility.py
+[I 12:48:01.831 LabApp] Saving file at /bead_motility.py
+[I 12:48:10.973 LabApp] Saving file at /bead_motility.py
+[I 12:48:15.024 LabApp] Saving file at /bead_motility.py
+[I 12:50:15.055 LabApp] Saving file at /bead_motility.py
+[I 12:52:15.096 LabApp] Saving file at /bead_motility.py
+[I 12:53:14.655 LabApp] Saving file at /bead_motility.py
+[I 12:55:14.691 LabApp] Saving file at /bead_motility.py
+[I 12:55:42.586 LabApp] Saving file at /bead_motility.py
+[I 12:56:18.241 LabApp] Saving file at /bead_motility.py
+[I 12:56:23.188 LabApp] Kernel restarted: f90d5540-8bc3-48ea-8a66-3bc922c661b9
+[I 12:56:37.543 LabApp] Saving file at /Untitled1.ipynb
+[I 12:58:18.275 LabApp] Saving file at /bead_motility.py
+[I 12:58:37.594 LabApp] Saving file at /Untitled1.ipynb
+[I 12:59:04.279 LabApp] Saving file at /bead_motility.py
+[I 13:00:45.989 LabApp] Saving file at /bead_motility.py
+[I 13:02:46.025 LabApp] Saving file at /bead_motility.py
+[I 13:04:46.098 LabApp] Saving file at /bead_motility.py
+[I 13:36:46.138 LabApp] Saving file at /bead_motility.py
+[I 13:37:52.156 LabApp] Saving file at /bead_motility.py
+[I 13:39:52.188 LabApp] Saving file at /bead_motility.py
+[I 13:40:08.973 LabApp] Saving file at /bead_motility.py
+[I 18:16:09.085 LabApp] Saving file at /bead_motility.py
+[I 18:18:09.122 LabApp] Saving file at /bead_motility.py
+[I 18:20:09.159 LabApp] Saving file at /bead_motility.py
+[I 18:20:48.449 LabApp] Saving file at /bead_motility.py
+[I 18:21:42.901 LabApp] Saving file at /bead_motility.py
+[I 18:21:47.586 LabApp] Kernel restarted: f90d5540-8bc3-48ea-8a66-3bc922c661b9
+[I 18:22:12.171 LabApp] Saving file at /bead_motility.py
+[I 18:22:17.210 LabApp] Kernel restarted: f90d5540-8bc3-48ea-8a66-3bc922c661b9
+[I 18:22:37.737 LabApp] Saving file at /Untitled1.ipynb
+[I 18:24:39.506 LabApp] Saving file at /bead_motility.py
+[I 18:24:45.424 LabApp] Kernel restarted: f90d5540-8bc3-48ea-8a66-3bc922c661b9
+[I 18:25:52.432 LabApp] Saving file at /bead_motility.py
+[I 18:26:15.699 LabApp] Saving file at /bead_motility.py
+[I 18:26:19.647 LabApp] Kernel restarted: f90d5540-8bc3-48ea-8a66-3bc922c661b9
+[I 18:26:37.785 LabApp] Saving file at /Untitled1.ipynb
+[I 18:26:41.896 LabApp] Kernel restarted: f90d5540-8bc3-48ea-8a66-3bc922c661b9
+[I 18:27:23.558 LabApp] Kernel restarted: f90d5540-8bc3-48ea-8a66-3bc922c661b9
+[I 18:28:37.830 LabApp] Saving file at /Untitled1.ipynb
+[I 18:29:09.249 LabApp] Saving file at /bead_motility.py
+[I 18:29:13.689 LabApp] Kernel restarted: f90d5540-8bc3-48ea-8a66-3bc922c661b9
+[I 18:29:50.523 LabApp] Saving file at /bead_motility.py
+[I 18:29:54.830 LabApp] Kernel restarted: f90d5540-8bc3-48ea-8a66-3bc922c661b9
+[I 18:30:37.888 LabApp] Saving file at /Untitled1.ipynb
+[W 18:30:54.832 LabApp] Timeout waiting for kernel_info_reply: f90d5540-8bc3-48ea-8a66-3bc922c661b9
+[I 18:31:50.557 LabApp] Saving file at /bead_motility.py
+[I 18:32:37.940 LabApp] Saving file at /Untitled1.ipynb
+[I 18:33:50.595 LabApp] Saving file at /bead_motility.py
+[I 18:33:58.296 LabApp] Saving file at /bead_motility.py
+[I 18:35:58.330 LabApp] Saving file at /bead_motility.py
+[I 18:36:35.904 LabApp] Saving file at /bead_motility.py
+[I 18:37:11.414 LabApp] Saving file at /bead_motility.py
+[I 18:38:16.688 LabApp] Saving file at /bead_motility.py
+[I 18:40:16.723 LabApp] Saving file at /bead_motility.py
+[I 18:40:17.567 LabApp] Saving file at /bead_motility.py
+[I 18:41:57.883 LabApp] Saving file at /bead_motility.py
+[I 18:43:50.152 LabApp] Saving file at /bead_motility.py
+[I 18:43:55.287 LabApp] Kernel restarted: f90d5540-8bc3-48ea-8a66-3bc922c661b9
+[I 18:44:33.141 LabApp] Saving file at /bead_motility.py
+[I 18:44:37.365 LabApp] Kernel restarted: f90d5540-8bc3-48ea-8a66-3bc922c661b9
+[I 18:44:38.074 LabApp] Saving file at /Untitled1.ipynb
+[I 18:44:59.134 LabApp] Saving file at /bead_motility.py
+[I 18:45:04.171 LabApp] Kernel restarted: f90d5540-8bc3-48ea-8a66-3bc922c661b9
+[I 18:45:15.293 LabApp] Saving file at /bead_motility.py
+[I 18:45:19.738 LabApp] Kernel restarted: f90d5540-8bc3-48ea-8a66-3bc922c661b9
+[I 18:45:47.183 LabApp] Saving file at /bead_motility.py
+[I 18:45:51.417 LabApp] Kernel restarted: f90d5540-8bc3-48ea-8a66-3bc922c661b9
+[I 18:46:38.130 LabApp] Saving file at /Untitled1.ipynb
+[I 18:47:47.216 LabApp] Saving file at /bead_motility.py
+[I 18:48:06.929 LabApp] Saving file at /bead_motility.py
+[I 18:48:16.230 LabApp] Kernel restarted: f90d5540-8bc3-48ea-8a66-3bc922c661b9
+[I 18:48:38.182 LabApp] Saving file at /Untitled1.ipynb
+[W 18:49:16.232 LabApp] Timeout waiting for kernel_info_reply: f90d5540-8bc3-48ea-8a66-3bc922c661b9
+[I 18:49:40.304 LabApp] Saving file at /bead_motility.py
+[I 18:49:45.422 LabApp] Kernel restarted: f90d5540-8bc3-48ea-8a66-3bc922c661b9
+Future exception was never retrieved
+future: <Future finished exception=TimeoutError('Timeout waiting for restart')>
+TimeoutError: Timeout waiting for restart
+[I 18:50:38.238 LabApp] Saving file at /Untitled1.ipynb
+[I 18:50:55.547 LabApp] Saving file at /bead_motility.py
+[I 18:51:05.449 LabApp] Kernel restarted: f90d5540-8bc3-48ea-8a66-3bc922c661b9
+Fatal Python error: initsite: Failed to import the site module
+[I 18:51:05.466 LabApp] Kernel interrupted: f90d5540-8bc3-48ea-8a66-3bc922c661b9
+Traceback (most recent call last):
+  File "/home/jiongyi/anaconda3/lib/python3.7/site.py", line 579, in <module>
+    main()
+  File "/home/jiongyi/anaconda3/lib/python3.7/site.py", line 566, in main
+    known_paths = addsitepackages(known_paths)
+  File "/home/jiongyi/anaconda3/lib/python3.7/site.py", line 349, in addsitepackages
+    addsitedir(sitedir, known_paths)
+  File "/home/jiongyi/anaconda3/lib/python3.7/site.py", line 207, in addsitedir
+    addpackage(sitedir, name, known_paths)
+  File "/home/jiongyi/anaconda3/lib/python3.7/site.py", line 168, in addpackage
+    exec(line)
+  File "<string>", line 1, in <module>
+  File "/home/jiongyi/anaconda3/lib/python3.7/importlib/util.py", line 14, in <module>
+    from contextlib import contextmanager
+  File "/home/jiongyi/anaconda3/lib/python3.7/contextlib.py", line 6, in <module>
+    from functools import wraps
+  File "<frozen importlib._bootstrap>", line 983, in _find_and_load
+  File "<frozen importlib._bootstrap>", line 963, in _find_and_load_unlocked
+  File "<frozen importlib._bootstrap>", line 906, in _find_spec
+  File "<frozen importlib._bootstrap_external>", line 1283, in find_spec
+KeyboardInterrupt
+[I 18:51:06.564 LabApp] Kernel restarted: f90d5540-8bc3-48ea-8a66-3bc922c661b9
+[W 18:52:05.452 LabApp] Timeout waiting for kernel_info_reply: f90d5540-8bc3-48ea-8a66-3bc922c661b9
+[W 18:52:06.566 LabApp] Timeout waiting for kernel_info_reply: f90d5540-8bc3-48ea-8a66-3bc922c661b9
+[I 18:52:08.046 LabApp] Kernel interrupted: f90d5540-8bc3-48ea-8a66-3bc922c661b9
+[I 18:52:11.969 LabApp] Kernel restarted: f90d5540-8bc3-48ea-8a66-3bc922c661b9
+[I 18:52:38.296 LabApp] Saving file at /Untitled1.ipynb
+[I 18:52:47.852 LabApp] Kernel interrupted: f90d5540-8bc3-48ea-8a66-3bc922c661b9
+[I 18:52:53.602 LabApp] Kernel shutdown: ee0b86e8-733e-4ebb-a1ee-636eb6fbd256
+[I 18:52:53.807 LabApp] Kernel shutdown: f90d5540-8bc3-48ea-8a66-3bc922c661b9
+[I 18:52:56.600 LabApp] Kernel started: 68b5b2bb-6bba-49f2-873b-f5011463851a, name: python3
+Future exception was never retrieved
+future: <Future finished exception=TimeoutError('Timeout waiting for restart')>
+TimeoutError: Timeout waiting for restart
+Future exception was never retrieved
+future: <Future finished exception=TimeoutError('Timeout waiting for restart')>
+TimeoutError: Timeout waiting for restart
+[I 18:54:38.357 LabApp] Saving file at /Untitled1.ipynb
+[I 18:55:40.593 LabApp] Saving file at /bead_motility.py
+[I 18:55:46.393 LabApp] Kernel restarted: 68b5b2bb-6bba-49f2-873b-f5011463851a
+[I 18:56:38.439 LabApp] Saving file at /Untitled1.ipynb
+[W 18:56:46.394 LabApp] Timeout waiting for kernel_info_reply: 68b5b2bb-6bba-49f2-873b-f5011463851a
+Future exception was never retrieved
+future: <Future finished exception=TimeoutError('Timeout waiting for restart')>
+TimeoutError: Timeout waiting for restart
+[I 18:58:32.583 LabApp] Saving file at /bead_motility.py
+[I 18:58:38.495 LabApp] Saving file at /Untitled1.ipynb
+[I 19:02:32.622 LabApp] Saving file at /bead_motility.py
+[I 19:02:38.333 LabApp] Saving file at /bead_motility.py
+[I 19:02:44.376 LabApp] Kernel restarted: 68b5b2bb-6bba-49f2-873b-f5011463851a
+[I 19:03:39.594 LabApp] Saving file at /bead_motility.py
+[I 19:03:48.821 LabApp] Kernel restarted: 68b5b2bb-6bba-49f2-873b-f5011463851a
+[I 19:03:48.835 LabApp] Kernel interrupted: 68b5b2bb-6bba-49f2-873b-f5011463851a
+Fatal Python error: initsite: Failed to import the site module
+Traceback (most recent call last):
+  File "/home/jiongyi/anaconda3/lib/python3.7/site.py", line 579, in <module>
+    main()
+  File "/home/jiongyi/anaconda3/lib/python3.7/site.py", line 566, in main
+    known_paths = addsitepackages(known_paths)
+  File "/home/jiongyi/anaconda3/lib/python3.7/site.py", line 349, in addsitepackages
+    addsitedir(sitedir, known_paths)
+  File "/home/jiongyi/anaconda3/lib/python3.7/site.py", line 207, in addsitedir
+    addpackage(sitedir, name, known_paths)
+  File "/home/jiongyi/anaconda3/lib/python3.7/site.py", line 168, in addpackage
+    exec(line)
+  File "<string>", line 1, in <module>
+KeyboardInterrupt
+[I 19:03:51.821 LabApp] KernelRestarter: restarting kernel (1/5), keep random ports
+kernel 68b5b2bb-6bba-49f2-873b-f5011463851a restarted
+[I 19:03:59.338 LabApp] Kernel restarted: 68b5b2bb-6bba-49f2-873b-f5011463851a
+[I 19:04:38.542 LabApp] Saving file at /Untitled1.ipynb
+[W 19:04:48.823 LabApp] Timeout waiting for kernel_info_reply: 68b5b2bb-6bba-49f2-873b-f5011463851a
+[I 19:06:38.610 LabApp] Saving file at /Untitled1.ipynb
+Future exception was never retrieved
+future: <Future finished exception=TimeoutError('Timeout waiting for restart')>
+TimeoutError: Timeout waiting for restart
+[I 19:08:05.806 LabApp] Kernel restarted: 68b5b2bb-6bba-49f2-873b-f5011463851a
+[I 19:08:38.695 LabApp] Saving file at /Untitled1.ipynb
+[W 19:09:05.808 LabApp] Timeout waiting for kernel_info_reply: 68b5b2bb-6bba-49f2-873b-f5011463851a
+[I 19:10:38.766 LabApp] Saving file at /Untitled1.ipynb
+Future exception was never retrieved
+future: <Future finished exception=TimeoutError('Timeout waiting for restart')>
+TimeoutError: Timeout waiting for restart
+Future exception was never retrieved
+future: <Future finished exception=TimeoutError('Timeout waiting for restart')>
+TimeoutError: Timeout waiting for restart
+[I 20:48:11.049 LabApp] Saving file at /bead_motility.py
+[I 20:48:17.030 LabApp] Kernel restarted: 68b5b2bb-6bba-49f2-873b-f5011463851a
+[I 20:48:38.466 LabApp] Saving file at /bead_motility.py
+[I 20:48:38.892 LabApp] Saving file at /Untitled1.ipynb
+[I 20:48:43.783 LabApp] Kernel restarted: 68b5b2bb-6bba-49f2-873b-f5011463851a
+[W 20:49:43.785 LabApp] Timeout waiting for kernel_info_reply: 68b5b2bb-6bba-49f2-873b-f5011463851a
+[I 20:50:38.946 LabApp] Saving file at /Untitled1.ipynb
+Future exception was never retrieved
+future: <Future finished exception=TimeoutError('Timeout waiting for restart')>
+TimeoutError: Timeout waiting for restart
+[I 20:56:39.140 LabApp] Saving file at /bead_motility.py
+[I 20:57:33.041 LabApp] Saving file at /bead_motility.py
+[I 20:57:38.202 LabApp] Kernel restarted: 68b5b2bb-6bba-49f2-873b-f5011463851a
+[I 20:57:54.694 LabApp] Saving file at /bead_motility.py
+[I 20:57:57.168 LabApp] Kernel interrupted: 68b5b2bb-6bba-49f2-873b-f5011463851a
+[I 20:58:00.148 LabApp] Kernel restarted: 68b5b2bb-6bba-49f2-873b-f5011463851a
+[I 20:58:39.145 LabApp] Saving file at /Untitled1.ipynb
+[W 20:59:00.150 LabApp] Timeout waiting for kernel_info_reply: 68b5b2bb-6bba-49f2-873b-f5011463851a
+[I 21:00:39.247 LabApp] Saving file at /Untitled1.ipynb
+Future exception was never retrieved
+future: <Future finished exception=TimeoutError('Timeout waiting for restart')>
+TimeoutError: Timeout waiting for restart
+[I 21:03:28.410 LabApp] Saving file at /bead_motility.py
+[I 21:03:33.810 LabApp] Kernel restarted: 68b5b2bb-6bba-49f2-873b-f5011463851a
+[I 21:04:39.347 LabApp] Saving file at /Untitled1.ipynb
+[I 21:06:36.794 LabApp] Saving file at /bead_motility.py
+[I 21:06:39.432 LabApp] Saving file at /Untitled1.ipynb
+[I 21:08:36.829 LabApp] Saving file at /bead_motility.py
+[I 21:10:19.096 LabApp] Saving file at /bead_motility.py
+[I 21:10:28.712 LabApp] Kernel restarted: 68b5b2bb-6bba-49f2-873b-f5011463851a
+[I 21:10:39.522 LabApp] Saving file at /Untitled1.ipynb
+[I 21:10:50.775 LabApp] Saving file at /bead_motility.py
+[I 21:10:55.286 LabApp] Kernel restarted: 68b5b2bb-6bba-49f2-873b-f5011463851a
+[I 21:11:05.362 LabApp] Kernel interrupted: 68b5b2bb-6bba-49f2-873b-f5011463851a
+[I 21:11:18.829 LabApp] Saving file at /Untitled1.ipynb
+[I 21:11:22.089 LabApp] Kernel restarted: 68b5b2bb-6bba-49f2-873b-f5011463851a
+[I 21:12:15.022 LabApp] Kernel interrupted: 68b5b2bb-6bba-49f2-873b-f5011463851a
+[I 21:12:26.334 LabApp] Saving file at /bead_motility.py
+[I 21:13:14.950 LabApp] Saving file at /bead_motility.py
+[I 21:13:19.115 LabApp] Kernel restarted: 68b5b2bb-6bba-49f2-873b-f5011463851a
+[I 21:13:19.189 LabApp] Saving file at /Untitled1.ipynb
+[W 21:14:19.117 LabApp] Timeout waiting for kernel_info_reply: 68b5b2bb-6bba-49f2-873b-f5011463851a
+[I 21:15:19.337 LabApp] Saving file at /Untitled1.ipynb
+Future exception was never retrieved
+future: <Future finished exception=TimeoutError('Timeout waiting for restart')>
+TimeoutError: Timeout waiting for restart
+[I 21:18:42.659 LabApp] Saving file at /bead_motility.py
+[I 21:18:47.510 LabApp] Kernel restarted: 68b5b2bb-6bba-49f2-873b-f5011463851a
+[I 21:19:19.514 LabApp] Saving file at /Untitled1.ipynb
+[I 21:21:19.578 LabApp] Saving file at /Untitled1.ipynb
+[I 21:25:04.909 LabApp] Saving file at /bead_motility.py
+[I 21:25:10.536 LabApp] Kernel restarted: 68b5b2bb-6bba-49f2-873b-f5011463851a
+[I 21:25:19.649 LabApp] Saving file at /Untitled1.ipynb
+[W 21:26:10.538 LabApp] Timeout waiting for kernel_info_reply: 68b5b2bb-6bba-49f2-873b-f5011463851a
+Future exception was never retrieved
+future: <Future finished exception=TimeoutError('Timeout waiting for restart')>
+TimeoutError: Timeout waiting for restart
+[I 21:27:19.715 LabApp] Saving file at /Untitled1.ipynb
+[I 21:28:35.610 LabApp] Saving file at /bead_motility.py
+[I 21:28:40.785 LabApp] Kernel restarted: 68b5b2bb-6bba-49f2-873b-f5011463851a
+[I 21:29:19.880 LabApp] Saving file at /Untitled1.ipynb
+[W 21:29:40.787 LabApp] Timeout waiting for kernel_info_reply: 68b5b2bb-6bba-49f2-873b-f5011463851a
+[I 21:31:19.969 LabApp] Saving file at /Untitled1.ipynb
+[I 21:35:12.846 LabApp] Saving file at /bead_motility.py
+Future exception was never retrieved
+future: <Future finished exception=TimeoutError('Timeout waiting for restart')>
+TimeoutError: Timeout waiting for restart
+[I 21:37:12.875 LabApp] Saving file at /bead_motility.py
+[I 21:37:21.784 LabApp] Saving file at /bead_motility.py
+[I 21:37:26.264 LabApp] Kernel restarted: 68b5b2bb-6bba-49f2-873b-f5011463851a
+[I 21:37:42.925 LabApp] Saving file at /bead_motility.py
+[I 21:37:50.422 LabApp] Kernel restarted: 68b5b2bb-6bba-49f2-873b-f5011463851a
+[I 21:39:20.347 LabApp] Saving file at /Untitled1.ipynb
+[I 21:39:24.813 LabApp] Saving file at /bead_motility.py
+[I 21:39:30.880 LabApp] Kernel restarted: 68b5b2bb-6bba-49f2-873b-f5011463851a
+[I 21:39:51.194 LabApp] Saving file at /bead_motility.py
+[I 21:41:20.441 LabApp] Saving file at /Untitled1.ipynb
+[I 21:42:17.692 LabApp] Kernel restarted: 68b5b2bb-6bba-49f2-873b-f5011463851a
+[I 21:42:59.174 LabApp] Saving file at /bead_motility.py
+[I 21:43:05.064 LabApp] Kernel restarted: 68b5b2bb-6bba-49f2-873b-f5011463851a
+[I 21:43:20.495 LabApp] Saving file at /Untitled1.ipynb
+[I 21:43:57.055 LabApp] Saving file at /bead_motility.py
+[I 21:44:07.037 LabApp] Kernel restarted: 68b5b2bb-6bba-49f2-873b-f5011463851a
+[W 21:45:07.040 LabApp] Timeout waiting for kernel_info_reply: 68b5b2bb-6bba-49f2-873b-f5011463851a
+[I 21:45:20.549 LabApp] Saving file at /Untitled1.ipynb
+Future exception was never retrieved
+future: <Future finished exception=TimeoutError('Timeout waiting for restart')>
+TimeoutError: Timeout waiting for restart
+[I 21:46:42.782 LabApp] Saving file at /bead_motility.py
+[I 21:47:20.668 LabApp] Saving file at /Untitled1.ipynb
+[I 21:47:43.993 LabApp] Saving file at /bead_motility.py
+[I 21:47:49.282 LabApp] Kernel restarted: 68b5b2bb-6bba-49f2-873b-f5011463851a
+[I 21:48:27.347 LabApp] Saving file at /bead_motility.py
+[I 21:48:31.936 LabApp] Kernel restarted: 68b5b2bb-6bba-49f2-873b-f5011463851a
+[I 21:49:20.827 LabApp] Saving file at /Untitled1.ipynb
+[I 21:51:20.908 LabApp] Saving file at /Untitled1.ipynb
+[I 21:56:42.313 LabApp] Saving file at /bead_motility.py
+[I 21:57:59.757 LabApp] Saving file at /bead_motility.py
+[I 21:58:05.202 LabApp] Kernel restarted: 68b5b2bb-6bba-49f2-873b-f5011463851a
+[I 21:59:21.084 LabApp] Saving file at /Untitled1.ipynb
+[I 22:01:21.188 LabApp] Saving file at /Untitled1.ipynb
+[I 22:03:07.963 LabApp] Saving file at /bead_motility.py
+[I 22:03:17.214 LabApp] Kernel restarted: 68b5b2bb-6bba-49f2-873b-f5011463851a
+[I 22:03:21.336 LabApp] Saving file at /Untitled1.ipynb
+[I 22:04:37.484 LabApp] Saving file at /bead_motility.py
+[I 22:04:46.224 LabApp] Kernel restarted: 68b5b2bb-6bba-49f2-873b-f5011463851a
+[I 22:05:07.573 LabApp] Saving file at /bead_motility.py
+[I 22:05:11.848 LabApp] Kernel restarted: 68b5b2bb-6bba-49f2-873b-f5011463851a
+[I 22:05:21.390 LabApp] Saving file at /Untitled1.ipynb
+[I 22:06:02.913 LabApp] Saving file at /bead_motility.py
+[I 22:06:08.543 LabApp] Kernel restarted: 68b5b2bb-6bba-49f2-873b-f5011463851a
+[I 22:07:21.449 LabApp] Saving file at /Untitled1.ipynb
+[I 22:09:21.544 LabApp] Saving file at /Untitled1.ipynb
+[I 22:26:02.951 LabApp] Saving file at /bead_motility.py
+[I 22:26:08.118 LabApp] Saving file at /bead_motility.py
+[I 22:28:04.574 LabApp] Saving file at /bead_motility.py
+[I 22:29:22.175 LabApp] Saving file at /bead_motility.py
+[I 22:34:10.304 LabApp] Saving file at /Untitled1.ipynb
+[I 22:36:11.280 LabApp] Saving file at /bead_motility.py
+[I 22:36:17.274 LabApp] Kernel restarted: 68b5b2bb-6bba-49f2-873b-f5011463851a
+[I 22:37:24.250 LabApp] Saving file at /bead_motility.py
+[I 22:37:32.828 LabApp] Saving file at /bead_motility.py
+[I 22:37:59.350 LabApp] Saving file at /bead_motility.py
+[I 22:38:10.448 LabApp] Saving file at /Untitled1.ipynb
+[I 22:38:30.934 LabApp] Saving file at /bead_motility.py
+[I 22:38:35.252 LabApp] Kernel restarted: 68b5b2bb-6bba-49f2-873b-f5011463851a
+[I 22:40:10.498 LabApp] Saving file at /Untitled1.ipynb
+[I 22:40:48.182 LabApp] Saving file at /bead_motility.py
+[I 22:40:52.427 LabApp] Kernel restarted: 68b5b2bb-6bba-49f2-873b-f5011463851a
+[W 22:41:52.429 LabApp] Timeout waiting for kernel_info_reply: 68b5b2bb-6bba-49f2-873b-f5011463851a
+[I 22:42:10.557 LabApp] Saving file at /Untitled1.ipynb
+[I 22:44:10.660 LabApp] Saving file at /Untitled1.ipynb
+[I 22:46:51.081 LabApp] Saving file at /bead_motility.py
+[I 22:52:51.546 LabApp] Saving file at /bead_motility.py
+[I 22:53:04.145 LabApp] Saving file at /bead_motility.py
+[I 22:54:59.152 LabApp] Saving file at /bead_motility.py
+[I 22:55:10.495 LabApp] Saving file at /bead_motility.py
+[I 22:55:15.909 LabApp] Kernel restarted: 68b5b2bb-6bba-49f2-873b-f5011463851a
+[I 22:56:11.554 LabApp] Saving file at /Untitled1.ipynb
+[I 22:57:13.625 LabApp] Saving file at /bead_motility.py
+[I 22:57:19.072 LabApp] Kernel restarted: 68b5b2bb-6bba-49f2-873b-f5011463851a
+[I 22:58:11.653 LabApp] Saving file at /Untitled1.ipynb
+[I 23:00:11.748 LabApp] Saving file at /Untitled1.ipynb
+[I 23:01:13.661 LabApp] Saving file at /bead_motility.py
+[I 23:03:13.698 LabApp] Saving file at /bead_motility.py
+[I 23:04:01.747 LabApp] Saving file at /bead_motility.py
+[I 23:04:24.998 LabApp] Kernel restarted: 68b5b2bb-6bba-49f2-873b-f5011463851a
+[I 23:04:44.451 LabApp] Saving file at /bead_motility.py
+[I 23:04:49.371 LabApp] Kernel restarted: 68b5b2bb-6bba-49f2-873b-f5011463851a
+[I 23:05:17.152 LabApp] Saving file at /bead_motility.py
+[I 23:06:11.885 LabApp] Saving file at /Untitled1.ipynb
+[I 23:08:11.976 LabApp] Saving file at /Untitled1.ipynb
+[I 23:13:17.188 LabApp] Saving file at /bead_motility.py
+[I 23:15:17.222 LabApp] Saving file at /bead_motility.py
+[I 23:15:48.216 LabApp] Saving file at /bead_motility.py
+[I 23:16:10.747 LabApp] Kernel restarted: 68b5b2bb-6bba-49f2-873b-f5011463851a
+[I 23:16:12.113 LabApp] Saving file at /Untitled1.ipynb
+[I 23:16:50.313 LabApp] Saving file at /bead_motility.py
+[I 23:16:54.498 LabApp] Kernel restarted: 68b5b2bb-6bba-49f2-873b-f5011463851a
+[W 23:17:54.500 LabApp] Timeout waiting for kernel_info_reply: 68b5b2bb-6bba-49f2-873b-f5011463851a
+[I 23:18:12.170 LabApp] Saving file at /Untitled1.ipynb
+[I 23:20:12.263 LabApp] Saving file at /Untitled1.ipynb
+Future exception was never retrieved
+future: <Future finished exception=TimeoutError('Timeout waiting for restart')>
+TimeoutError: Timeout waiting for restart
+[I 23:26:50.350 LabApp] Saving file at /bead_motility.py
+[I 23:28:50.385 LabApp] Saving file at /bead_motility.py
+[I 23:28:54.136 LabApp] Saving file at /bead_motility.py
+[I 23:30:54.168 LabApp] Saving file at /bead_motility.py
+[I 23:31:03.451 LabApp] Saving file at /bead_motility.py
+[I 23:31:08.117 LabApp] Kernel restarted: 68b5b2bb-6bba-49f2-873b-f5011463851a
+[I 23:32:12.403 LabApp] Saving file at /Untitled1.ipynb
+[I 23:32:37.134 LabApp] Saving file at /bead_motility.py
+[I 23:32:44.370 LabApp] Saving file at /bead_motility.py
+[I 23:34:12.503 LabApp] Saving file at /Untitled1.ipynb
+[I 23:34:25.883 LabApp] Saving file at /bead_motility.py
+[I 23:36:25.916 LabApp] Saving file at /bead_motility.py
+[I 23:36:57.235 LabApp] Saving file at /bead_motility.py
+[I 23:40:04.246 LabApp] Saving file at /bead_motility.py
+[I 23:40:29.173 LabApp] Kernel restarted: 68b5b2bb-6bba-49f2-873b-f5011463851a
+[I 23:41:36.921 LabApp] Saving file at /bead_motility.py
+[I 23:42:12.659 LabApp] Saving file at /Untitled1.ipynb
+[I 23:42:20.607 LabApp] Saving file at /bead_motility.py
+[I 23:42:34.439 LabApp] Saving file at /Untitled1.ipynb
+[I 23:42:52.987 LabApp] Kernel restarted: 68b5b2bb-6bba-49f2-873b-f5011463851a
+[W 23:43:52.988 LabApp] Timeout waiting for kernel_info_reply: 68b5b2bb-6bba-49f2-873b-f5011463851a
+[I 23:44:34.648 LabApp] Saving file at /Untitled1.ipynb
+[I 23:46:34.809 LabApp] Saving file at /Untitled1.ipynb
+[I 23:48:34.962 LabApp] Saving file at /Untitled1.ipynb
+[I 23:50:35.116 LabApp] Saving file at /Untitled1.ipynb
+[I 23:50:50.132 LabApp] Saving file at /bead_motility.py
+[I 23:51:00.820 LabApp] Kernel restarted: 68b5b2bb-6bba-49f2-873b-f5011463851a
+[I 23:51:16.901 LabApp] Saving file at /bead_motility.py
+[I 23:51:21.675 LabApp] Kernel restarted: 68b5b2bb-6bba-49f2-873b-f5011463851a
+[I 23:52:35.271 LabApp] Saving file at /Untitled1.ipynb
+[I 23:54:35.379 LabApp] Saving file at /Untitled1.ipynb
+[I 23:56:35.559 LabApp] Saving file at /Untitled1.ipynb
+[I 23:57:12.832 LabApp] Saving file at /Untitled1.ipynb
+[I 23:57:15.937 LabApp] Kernel restarted: 68b5b2bb-6bba-49f2-873b-f5011463851a
+[I 23:59:12.988 LabApp] Saving file at /Untitled1.ipynb
+[I 00:01:24.709 LabApp] Saving file at /bead_motility.py
+[I 00:01:29.274 LabApp] Kernel restarted: 68b5b2bb-6bba-49f2-873b-f5011463851a
+[I 00:03:13.108 LabApp] Saving file at /Untitled1.ipynb
+[I 00:03:24.743 LabApp] Saving file at /bead_motility.py
+[I 00:04:57.180 LabApp] Saving file at /bead_motility.py
+[I 00:05:17.927 LabApp] Saving file at /Untitled1.ipynb
+[I 00:05:20.573 LabApp] Saving file at /bead_motility.py
+[I 00:05:24.525 LabApp] Kernel restarted: 68b5b2bb-6bba-49f2-873b-f5011463851a
+[W 00:06:24.527 LabApp] Timeout waiting for kernel_info_reply: 68b5b2bb-6bba-49f2-873b-f5011463851a
+[I 00:07:18.036 LabApp] Saving file at /Untitled1.ipynb
+Future exception was never retrieved
+future: <Future finished exception=TimeoutError('Timeout waiting for restart')>
+TimeoutError: Timeout waiting for restart
+Future exception was never retrieved
+future: <Future finished exception=TimeoutError('Timeout waiting for restart')>
+TimeoutError: Timeout waiting for restart
+Future exception was never retrieved
+future: <Future finished exception=TimeoutError('Timeout waiting for restart')>
+TimeoutError: Timeout waiting for restart
+[I 00:08:30.828 LabApp] Saving file at /bead_motility.py
+[I 00:08:58.358 LabApp] Kernel restarted: 68b5b2bb-6bba-49f2-873b-f5011463851a
+[I 00:09:18.181 LabApp] Saving file at /Untitled1.ipynb
+[I 00:11:18.265 LabApp] Saving file at /Untitled1.ipynb
+[I 00:13:18.456 LabApp] Saving file at /Untitled1.ipynb
+[I 00:14:43.224 LabApp] Saving file at /Untitled1.ipynb
+[I 00:14:43.351 LabApp] Saving file at /bead_motility.py
+[I 00:14:43.354 LabApp] Saving file at /Untitled.ipynb
+[I 00:14:45.357 LabApp] Saving file at /bead_motility.py

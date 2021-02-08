@@ -1,0 +1,119 @@
+[I 09:26:02.235 LabApp] JupyterLab extension loaded from /home/jiongyi/anaconda3/lib/python3.7/site-packages/jupyterlab
+[I 09:26:02.235 LabApp] JupyterLab application directory is /home/jiongyi/anaconda3/share/jupyter/lab
+[I 09:26:02.237 LabApp] Serving notebooks from local directory: /home/jiongyi/github/jupyter
+[I 09:26:02.237 LabApp] Jupyter Notebook 6.2.0 is running at:
+[I 09:26:02.238 LabApp] http://localhost:8888/?token=b788646b4c2281b363154df95b531b3ad5c91a1a8d542a94
+[I 09:26:02.238 LabApp]  or http://127.0.0.1:8888/?token=b788646b4c2281b363154df95b531b3ad5c91a1a8d542a94
+[I 09:26:02.238 LabApp] Use Control-C to stop this server and shut down all kernels (twice to skip confirmation).
+[C 09:26:02.288 LabApp] 
+    
+    To access the notebook, open this file in a browser:
+        file:///home/jiongyi/.local/share/jupyter/runtime/nbserver-37814-open.html
+    Or copy and paste one of these URLs:
+        http://localhost:8888/?token=b788646b4c2281b363154df95b531b3ad5c91a1a8d542a94
+     or http://127.0.0.1:8888/?token=b788646b4c2281b363154df95b531b3ad5c91a1a8d542a94
+[W 09:26:04.809 LabApp] Could not determine jupyterlab build status without nodejs
+[W 09:26:05.886 LabApp] 404 GET /api/contents/2021_01_15_bead_motility.ipynb?content=0&1612286765868 (127.0.0.1): No such file or directory: 2021_01_15_bead_motility.ipynb
+[W 09:26:05.886 LabApp] No such file or directory: 2021_01_15_bead_motility.ipynb
+[W 09:26:05.887 LabApp] 404 GET /api/contents/2021_01_15_bead_motility.ipynb?content=0&1612286765868 (127.0.0.1) 2.040000ms referer=http://localhost:8888/lab
+[W 09:26:05.889 LabApp] 404 GET /api/contents/bead_motility.py?content=0&1612286765869 (127.0.0.1): No such file or directory: bead_motility.py
+[W 09:26:05.890 LabApp] No such file or directory: bead_motility.py
+[W 09:26:05.890 LabApp] 404 GET /api/contents/bead_motility.py?content=0&1612286765869 (127.0.0.1) 2.330000ms referer=http://localhost:8888/lab
+[I 09:27:07.073 LabApp] Creating new notebook in /actin_assembly/bead_motility
+[I 09:27:07.532 LabApp] Kernel started: ac503e6e-b4f5-4591-a3ba-f532e242420d, name: python3
+[I 09:28:10.864 LabApp] Saving file at /actin_assembly/bead_motility/Untitled.ipynb
+[I 09:28:15.295 LabApp] Kernel restarted: ac503e6e-b4f5-4591-a3ba-f532e242420d
+[I 09:30:10.941 LabApp] Saving file at /actin_assembly/bead_motility/Untitled.ipynb
+[I 09:34:23.750 LabApp] Kernel restarted: ac503e6e-b4f5-4591-a3ba-f532e242420d
+[I 09:36:11.760 LabApp] Saving file at /actin_assembly/bead_motility/Untitled.ipynb
+[I 10:18:14.318 LabApp] Saving file at /actin_assembly/bead_motility/Untitled.ipynb
+[I 10:20:14.385 LabApp] Saving file at /actin_assembly/bead_motility/Untitled.ipynb
+[I 10:23:08.537 LabApp] Saving file at /actin_assembly/bead_motility/Untitled.ipynb
+[I 10:23:11.951 LabApp] Kernel restarted: ac503e6e-b4f5-4591-a3ba-f532e242420d
+[I 10:25:08.611 LabApp] Saving file at /actin_assembly/bead_motility/Untitled.ipynb
+[I 10:27:08.662 LabApp] Saving file at /actin_assembly/bead_motility/Untitled.ipynb
+[I 10:29:08.722 LabApp] Saving file at /actin_assembly/bead_motility/Untitled.ipynb
+[I 10:31:08.770 LabApp] Saving file at /actin_assembly/bead_motility/Untitled.ipynb
+[I 10:33:08.832 LabApp] Saving file at /actin_assembly/bead_motility/Untitled.ipynb
+[I 10:35:08.884 LabApp] Saving file at /actin_assembly/bead_motility/Untitled.ipynb
+[I 10:39:09.183 LabApp] Saving file at /actin_assembly/bead_motility/Untitled.ipynb
+[I 10:41:09.251 LabApp] Saving file at /actin_assembly/bead_motility/Untitled.ipynb
+[I 10:43:09.307 LabApp] Saving file at /actin_assembly/bead_motility/Untitled.ipynb
+[I 10:49:09.377 LabApp] Saving file at /actin_assembly/bead_motility/Untitled.ipynb
+[I 10:51:09.447 LabApp] Saving file at /actin_assembly/bead_motility/Untitled.ipynb
+[I 10:53:09.504 LabApp] Saving file at /actin_assembly/bead_motility/Untitled.ipynb
+[I 10:55:09.569 LabApp] Saving file at /actin_assembly/bead_motility/Untitled.ipynb
+[I 10:57:09.696 LabApp] Saving file at /actin_assembly/bead_motility/Untitled.ipynb
+[I 10:59:09.766 LabApp] Saving file at /actin_assembly/bead_motility/Untitled.ipynb
+[I 11:01:09.829 LabApp] Saving file at /actin_assembly/bead_motility/Untitled.ipynb
+[I 11:03:09.898 LabApp] Saving file at /actin_assembly/bead_motility/Untitled.ipynb
+[I 11:05:09.967 LabApp] Saving file at /actin_assembly/bead_motility/Untitled.ipynb
+[I 11:09:10.046 LabApp] Saving file at /actin_assembly/bead_motility/Untitled.ipynb
+[I 11:13:11.017 LabApp] Saving file at /actin_assembly/bead_motility/Untitled.ipynb
+[I 11:15:11.684 LabApp] Saving file at /actin_assembly/bead_motility/Untitled.ipynb
+[I 11:17:11.755 LabApp] Saving file at /actin_assembly/bead_motility/Untitled.ipynb
+[I 11:19:11.837 LabApp] Saving file at /actin_assembly/bead_motility/Untitled.ipynb
+[I 11:21:08.120 LabApp] Saving file at /actin_assembly/bead_motility/bead_motility.py
+[I 11:21:11.915 LabApp] Saving file at /actin_assembly/bead_motility/Untitled.ipynb
+[I 11:21:53.535 LabApp] Saving file at /actin_assembly/bead_motility/bead_motility.py
+[I 11:22:00.369 LabApp] Kernel restarted: ac503e6e-b4f5-4591-a3ba-f532e242420d
+[I 11:22:25.771 LabApp] Saving file at /actin_assembly/bead_motility/bead_motility.py
+[I 11:22:30.358 LabApp] Kernel restarted: ac503e6e-b4f5-4591-a3ba-f532e242420d
+[I 11:23:11.983 LabApp] Saving file at /actin_assembly/bead_motility/Untitled.ipynb
+[I 11:24:56.884 LabApp] Kernel interrupted: ac503e6e-b4f5-4591-a3ba-f532e242420d
+[I 11:25:12.049 LabApp] Saving file at /actin_assembly/bead_motility/Untitled.ipynb
+[I 11:27:25.702 LabApp] Saving file at /actin_assembly/bead_motility/bead_motility.py
+[I 11:27:29.589 LabApp] Saving file at /actin_assembly/bead_motility/Untitled.ipynb
+[I 11:27:32.733 LabApp] Kernel restarted: ac503e6e-b4f5-4591-a3ba-f532e242420d
+[I 11:28:47.749 LabApp] Kernel interrupted: ac503e6e-b4f5-4591-a3ba-f532e242420d
+[I 11:29:09.878 LabApp] Saving file at /actin_assembly/bead_motility/bead_motility.py
+[I 11:29:14.641 LabApp] Kernel restarted: ac503e6e-b4f5-4591-a3ba-f532e242420d
+[I 11:29:25.236 LabApp] Saving file at /actin_assembly/bead_motility/bead_motility.py
+[I 11:29:29.662 LabApp] Saving file at /actin_assembly/bead_motility/Untitled.ipynb
+[I 11:29:57.421 LabApp] Saving file at /actin_assembly/bead_motility/Untitled.ipynb
+[I 11:30:12.845 LabApp] Saving file at /actin_assembly/bead_motility/Untitled.ipynb
+[I 11:30:22.105 LabApp] Kernel restarted: ac503e6e-b4f5-4591-a3ba-f532e242420d
+[I 11:31:04.734 LabApp] Kernel interrupted: ac503e6e-b4f5-4591-a3ba-f532e242420d
+[I 11:31:16.741 LabApp] Saving file at /actin_assembly/bead_motility/bead_motility.py
+[I 11:31:39.550 LabApp] Saving file at /actin_assembly/bead_motility/bead_motility.py
+[I 11:31:44.034 LabApp] Kernel restarted: ac503e6e-b4f5-4591-a3ba-f532e242420d
+[I 11:31:55.390 LabApp] Saving file at /actin_assembly/bead_motility/bead_motility.py
+[I 11:32:00.429 LabApp] Kernel restarted: ac503e6e-b4f5-4591-a3ba-f532e242420d
+[I 11:32:12.910 LabApp] Saving file at /actin_assembly/bead_motility/Untitled.ipynb
+[I 11:34:12.958 LabApp] Saving file at /actin_assembly/bead_motility/Untitled.ipynb
+[I 11:37:03.707 LabApp] Saving file at /actin_assembly/bead_motility/bead_motility.py
+[I 11:37:22.381 LabApp] Saving file at /actin_assembly/bead_motility/bead_motility.py
+[I 11:37:27.655 LabApp] Kernel restarted: ac503e6e-b4f5-4591-a3ba-f532e242420d
+[I 11:37:47.501 LabApp] Saving file at /actin_assembly/bead_motility/bead_motility.py
+[I 11:37:52.283 LabApp] Kernel restarted: ac503e6e-b4f5-4591-a3ba-f532e242420d
+[I 11:38:13.371 LabApp] Saving file at /actin_assembly/bead_motility/Untitled.ipynb
+[I 11:38:14.980 LabApp] Saving file at /actin_assembly/bead_motility/bead_motility.py
+[I 11:38:20.411 LabApp] Kernel interrupted: ac503e6e-b4f5-4591-a3ba-f532e242420d
+[I 11:38:23.510 LabApp] Kernel restarted: ac503e6e-b4f5-4591-a3ba-f532e242420d
+[I 11:39:25.240 LabApp] Saving file at /actin_assembly/bead_motility/bead_motility.py
+[I 11:39:31.969 LabApp] Kernel restarted: ac503e6e-b4f5-4591-a3ba-f532e242420d
+[I 11:39:52.221 LabApp] Saving file at /actin_assembly/bead_motility/bead_motility.py
+[I 11:40:13.416 LabApp] Saving file at /actin_assembly/bead_motility/Untitled.ipynb
+[I 11:40:21.601 LabApp] Saving file at /actin_assembly/bead_motility/bead_motility.py
+[I 11:40:25.659 LabApp] Kernel interrupted: ac503e6e-b4f5-4591-a3ba-f532e242420d
+[I 11:40:29.096 LabApp] Kernel restarted: ac503e6e-b4f5-4591-a3ba-f532e242420d
+[I 11:42:13.463 LabApp] Saving file at /actin_assembly/bead_motility/Untitled.ipynb
+[I 11:42:58.976 LabApp] Saving file at /actin_assembly/bead_motility/bead_motility.py
+[I 11:43:03.716 LabApp] Kernel restarted: ac503e6e-b4f5-4591-a3ba-f532e242420d
+[I 11:44:13.519 LabApp] Saving file at /actin_assembly/bead_motility/Untitled.ipynb
+[I 11:44:36.699 LabApp] Saving file at /actin_assembly/bead_motility/bead_motility.py
+[I 11:44:41.033 LabApp] Kernel interrupted: ac503e6e-b4f5-4591-a3ba-f532e242420d
+[I 11:44:49.539 LabApp] Saving file at /actin_assembly/bead_motility/Untitled.ipynb
+[I 11:44:52.780 LabApp] Kernel restarted: ac503e6e-b4f5-4591-a3ba-f532e242420d
+[I 11:46:49.781 LabApp] Saving file at /actin_assembly/bead_motility/Untitled.ipynb
+[I 11:48:49.831 LabApp] Saving file at /actin_assembly/bead_motility/Untitled.ipynb
+[I 11:50:50.363 LabApp] Saving file at /actin_assembly/bead_motility/Untitled.ipynb
+[I 12:02:51.828 LabApp] Saving file at /actin_assembly/bead_motility/Untitled.ipynb
+[I 12:06:52.474 LabApp] Saving file at /actin_assembly/bead_motility/Untitled.ipynb
+[I 12:08:52.928 LabApp] Saving file at /actin_assembly/bead_motility/Untitled.ipynb
+[I 09:23:10.331 LabApp] Saving file at /actin_assembly/bead_motility/Untitled.ipynb
+[I 09:25:10.387 LabApp] Saving file at /actin_assembly/bead_motility/Untitled.ipynb
+[I 09:58:44.688 LabApp] Shutting down on /api/shutdown request.
+[I 09:58:44.693 LabApp] Shutting down 1 kernel
+[I 09:58:45.295 LabApp] Kernel shutdown: ac503e6e-b4f5-4591-a3ba-f532e242420d
+[I 09:58:45.296 LabApp] Shutting down 0 terminals
