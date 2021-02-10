@@ -1736,3 +1736,21 @@ kernel 68b5b2bb-6bba-49f2-873b-f5011463851a restarted
 [I 22:27:38.566 LabApp] Saving file at /2020_02_08_n_wasp_pwca_bead_motility.ipynb
 [I 22:27:49.522 LabApp] Kernel restarted: 8520cf8d-9bc6-45b3-ab6d-e6abc615475b
 [I 22:29:39.603 LabApp] Saving file at /2020_02_08_n_wasp_pwca_bead_motility.ipynb
+[I 22:33:40.750 LabApp] Saving file at /2020_02_08_n_wasp_pwca_bead_motility.ipynb
+[I 22:37:41.824 LabApp] Saving file at /2020_02_08_n_wasp_pwca_bead_motility.ipynb
+[I 22:41:41.940 LabApp] Saving file at /2020_02_08_n_wasp_pwca_bead_motility.ipynb
+[I 22:43:42.240 LabApp] Saving file at /2020_02_08_n_wasp_pwca_bead_motility.ipynb
+[I 22:47:43.297 LabApp] Saving file at /2020_02_08_n_wasp_pwca_bead_motility.ipynb
+[I 22:49:17.036 LabApp] Saving file at /2020_02_08_n_wasp_pwca_bead_motility.ipynb
+[I 22:49:19.899 LabApp] Saving file at /2021_02_08_wave_bead_motility.ipynb
+[I 22:49:19.933 LabApp] Saving file at /2021_02_08_n_wasp_bead_motility.ipynb
+[I 22:49:19.963 LabApp] Saving file at /bead_motility.py
+[I 22:49:19.968 LabApp] Saving file at /2020_02_08_n_wasp_pwca_bead_motility.ipynb
+[I 22:49:24.292 LabApp] Shutting down on /api/shutdown request.
+[I 22:49:24.295 LabApp] Shutting down 3 kernels
+[I 22:49:25.098 LabApp] Kernel shutdown: f9eeaea0-834b-409f-9633-635977e07eaa
+[I 22:49:25.098 LabApp] Kernel shutdown: 42494ef6-b799-41d3-adcf-1ef4acc33322
+[I 22:49:25.099 LabApp] Kernel shutdown: 8520cf8d-9bc6-45b3-ab6d-e6abc615475b
+[I 22:49:25.099 LabApp] Shutting down 0 terminals
+[I 22:49:25.107 LabApp] KernelRestarter: restarting kernel (1/5), keep random ports
+kernel f9eeaea0-834b-409f-9633-635977e07eaa restarted
