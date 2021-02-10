@@ -1452,3 +1452,287 @@ kernel 68b5b2bb-6bba-49f2-873b-f5011463851a restarted
 [I 10:18:36.557 LabApp] Shutting down 0 terminals
 [I 10:18:36.560 LabApp] KernelRestarter: restarting kernel (1/5), keep random ports
 kernel 68b5b2bb-6bba-49f2-873b-f5011463851a restarted
+[I 10:19:48.807 LabApp] JupyterLab extension loaded from /home/jiongyi/anaconda3/lib/python3.7/site-packages/jupyterlab
+[I 10:19:48.807 LabApp] JupyterLab application directory is /home/jiongyi/anaconda3/share/jupyter/lab
+[I 10:19:48.809 LabApp] Serving notebooks from local directory: /home/jiongyi/github/jupyter/actin_assembly/bead_motility
+[I 10:19:48.809 LabApp] Jupyter Notebook 6.2.0 is running at:
+[I 10:19:48.809 LabApp] http://localhost:8888/?token=72ca52cb63654b183fbc3c13233886d97f30cbaae4509224
+[I 10:19:48.809 LabApp]  or http://127.0.0.1:8888/?token=72ca52cb63654b183fbc3c13233886d97f30cbaae4509224
+[I 10:19:48.809 LabApp] Use Control-C to stop this server and shut down all kernels (twice to skip confirmation).
+[C 10:19:48.857 LabApp] 
+    
+    To access the notebook, open this file in a browser:
+        file:///home/jiongyi/.local/share/jupyter/runtime/nbserver-203331-open.html
+    Or copy and paste one of these URLs:
+        http://localhost:8888/?token=72ca52cb63654b183fbc3c13233886d97f30cbaae4509224
+     or http://127.0.0.1:8888/?token=72ca52cb63654b183fbc3c13233886d97f30cbaae4509224
+[W 10:19:52.335 LabApp] Could not determine jupyterlab build status without nodejs
+[W 10:19:53.904 LabApp] Notebook 2021_02_08_wave_bead_motility.ipynb is not trusted
+[I 10:19:54.362 LabApp] Kernel started: f9eeaea0-834b-409f-9633-635977e07eaa, name: python3
+[I 10:21:33.338 LabApp] Saving file at /bead_motility.py
+[I 10:25:30.236 LabApp] Kernel restarted: f9eeaea0-834b-409f-9633-635977e07eaa
+[I 10:25:55.483 LabApp] Saving file at /2021_02_08_wave_bead_motility.ipynb
+[I 10:26:38.066 LabApp] Saving file at /bead_motility.py
+[I 10:27:11.448 LabApp] Kernel interrupted: f9eeaea0-834b-409f-9633-635977e07eaa
+[I 10:27:26.996 LabApp] Saving file at /bead_motility.py
+[I 10:27:32.625 LabApp] Kernel restarted: f9eeaea0-834b-409f-9633-635977e07eaa
+[I 10:27:56.512 LabApp] Saving file at /2021_02_08_wave_bead_motility.ipynb
+[I 10:28:39.286 LabApp] Saving file at /bead_motility.py
+[I 10:28:56.112 LabApp] Saving file at /bead_motility.py
+[I 10:29:01.191 LabApp] Kernel restarted: f9eeaea0-834b-409f-9633-635977e07eaa
+[I 10:29:23.438 LabApp] Saving file at /bead_motility.py
+[I 10:29:26.032 LabApp] Kernel interrupted: f9eeaea0-834b-409f-9633-635977e07eaa
+[I 10:29:32.958 LabApp] Kernel restarted: f9eeaea0-834b-409f-9633-635977e07eaa
+[I 10:29:56.569 LabApp] Saving file at /2021_02_08_wave_bead_motility.ipynb
+[I 10:31:34.873 LabApp] Kernel interrupted: f9eeaea0-834b-409f-9633-635977e07eaa
+[I 10:31:45.503 LabApp] Saving file at /bead_motility.py
+[I 10:31:49.999 LabApp] Kernel restarted: f9eeaea0-834b-409f-9633-635977e07eaa
+[I 10:31:57.644 LabApp] Saving file at /2021_02_08_wave_bead_motility.ipynb
+[I 10:33:57.956 LabApp] Saving file at /2021_02_08_wave_bead_motility.ipynb
+[I 10:43:59.676 LabApp] Saving file at /2021_02_08_wave_bead_motility.ipynb
+[I 10:45:29.225 LabApp] Kernel interrupted: f9eeaea0-834b-409f-9633-635977e07eaa
+[I 10:45:46.671 LabApp] Saving file at /bead_motility.py
+[I 10:45:59.733 LabApp] Saving file at /2021_02_08_wave_bead_motility.ipynb
+[I 10:46:14.805 LabApp] Saving file at /bead_motility.py
+[I 10:46:40.890 LabApp] Saving file at /bead_motility.py
+[I 10:48:06.202 LabApp] Saving file at /bead_motility.py
+[I 10:48:30.885 LabApp] Saving file at /bead_motility.py
+[I 10:49:25.759 LabApp] Saving file at /bead_motility.py
+[I 10:49:33.465 LabApp] Saving file at /bead_motility.py
+[I 10:49:49.549 LabApp] Saving file at /2021_02_08_wave_bead_motility.ipynb
+[I 10:49:53.033 LabApp] Kernel restarted: f9eeaea0-834b-409f-9633-635977e07eaa
+[I 10:51:49.627 LabApp] Saving file at /2021_02_08_wave_bead_motility.ipynb
+[I 10:51:55.958 LabApp] Saving file at /bead_motility.py
+[I 10:52:00.244 LabApp] Kernel interrupted: f9eeaea0-834b-409f-9633-635977e07eaa
+[I 10:52:02.166 LabApp] Kernel interrupted: f9eeaea0-834b-409f-9633-635977e07eaa
+[I 10:52:05.873 LabApp] Kernel restarted: f9eeaea0-834b-409f-9633-635977e07eaa
+[I 10:53:49.736 LabApp] Saving file at /2021_02_08_wave_bead_motility.ipynb
+[I 10:55:20.033 LabApp] Kernel interrupted: f9eeaea0-834b-409f-9633-635977e07eaa
+[I 10:55:23.272 LabApp] Kernel restarted: f9eeaea0-834b-409f-9633-635977e07eaa
+[I 10:55:33.560 LabApp] Kernel interrupted: f9eeaea0-834b-409f-9633-635977e07eaa
+[I 10:55:49.805 LabApp] Saving file at /2021_02_08_wave_bead_motility.ipynb
+[I 10:55:55.993 LabApp] Saving file at /bead_motility.py
+[I 10:56:47.590 LabApp] Saving file at /bead_motility.py
+[I 10:56:54.362 LabApp] Kernel restarted: f9eeaea0-834b-409f-9633-635977e07eaa
+[I 10:57:50.038 LabApp] Saving file at /2021_02_08_wave_bead_motility.ipynb
+[I 10:59:50.276 LabApp] Saving file at /2021_02_08_wave_bead_motility.ipynb
+[I 11:09:52.693 LabApp] Saving file at /2021_02_08_wave_bead_motility.ipynb
+[I 11:11:53.058 LabApp] Saving file at /2021_02_08_wave_bead_motility.ipynb
+[I 11:13:17.208 LabApp] Starting buffering for f9eeaea0-834b-409f-9633-635977e07eaa:9909205f-b71f-4849-bac7-a209bd94701e
+[I 11:13:17.233 LabApp] Starting buffering for f9eeaea0-834b-409f-9633-635977e07eaa:2066857e-bea3-4143-b306-41b6ab9f9ce1
+[W 11:13:19.976 LabApp] Could not determine jupyterlab build status without nodejs
+[W 11:13:21.247 LabApp] Notebook 2021_02_08_wave_bead_motility.ipynb is not trusted
+[I 11:13:28.918 LabApp] Kernel interrupted: f9eeaea0-834b-409f-9633-635977e07eaa
+[I 11:13:32.656 LabApp] Kernel restarted: f9eeaea0-834b-409f-9633-635977e07eaa
+[I 11:15:21.399 LabApp] Saving file at /2021_02_08_wave_bead_motility.ipynb
+[I 11:17:21.455 LabApp] Saving file at /2021_02_08_wave_bead_motility.ipynb
+[I 11:25:21.519 LabApp] Saving file at /2021_02_08_wave_bead_motility.ipynb
+[I 11:27:21.583 LabApp] Saving file at /2021_02_08_wave_bead_motility.ipynb
+[I 11:31:21.631 LabApp] Saving file at /2021_02_08_wave_bead_motility.ipynb
+[I 11:33:21.684 LabApp] Saving file at /2021_02_08_wave_bead_motility.ipynb
+[I 11:41:00.801 LabApp] Saving file at /2021_02_08_wave_bead_motility.ipynb
+[I 11:42:27.575 LabApp] Saving file at /2021_02_08_wave_bead_motility.ipynb
+[I 11:42:30.978 LabApp] Kernel restarted: f9eeaea0-834b-409f-9633-635977e07eaa
+[I 11:44:27.664 LabApp] Saving file at /2021_02_08_wave_bead_motility.ipynb
+[I 11:48:27.720 LabApp] Saving file at /2021_02_08_wave_bead_motility.ipynb
+[I 11:52:27.773 LabApp] Saving file at /2021_02_08_wave_bead_motility.ipynb
+[I 11:54:27.827 LabApp] Saving file at /2021_02_08_wave_bead_motility.ipynb
+[I 11:56:27.875 LabApp] Saving file at /2021_02_08_wave_bead_motility.ipynb
+[I 11:58:27.931 LabApp] Saving file at /2021_02_08_wave_bead_motility.ipynb
+[I 12:00:27.988 LabApp] Saving file at /2021_02_08_wave_bead_motility.ipynb
+[I 12:02:28.044 LabApp] Saving file at /2021_02_08_wave_bead_motility.ipynb
+[I 12:04:28.136 LabApp] Saving file at /2021_02_08_wave_bead_motility.ipynb
+[I 12:06:28.201 LabApp] Saving file at /2021_02_08_wave_bead_motility.ipynb
+[I 12:08:28.263 LabApp] Saving file at /2021_02_08_wave_bead_motility.ipynb
+[I 12:10:28.317 LabApp] Saving file at /2021_02_08_wave_bead_motility.ipynb
+[I 12:10:34.208 LabApp] Saving file at /2021_02_08_wave_bead_motility.ipynb
+[I 12:11:39.300 LabApp] Saving file at /2021_02_08_wave_bead_motility.ipynb
+[I 12:12:20.919 LabApp] Saving file at /2021_02_08_wave_bead_motility.ipynb
+[I 12:14:20.974 LabApp] Saving file at /2021_02_08_wave_bead_motility.ipynb
+[I 12:16:21.036 LabApp] Saving file at /2021_02_08_wave_bead_motility.ipynb
+[I 12:18:21.103 LabApp] Saving file at /2021_02_08_wave_bead_motility.ipynb
+[I 12:20:21.167 LabApp] Saving file at /2021_02_08_wave_bead_motility.ipynb
+[I 12:21:03.685 LabApp] Saving file at /2021_02_08_wave_bead_motility.ipynb
+[I 12:21:34.423 LabApp] Saving file at /2021_02_08_wave_bead_motility.ipynb
+[I 12:23:34.479 LabApp] Saving file at /2021_02_08_wave_bead_motility.ipynb
+[I 12:27:34.554 LabApp] Saving file at /2021_02_08_wave_bead_motility.ipynb
+[I 12:29:34.608 LabApp] Saving file at /2021_02_08_wave_bead_motility.ipynb
+[I 12:31:17.991 LabApp] Saving file at /2021_02_08_wave_bead_motility.ipynb
+[I 12:33:18.047 LabApp] Saving file at /2021_02_08_wave_bead_motility.ipynb
+[I 12:35:18.122 LabApp] Saving file at /2021_02_08_wave_bead_motility.ipynb
+[I 12:37:18.181 LabApp] Saving file at /2021_02_08_wave_bead_motility.ipynb
+[I 12:39:18.248 LabApp] Saving file at /2021_02_08_wave_bead_motility.ipynb
+[I 12:41:18.310 LabApp] Saving file at /2021_02_08_wave_bead_motility.ipynb
+[I 12:43:18.369 LabApp] Saving file at /2021_02_08_wave_bead_motility.ipynb
+[I 12:45:18.449 LabApp] Saving file at /2021_02_08_wave_bead_motility.ipynb
+[I 12:47:18.529 LabApp] Saving file at /2021_02_08_wave_bead_motility.ipynb
+[I 12:49:18.598 LabApp] Saving file at /2021_02_08_wave_bead_motility.ipynb
+[I 12:53:18.670 LabApp] Saving file at /2021_02_08_wave_bead_motility.ipynb
+[I 12:55:18.733 LabApp] Saving file at /2021_02_08_wave_bead_motility.ipynb
+[I 12:57:18.817 LabApp] Saving file at /2021_02_08_wave_bead_motility.ipynb
+[I 12:59:18.898 LabApp] Saving file at /2021_02_08_wave_bead_motility.ipynb
+[I 13:01:18.964 LabApp] Saving file at /2021_02_08_wave_bead_motility.ipynb
+[I 13:03:19.035 LabApp] Saving file at /2021_02_08_wave_bead_motility.ipynb
+[I 13:05:19.104 LabApp] Saving file at /2021_02_08_wave_bead_motility.ipynb
+[I 17:07:42.196 LabApp] Saving file at /2021_02_08_wave_bead_motility.ipynb
+[I 17:08:41.080 LabApp] Saving file at /2021_02_08_wave_bead_motility.ipynb
+[I 17:08:48.611 LabApp] Kernel restarted: f9eeaea0-834b-409f-9633-635977e07eaa
+[I 17:10:41.162 LabApp] Saving file at /2021_02_08_wave_bead_motility.ipynb
+[I 17:12:41.238 LabApp] Saving file at /2021_02_08_wave_bead_motility.ipynb
+[I 17:13:46.841 LabApp] Saving file at /2021_02_08_wave_bead_motility.ipynb
+[I 17:15:46.905 LabApp] Saving file at /2021_02_08_wave_bead_motility.ipynb
+[I 17:45:47.223 LabApp] Saving file at /2021_02_08_wave_bead_motility.ipynb
+[I 17:47:47.297 LabApp] Saving file at /2021_02_08_wave_bead_motility.ipynb
+[I 17:49:47.369 LabApp] Saving file at /2021_02_08_wave_bead_motility.ipynb
+[I 17:50:02.642 LabApp] Saving file at /2021_02_08_wave_bead_motility.ipynb
+[I 17:50:55.132 LabApp] Saving file at /2021_02_08_wave_bead_motility.ipynb
+[I 17:52:55.191 LabApp] Saving file at /2021_02_08_wave_bead_motility.ipynb
+[I 17:54:02.443 LabApp] Saving file at /2021_02_08_wave_bead_motility.ipynb
+[I 17:56:02.556 LabApp] Saving file at /2021_02_08_wave_bead_motility.ipynb
+[I 17:58:02.615 LabApp] Saving file at /2021_02_08_wave_bead_motility.ipynb
+[I 17:58:15.232 LabApp] Copying 2021_02_08_wave_bead_motility.ipynb to /
+[W 17:58:15.240 LabApp] Notebook 2021_02_08_wave_bead_motility.ipynb is not trusted
+[W 17:58:15.244 LabApp] Notebook 2021_02_08_wave_bead_motility-Copy1.ipynb is not trusted
+[W 17:58:17.816 LabApp] Notebook 2021_02_08_wave_bead_motility-Copy1.ipynb is not trusted
+[I 17:58:18.353 LabApp] Kernel started: 42494ef6-b799-41d3-adcf-1ef4acc33322, name: python3
+[I 18:00:18.120 LabApp] Saving file at /2021_02_08_n_wasp_bead_motility.ipynb
+[I 18:01:43.243 LabApp] Kernel restarted: 42494ef6-b799-41d3-adcf-1ef4acc33322
+[I 18:01:51.161 LabApp] Kernel restarted: 42494ef6-b799-41d3-adcf-1ef4acc33322
+[I 18:01:57.326 LabApp] Saving file at /2021_02_08_n_wasp_bead_motility.ipynb
+[I 18:02:00.142 LabApp] Kernel restarted: 42494ef6-b799-41d3-adcf-1ef4acc33322
+[I 18:03:57.719 LabApp] Saving file at /2021_02_08_n_wasp_bead_motility.ipynb
+[I 18:09:58.728 LabApp] Saving file at /2021_02_08_n_wasp_bead_motility.ipynb
+[I 18:13:59.128 LabApp] Saving file at /2021_02_08_n_wasp_bead_motility.ipynb
+[I 18:17:59.178 LabApp] Saving file at /2021_02_08_n_wasp_bead_motility.ipynb
+[I 18:21:59.230 LabApp] Saving file at /2021_02_08_n_wasp_bead_motility.ipynb
+[I 18:29:25.125 LabApp] Saving file at /bead_motility.py
+[I 18:29:36.302 LabApp] Saving file at /bead_motility.py
+[I 18:29:59.278 LabApp] Saving file at /2021_02_08_n_wasp_bead_motility.ipynb
+[I 18:31:23.091 LabApp] Saving file at /2021_02_08_n_wasp_bead_motility.ipynb
+[I 18:31:26.972 LabApp] Kernel restarted: 42494ef6-b799-41d3-adcf-1ef4acc33322
+[I 18:31:56.013 LabApp] Saving file at /bead_motility.py
+[I 18:32:00.945 LabApp] Kernel restarted: 42494ef6-b799-41d3-adcf-1ef4acc33322
+[I 18:33:23.175 LabApp] Saving file at /2021_02_08_n_wasp_bead_motility.ipynb
+[I 18:35:23.226 LabApp] Saving file at /2021_02_08_n_wasp_bead_motility.ipynb
+[I 18:35:56.052 LabApp] Saving file at /bead_motility.py
+[I 18:36:51.821 LabApp] Saving file at /bead_motility.py
+[I 18:36:54.839 LabApp] Saving file at /2021_02_08_n_wasp_bead_motility.ipynb
+[I 18:36:59.267 LabApp] Kernel restarted: 42494ef6-b799-41d3-adcf-1ef4acc33322
+[I 18:38:55.285 LabApp] Saving file at /2021_02_08_n_wasp_bead_motility.ipynb
+[I 18:41:57.783 LabApp] Saving file at /bead_motility.py
+[I 18:42:04.354 LabApp] Creating new file in /
+[W 18:42:16.417 LabApp] delete /untitled.txt
+[I 18:42:20.139 LabApp] Creating new notebook in /
+[I 18:42:20.497 LabApp] Kernel started: 8520cf8d-9bc6-45b3-ab6d-e6abc615475b, name: python3
+[I 18:44:20.442 LabApp] Saving file at /2020_02_08_n_wasp_pwca_bead_motility.ipynb
+[I 18:46:20.868 LabApp] Saving file at /2020_02_08_n_wasp_pwca_bead_motility.ipynb
+[I 18:46:48.649 LabApp] Saving file at /bead_motility.py
+[I 18:46:54.089 LabApp] Kernel restarted: 42494ef6-b799-41d3-adcf-1ef4acc33322
+[I 18:46:55.928 LabApp] Saving file at /2021_02_08_n_wasp_bead_motility.ipynb
+[I 18:47:33.964 LabApp] Saving file at /bead_motility.py
+[I 18:47:38.816 LabApp] Kernel restarted: 42494ef6-b799-41d3-adcf-1ef4acc33322
+[I 18:48:05.868 LabApp] Saving file at /2021_02_08_wave_bead_motility.ipynb
+[I 18:48:11.514 LabApp] Kernel restarted: f9eeaea0-834b-409f-9633-635977e07eaa
+[I 18:48:30.759 LabApp] Saving file at /2021_02_08_wave_bead_motility.ipynb
+[I 18:48:33.702 LabApp] Kernel restarted: f9eeaea0-834b-409f-9633-635977e07eaa
+[I 18:48:55.988 LabApp] Saving file at /2021_02_08_n_wasp_bead_motility.ipynb
+[I 18:50:20.915 LabApp] Saving file at /2020_02_08_n_wasp_pwca_bead_motility.ipynb
+[I 18:50:30.836 LabApp] Saving file at /2021_02_08_wave_bead_motility.ipynb
+[I 18:58:22.591 LabApp] Saving file at /2020_02_08_n_wasp_pwca_bead_motility.ipynb
+[I 18:58:57.368 LabApp] Saving file at /2021_02_08_n_wasp_bead_motility.ipynb
+[I 19:00:57.434 LabApp] Saving file at /2021_02_08_n_wasp_bead_motility.ipynb
+[I 19:02:57.957 LabApp] Saving file at /2021_02_08_n_wasp_bead_motility.ipynb
+[I 19:04:23.266 LabApp] Saving file at /2020_02_08_n_wasp_pwca_bead_motility.ipynb
+[I 19:06:52.029 LabApp] Saving file at /2021_02_08_n_wasp_bead_motility.ipynb
+[I 19:08:52.094 LabApp] Saving file at /2021_02_08_n_wasp_bead_motility.ipynb
+[I 19:10:52.156 LabApp] Saving file at /2021_02_08_n_wasp_bead_motility.ipynb
+[I 19:12:16.090 LabApp] Saving file at /2020_02_08_n_wasp_pwca_bead_motility.ipynb
+[I 19:12:18.226 LabApp] Saving file at /2020_02_08_n_wasp_pwca_bead_motility.ipynb
+[I 19:12:22.084 LabApp] Kernel restarted: 8520cf8d-9bc6-45b3-ab6d-e6abc615475b
+[I 19:14:19.027 LabApp] Saving file at /2020_02_08_n_wasp_pwca_bead_motility.ipynb
+[I 19:15:35.006 LabApp] Saving file at /bead_motility.py
+[I 19:15:36.818 LabApp] Saving file at /bead_motility.py
+[I 19:15:58.566 LabApp] Saving file at /bead_motility.py
+[I 19:16:14.599 LabApp] Saving file at /2020_02_08_n_wasp_pwca_bead_motility.ipynb
+[I 19:16:19.199 LabApp] Kernel restarted: 8520cf8d-9bc6-45b3-ab6d-e6abc615475b
+[I 19:16:43.479 LabApp] Saving file at /bead_motility.py
+[I 19:16:49.301 LabApp] Kernel restarted: 8520cf8d-9bc6-45b3-ab6d-e6abc615475b
+[I 19:18:14.713 LabApp] Saving file at /2020_02_08_n_wasp_pwca_bead_motility.ipynb
+[I 19:18:52.987 LabApp] Saving file at /2021_02_08_n_wasp_bead_motility.ipynb
+[I 19:18:57.623 LabApp] Saving file at /2021_02_08_n_wasp_bead_motility.ipynb
+[I 19:19:03.991 LabApp] Kernel restarted: 42494ef6-b799-41d3-adcf-1ef4acc33322
+[I 19:20:58.057 LabApp] Saving file at /2021_02_08_n_wasp_bead_motility.ipynb
+[I 19:26:15.067 LabApp] Saving file at /2020_02_08_n_wasp_pwca_bead_motility.ipynb
+[I 19:28:15.506 LabApp] Saving file at /2020_02_08_n_wasp_pwca_bead_motility.ipynb
+[I 19:31:04.952 LabApp] Saving file at /bead_motility.py
+[I 19:31:15.051 LabApp] Saving file at /2021_02_08_n_wasp_bead_motility.ipynb
+[I 19:31:21.259 LabApp] Kernel restarted: 42494ef6-b799-41d3-adcf-1ef4acc33322
+[I 19:32:15.557 LabApp] Saving file at /2020_02_08_n_wasp_pwca_bead_motility.ipynb
+[I 19:33:15.116 LabApp] Saving file at /2021_02_08_n_wasp_bead_motility.ipynb
+[I 19:35:15.179 LabApp] Saving file at /2021_02_08_n_wasp_bead_motility.ipynb
+[I 19:36:40.011 LabApp] Saving file at /bead_motility.py
+[I 19:37:06.773 LabApp] Saving file at /bead_motility.py
+[I 19:37:11.711 LabApp] Kernel restarted: 42494ef6-b799-41d3-adcf-1ef4acc33322
+[I 19:37:15.240 LabApp] Saving file at /2021_02_08_n_wasp_bead_motility.ipynb
+[I 19:37:42.142 LabApp] Saving file at /bead_motility.py
+[I 19:37:47.244 LabApp] Kernel restarted: 42494ef6-b799-41d3-adcf-1ef4acc33322
+[I 19:39:15.403 LabApp] Saving file at /2021_02_08_n_wasp_bead_motility.ipynb
+[I 19:40:16.426 LabApp] Saving file at /2020_02_08_n_wasp_pwca_bead_motility.ipynb
+[I 19:40:47.445 LabApp] Saving file at /2021_02_08_wave_bead_motility.ipynb
+[I 19:40:51.895 LabApp] Kernel restarted: f9eeaea0-834b-409f-9633-635977e07eaa
+[I 19:42:18.959 LabApp] Saving file at /2021_02_08_n_wasp_bead_motility.ipynb
+[I 19:42:47.550 LabApp] Saving file at /2021_02_08_wave_bead_motility.ipynb
+[I 19:46:17.702 LabApp] Saving file at /2020_02_08_n_wasp_pwca_bead_motility.ipynb
+[I 19:48:20.703 LabApp] Saving file at /2021_02_08_n_wasp_bead_motility.ipynb
+[I 19:54:21.602 LabApp] Saving file at /2021_02_08_n_wasp_bead_motility.ipynb
+[I 19:56:21.672 LabApp] Saving file at /2021_02_08_n_wasp_bead_motility.ipynb
+[I 20:00:22.232 LabApp] Saving file at /2021_02_08_n_wasp_bead_motility.ipynb
+[I 20:04:22.663 LabApp] Saving file at /2021_02_08_n_wasp_bead_motility.ipynb
+[I 20:08:23.597 LabApp] Saving file at /2021_02_08_n_wasp_bead_motility.ipynb
+[W 20:08:28.292 LabApp] Notebook 2021_02_08_wave_bead_motility.ipynb is not trusted
+[W 20:08:42.178 LabApp] Notebook 2021_02_08_wave_bead_motility.ipynb is not trusted
+[I 20:08:42.306 LabApp] Support files will be in 
+[I 20:08:42.306 LabApp] Making directory .
+[I 20:08:42.306 LabApp] Making directory .
+[I 20:08:42.306 LabApp] Making directory .
+[I 20:08:42.308 LabApp] Making directory .
+[I 20:08:42.308 LabApp] Writing 27211 bytes to notebook.tex
+[I 20:08:42.308 LabApp] Building PDF
+[I 20:08:42.309 LabApp] Running xelatex 3 times: ['xelatex', 'notebook.tex', '-quiet']
+[I 20:08:44.841 LabApp] Running bibtex 1 time: ['bibtex', 'notebook']
+[W 20:08:44.862 LabApp] bibtex had problems, most likely because there were no citations
+[I 20:08:44.862 LabApp] PDF successfully created
+[W 20:09:23.291 LabApp] Notebook 2021_02_08_n_wasp_bead_motility.ipynb is not trusted
+[I 20:09:23.486 LabApp] Support files will be in 
+[I 20:09:23.486 LabApp] Making directory .
+[I 20:09:23.486 LabApp] Making directory .
+[I 20:09:23.486 LabApp] Making directory .
+[I 20:09:23.486 LabApp] Making directory .
+[I 20:09:23.486 LabApp] Writing 43364 bytes to notebook.tex
+[I 20:09:23.486 LabApp] Building PDF
+[I 20:09:23.487 LabApp] Running xelatex 3 times: ['xelatex', 'notebook.tex', '-quiet']
+[I 20:09:26.241 LabApp] Running bibtex 1 time: ['bibtex', 'notebook']
+[W 20:09:26.263 LabApp] bibtex had problems, most likely because there were no citations
+[I 20:09:26.264 LabApp] PDF successfully created
+[W 20:09:41.771 LabApp] Notebook 2020_02_08_n_wasp_pwca_bead_motility.ipynb is not trusted
+[I 20:09:41.981 LabApp] Support files will be in 
+[I 20:09:41.981 LabApp] Making directory .
+[I 20:09:41.981 LabApp] Making directory .
+[I 20:09:41.981 LabApp] Making directory .
+[I 20:09:41.981 LabApp] Making directory .
+[I 20:09:41.981 LabApp] Writing 42056 bytes to notebook.tex
+[I 20:09:41.981 LabApp] Building PDF
+[I 20:09:41.982 LabApp] Running xelatex 3 times: ['xelatex', 'notebook.tex', '-quiet']
+[I 20:09:44.688 LabApp] Running bibtex 1 time: ['bibtex', 'notebook']
+[W 20:09:44.711 LabApp] bibtex had problems, most likely because there were no citations
+[I 20:09:44.711 LabApp] PDF successfully created
+[I 20:10:11.263 LabApp] Saving file at /bead_motility.py
+[I 20:10:17.696 LabApp] Kernel restarted: 42494ef6-b799-41d3-adcf-1ef4acc33322
+[I 20:10:24.227 LabApp] Saving file at /2021_02_08_n_wasp_bead_motility.ipynb
+[I 20:16:24.286 LabApp] Saving file at /2021_02_08_n_wasp_bead_motility.ipynb
+[I 20:26:24.335 LabApp] Saving file at /2021_02_08_n_wasp_bead_motility.ipynb
+[I 20:28:24.395 LabApp] Saving file at /2021_02_08_n_wasp_bead_motility.ipynb
+[I 22:26:24.466 LabApp] Saving file at /2021_02_08_n_wasp_bead_motility.ipynb
+[I 22:27:38.566 LabApp] Saving file at /2020_02_08_n_wasp_pwca_bead_motility.ipynb
+[I 22:27:49.522 LabApp] Kernel restarted: 8520cf8d-9bc6-45b3-ab6d-e6abc615475b
+[I 22:29:39.603 LabApp] Saving file at /2020_02_08_n_wasp_pwca_bead_motility.ipynb
