@@ -3,7 +3,7 @@ from os.path import join, basename
 import fnmatch
 from skimage.io import imread, imsave
 from scipy.ndimage.morphology import binary_fill_holes
-from skimage.morphology import dilation, disk, erosion, medial_axis, reconstruction, remove_small_objects, opening, white_tophat
+from skimage.morphology import dilation, disk, erosion, skeletonize, reconstruction, remove_small_objects, opening, white_tophat, medial_axis
 from skimage.graph import route_through_array
 from skan import skeleton_to_csgraph
 from skimage.filters import gaussian, hessian, threshold_isodata, threshold_otsu, threshold_multiotsu
@@ -11,12 +11,15 @@ from skimage.feature import canny
 from skimage.exposure import equalize_adapthist
 from skimage.util import invert, img_as_ubyte
 from skimage.color import label2rgb
-from numpy import abs, append, array, convolve, delete, hstack, max, ones, unravel_index, zeros, gradient, percentile, stack
+from numpy import mean, abs, append, array, convolve, delete, hstack, max, ones, unravel_index, zeros, gradient, percentile, stack
 from skimage.measure import label, regionprops
-from skimage.segmentation import clear_border, find_boundaries
+from skimage.segmentation import clear_border, find_boundaries, morphological_chan_vese
 from pandas import DataFrame, read_csv
 from matplotlib.pyplot import subplots, savefig, ioff, close
 from seaborn import catplot
+from scipy.ndimage.morphology import distance_transform_edt
+from scipy.ndimage import rank_filter
+from scipy.signal import savgol_filter
 
 MICRON_PER_PIXEL = 0.16
 DIAMETER_THRESHOLD = 2.0
@@ -42,104 +45,128 @@ def open_close(raw_im, radius):
     opened_im = reconstruction(eroded_im, raw_im)
     dilated_im = dilation(opened_im, disk(radius))
     closed_im = invert(reconstruction(invert(dilated_im), invert(opened_im)))
-    return closed_im.astype('uint16')
+    return closed_im
+    
+    
+def make_composite(c0_im, c1_im, c2_im):
+    c0_norm_im = c0_im / threshold_isodata(c0_im)
+    c1_norm_im = c1_im / threshold_isodata(c1_im)
+    c2_norm_im = c2_im / threshold_isodata(c2_im)
+    composite_im = mean(stack((c0_norm_im, c1_norm_im, c2_norm_im), axis = -1), axis = -1)
+    return composite_im
+    
+    
+def segment_composite(composite_im):
+    closed_im = open_close(composite_im, 6)
+    composite_bw_im = closed_im > threshold_isodata(closed_im)
+    return composite_bw_im
+
 
 def segment_bead(raw_im):
-    gaussian_im = gaussian(raw_im, sigma = 1)
-    bw1_im = gaussian_im > threshold_otsu(gaussian_im)
+    closed_im = open_close(raw_im, 6)
+    bw1_im = closed_im > threshold_isodata(closed_im)
     bw2_im = binary_fill_holes(bw1_im)
     bw3_im = clear_border(bw2_im)
     bead_bw_im = remove_small_objects(bw3_im, min_size=disk(6).sum())
     return bead_bw_im
-
-
-def segment_actin(raw_im, bead_bw_im):
-    open_closed_im = open_close(raw_im, 3)
-    open_closed_im = white_tophat(open_closed_im, disk(18))
-    hessian_im = hessian(open_closed_im, sigmas = range(6, 12, 3), mode = 'constant')
-    gauss_im = gaussian(hessian_im, sigma = 2)
-    bw1_im = gauss_im > threshold_otsu(gauss_im)
-    bw1_im = opening(bw1_im, disk(6))
-    bw2_im = binary_fill_holes(bw1_im)
-    bw3_im = clear_border(bw2_im)
-    bw4_im = remove_small_objects(bw3_im, min_size = disk(6).sum())
-    actin_bw_im = reconstruction(dilation(bead_bw_im, disk(3)) & bw4_im, bw4_im).astype(bool)
-    return actin_bw_im
-
-
-def skeletonize_comet(bead_bw_im, composite_bw_im):
-    # Add bead binary to smooth out axis.
-    medial_bw_im = medial_axis(bead_bw_im | composite_bw_im)
-    # Remove the bead binary and ignore spurious mask(s).
-    medial_bw_im = medial_bw_im & ~bead_bw_im
-    medial_label_im, no_skels = label(medial_bw_im, return_num = True)
-    if no_skels > 1:
-        medial_props_list = regionprops(medial_label_im)
-        skel_size_row = zeros(no_skels)
-        for i in range(no_skels):
-            skel_size_row[i] = medial_props_list[i].area
-        index_largest_skel = skel_size_row.argmax()
-        medial_bw_im = medial_label_im == (index_largest_skel + 1)
-    _, _, degrees_mat = skeleton_to_csgraph(medial_bw_im)
-    ends_bw_im = degrees_mat == 1
-    no_ends = ends_bw_im.sum()
-    if no_ends > 2:
-        # Find longest path.
-        cost_mat = zeros((no_ends, no_ends))
-        ends_row_row, ends_col_row = ends_bw_im.nonzero()
-        for i in range(no_ends):
-            for j in range(no_ends):
-                if i != j:
-                    _, ij_cost = route_through_array(~medial_bw_im + 1, \
-                                                     [ends_row_row[i], ends_col_row[i]], \
-                                                     [ends_row_row[j], ends_col_row[j]], \
-                                                     fully_connected = True, geometric = True)
-                    cost_mat[i, j] = ij_cost
-        costliest_row, costliest_col = unravel_index(cost_mat.argmax(), cost_mat.shape)
-        costliest_path = route_through_array(~medial_bw_im + 1, \
-                                             [ends_row_row[costliest_row], ends_col_row[costliest_row]], \
-                                             [ends_row_row[costliest_col], ends_col_row[costliest_col]], \
-                                             fully_connected = True)
-        longest_path_bw_im = zeros(medial_bw_im.shape, dtype = bool)
-        for i in range(len(costliest_path[0])):
-            longest_path_bw_im[costliest_path[0][i][0], costliest_path[0][i][1]] = True
-        return longest_path_bw_im
-    else:
-        return medial_bw_im
-
-def sort_pixel_coords(bead_bw_im, path_bw_im):
-    # Find endpoint nearest to bead.
+    
+    
+def skeletonize_alternate(bead_bw_im, comet_bw_im):
     bead_props_list = regionprops(label(bead_bw_im))
     bead_center_row, bead_center_col = bead_props_list[0].centroid
-    _, _, degrees_mat = skeleton_to_csgraph(path_bw_im)
-    ends_bw_im = degrees_mat == 1
-    ends_row_row, ends_col_row = ends_bw_im.nonzero()
-    bead2ends_dist_row = (bead_center_row - ends_row_row)**2 + \
-                          (bead_center_col - ends_col_row)**2
-    index_nearest_end = bead2ends_dist_row.argmin()
-    # Iterate to sort.
-    no_pixels = path_bw_im.sum()
-    current_row = ends_row_row[index_nearest_end]
-    current_col = ends_col_row[index_nearest_end]
-    path_row_row, path_col_row = path_bw_im.nonzero()
-    path_row_row = delete(path_row_row, index_nearest_end)
-    path_col_row = delete(path_col_row, index_nearest_end)
-    sorted_row_row = zeros(no_pixels, dtype = int)
-    sorted_col_row = zeros(no_pixels, dtype = int)
-    sorted_row_row[0] = current_row
-    sorted_col_row[0] = current_col
-    for i in range(1, no_pixels):
-        dist_row = (current_row - path_row_row)**2 + \
-                   (current_col - path_col_row)**2
-        index_nearest = dist_row.argmin()
-        current_row = path_row_row[index_nearest]
-        current_col = path_col_row[index_nearest]
-        path_row_row = delete(path_row_row, index_nearest)
-        path_col_row = delete(path_col_row, index_nearest)
-        sorted_row_row[i] = current_row
-        sorted_col_row[i] = current_col
-    return sorted_row_row, sorted_col_row
+    bead_center_row = round(bead_center_row)
+    bead_center_col = round(bead_center_col)
+    bead_center_bw_im = ones(bead_bw_im.shape, dtype = bool)
+    bead_center_bw_im[bead_center_row, bead_center_col] = False
+    distance_im = distance_transform_edt(bead_center_bw_im)
+    distance_im *= comet_bw_im
+    max_distance = distance_im.max()
+    end_bw_im = distance_im == max_distance
+    end_row, end_col = unravel_index(distance_im.argmax(), distance_im.shape)
+    distance_im = distance_transform_edt(comet_bw_im)
+    cost_im = distance_im.max() - distance_im
+    path_list, _ = route_through_array(cost_im, \
+                                       (bead_center_row, bead_center_col), \
+                                       (end_row, end_col), \
+                                       fully_connected = False, \
+                                       geometric = True)
+    skel_bw_im = zeros(bead_bw_im.shape, dtype = bool)
+    for i in range(len(path_list)):
+        skel_bw_im[path_list[i][0], path_list[i][1]] = True
+    return skel_bw_im
 
+def find_longest_path(bead_bw_im, composite_bw_im):
+    pre_skel_bw_im = skeletonize(composite_bw_im)
+    skel_bw_im = pre_skel_bw_im & ~bead_bw_im
+    if skel_bw_im.sum() > 1:
+        _, _, degrees_mat = skeleton_to_csgraph(skel_bw_im)
+        ends_bw_im = degrees_mat == 1
+        no_ends = ends_bw_im.sum()
+        if no_ends > 1:
+            # Index skeleton end nearest to bead center.
+            bead_props_list = regionprops(label(bead_bw_im))
+            bead_center_row, bead_center_col = bead_props_list[0].centroid
+            ends_row_row, ends_col_row = ends_bw_im.nonzero()
+            ends2bead_distance_row = (ends_row_row - bead_center_row)**2 + \
+                                     (ends_col_row - bead_center_col)**2
+            index_nearest_end = ends2bead_distance_row.argmin()
+            start_tup = (ends_row_row[index_nearest_end], \
+                             ends_col_row[index_nearest_end])
+            other_ends_row_row = delete(ends_row_row, index_nearest_end)
+            other_ends_col_row = delete(ends_col_row, index_nearest_end)
+            distance_mat = distance_transform_edt(composite_bw_im)
+            cost_mat = distance_mat.max() - distance_mat
+            if no_ends > 2:
+                no_other_ends = other_ends_col_row.size
+                cost_row = zeros(no_other_ends)
+                path_list = []
+                for i in range(no_other_ends):
+                    i_end_tup = (other_ends_row_row[i], other_ends_col_row[i])
+                    i_path_list, cost_row[i] = route_through_array(cost_mat, \
+                                                                   start_tup, \
+                                                                   i_end_tup, \
+                                                                   fully_connected = False, \
+                                                                   geometric = True)
+                    path_list.append(i_path_list)
+                index_highest_cost = cost_row.argmax()
+                longest_path = path_list[index_highest_cost]                                        
+            else:
+                end_tup = (other_ends_row_row[0], other_ends_col_row[0])
+                longest_path, _ = route_through_array(cost_mat, \
+                                                      start_tup, \
+                                                      end_tup, \
+                                                      fully_connected = False, \
+                                                      geometric = True)
+        else:
+            longest_path = ([])
+    else:
+        longest_path = ([])
+    return longest_path
+    
+    
+def find_step(c1_fluor_row, c2_fluor_row):
+    c1_float_row = c1_fluor_row.astype(float)
+    c1_float_row -= c1_float_row.min()
+    c1_float_row /= c1_float_row.max()
+    c2_float_row = c2_fluor_row.astype(float)
+    c2_float_row -= c2_float_row.min()
+    c2_float_row /= c2_float_row.max()
+    no_points = c1_float_row.size
+    kernel_row = hstack((ones(no_points), -1 * ones(no_points)))
+    c1_convolved_row = convolve(c1_float_row - c1_float_row.mean(), kernel_row, mode = 'valid')
+    c2_convolved_row = convolve(c2_float_row - c2_float_row.mean(), kernel_row, mode = 'valid')
+    c1_max = abs(c1_convolved_row).max()
+    c2_max = abs(c2_convolved_row).max()
+    if c1_max > c2_max:
+        if c1_max > 0.2:
+            index_step = abs(c1_convolved_row).argmax()
+        else:
+            index_step = no_points
+    elif c2_max > 0.2:
+        index_step = abs(c2_convolved_row).argmax()
+    else:
+        index_step = no_points
+    return index_step
 
 def estimate_comet_tail_props(file_path_str, save_scan = False):
     # Load stack.
@@ -234,6 +261,105 @@ def estimate_comet_tail_props(file_path_str, save_scan = False):
                                                    'file_path_str': basename(file_path_str)})
     return comet_tail_props_df
     
+def comet_tail_props(file_path_str, save_segmentation):
+    c0_im, c1_im, c2_im = load_stack(file_path_str)
+    bead_bw_im = segment_bead(c0_im)
+    composite_im = make_composite(c0_im, c1_im, c2_im)
+    composite_bw_im = segment_composite(composite_im)
+    bead_label_im, no_beads = label(bead_bw_im, return_num = True)
+    path_bw_im = zeros(bead_bw_im.shape, dtype = bool)
+    if save_segmentation == True:
+        imsave(file_path_str[:-21] + '_c0_segment.jpg', \
+               img_as_ubyte(label2rgb(label(find_boundaries(bead_bw_im)), \
+                            image = equalize_adapthist(invert(c0_im)), \
+                            bg_label = 0, colors = ['green'])), \
+                            check_contrast = False)
+        imsave(file_path_str[:-21] + '_c1_segment.jpg', \
+               img_as_ubyte(label2rgb(label(find_boundaries(composite_bw_im)), \
+                            image = equalize_adapthist(invert(c1_im)), \
+                            bg_label = 0, colors = ['red'])), \
+                            check_contrast = False)
+        imsave(file_path_str[:-21] + '_c2_segment.jpg', \
+               img_as_ubyte(label2rgb(label(find_boundaries(composite_bw_im)), \
+                            image = equalize_adapthist(invert(c2_im)), \
+                            bg_label = 0, colors = ['magenta'])), \
+                            check_contrast = False)
+    if no_beads > 0:
+        c0_mean_back_fluor = c0_im[~bead_bw_im].mean()
+        c1_mean_back_fluor = c1_im[~composite_bw_im].mean()
+        c2_mean_back_fluor = c2_im[~composite_bw_im].mean()
+        # Set up property arrays.
+        npf_fluor_row = zeros(no_beads)
+        chase_fluor_row = zeros(no_beads)
+        chase_tail_length_row = zeros(no_beads)
+        chase_channel_name_row = zeros(no_beads)
+        pulse_fluor_row = zeros(no_beads)
+        pulse_tail_length_row = zeros(no_beads)
+        for i in range(no_beads):
+            i_bead_bw_im = bead_label_im == (i + 1)
+            i_npf_bw_im = i_bead_bw_im & ~erosion(i_bead_bw_im, disk(3))
+            npf_fluor_row[i] = c0_im[i_npf_bw_im].mean() - c0_mean_back_fluor
+            i_composite_bw_im = reconstruction(i_bead_bw_im & composite_bw_im, \
+                                               composite_bw_im).astype(bool)
+            i_longest_path = find_longest_path(i_bead_bw_im, i_composite_bw_im)
+            i_path_size = len(i_longest_path)
+            if i_path_size > 0:
+                i_path_row_row = array([i_longest_path[k][0] for k in range(i_path_size)])
+                i_path_col_row = array([i_longest_path[k][1] for k in range(i_path_size)])
+                i_ds_row = (gradient(i_path_row_row)**2 + gradient(i_path_col_row)**2)**0.5
+                i_distance_row = i_ds_row.cumsum() * 0.16
+                i_index_step = find_step(c1_im[i_path_row_row, i_path_col_row], \
+                                         c2_im[i_path_row_row, i_path_col_row])
+                chase_tail_length_row[i] = i_distance_row[i_index_step]
+                pulse_tail_length_row[i] = i_distance_row[-1] - chase_tail_length_row[i]
+                c1_first_fluor_mean = c1_im[i_path_row_row[:i_index_step], i_path_col_row[:i_index_step]].mean() - c1_mean_back_fluor
+                c1_second_fluor_mean = c1_im[i_path_row_row[i_index_step:], i_path_col_row[i_index_step]].mean() - c1_mean_back_fluor
+                c2_first_fluor_mean = c2_im[i_path_row_row[:i_index_step], i_path_col_row[:i_index_step]].mean() - c2_mean_back_fluor
+                c2_second_fluor_mean = c2_im[i_path_row_row[i_index_step:], i_path_col_row[i_index_step]].mean() - c2_mean_back_fluor
+                if c1_first_fluor_mean > c1_second_fluor_mean:
+                    chase_channel_name_row[i] = 1
+                    chase_fluor_row[i] = c1_first_fluor_mean
+                    pulse_fluor_row[i] = c2_first_fluor_mean
+                else:
+                    chase_channel_name_row[i] = 2
+                    chase_fluor_row[i] = c2_first_fluor_mean
+                    pulse_fluor_row[i] = c2_second_fluor_mean
+                ioff()
+                fig_hand, axes_hand = subplots()
+                axes_hand.plot(i_distance_row, c1_im[i_path_row_row, i_path_col_row], 'red')
+                axes_hand.plot(i_distance_row, c2_im[i_path_row_row, i_path_col_row], 'blue')
+                axes_hand.plot([i_distance_row[i_index_step], i_distance_row[i_index_step]], \
+                                       [0, axes_hand.get_ylim()[1]], 'black')
+                savefig(file_path_str[:-21] + '_linescan.png', facecolor = 'white', dpi = 300)
+                close()
+                for j in range(i_index_step):
+                    path_bw_im[i_longest_path[j]] = True
+                
+        save1_im = invert(composite_im / composite_im.max())
+        overlay_im = label2rgb(label(path_bw_im), \
+                               image = save1_im, \
+                               bg_label = 0, colors = ['yellow'])
+        imsave(file_path_str[:-21] + '_path.jpg', img_as_ubyte(overlay_im), \
+               check_contrast = False)
+        comet_tail_props_df = DataFrame.from_dict({'npf_fluor': npf_fluor_row,
+                                                   'chase_fluor': chase_fluor_row,
+                                                   'chase_tail_length': chase_tail_length_row,
+                                                   'chase_channel_name': chase_channel_name_row, 
+                                                   'pulse_fluor': pulse_fluor_row, 
+                                                   'pulse_tail_length': pulse_tail_length_row, 
+                                                   'file_path_str': basename(file_path_str)})
+    else:
+        print("No beads found")
+        comet_tail_props_df = DataFrame.from_dict({'npf_fluor': array([]),
+                                                   'chase_fluor': array([]),
+                                                   'chase_tail_length': array([]),
+                                                   'chase_channel_name': array([]),
+                                                   'pulse_fluor': array([]), 
+                                                   'pulse_tail_length': array([]),
+                                                   'file_path_str': basename(file_path_str)})
+    return comet_tail_props_df
+            
+    
 
 def batch_analysis(folder_path_str, save_segmentation = False):
     mmstack_file_path_list = find_mmstack_files(folder_path_str)
@@ -246,26 +372,12 @@ def batch_analysis(folder_path_str, save_segmentation = False):
                                                'pulse_tail_length': array([]),
                                                'file_path_str': array([])})
     for i in range(no_files):
-        # Load stack.
-        i_c0_im, i_c1_im, i_c2_im = load_stack(mmstack_file_path_list[i])
-        # Segment channels.
-        i_bead_bw_im = segment_bead(i_c0_im)
-        i_actin1_bw_im = segment_actin(i_c1_im, i_bead_bw_im)
-        i_actin2_bw_im = segment_actin(i_c2_im, i_bead_bw_im)
-        # Save segmentation results.
-        if save_segmentation == True:
-            i_bead_overlay_im = label2rgb(label(find_boundaries(i_bead_bw_im)), image = equalize_adapthist(invert(i_c0_im)), bg_label = 0, colors = ['green'])
-            i_actin1_overlay_im = label2rgb(label(find_boundaries(i_actin1_bw_im)), image = equalize_adapthist(invert(i_c1_im)), bg_label = 0, colors = ['red'])
-            i_actin2_overlay_im = label2rgb(label(find_boundaries(i_actin2_bw_im)), image = equalize_adapthist(invert(i_c2_im)), bg_label = 0, colors = ['magenta'])
-            imsave(mmstack_file_path_list[i][:-21] + '_c0_segment.jpg', img_as_ubyte(i_bead_overlay_im), check_contrast = False)
-            imsave(mmstack_file_path_list[i][:-21] + '_c1_segment.jpg', img_as_ubyte(i_actin1_overlay_im), check_contrast = False)
-            imsave(mmstack_file_path_list[i][:-21] + '_c2_segment.jpg', img_as_ubyte(i_actin2_overlay_im), check_contrast = False)
-        # Analyze comet tails.
-        i_comet_tail_props_df = estimate_comet_tail_props(mmstack_file_path_list[i], save_scan = True)
+        i_comet_tail_props_df = comet_tail_props(mmstack_file_path_list[i], save_segmentation)
         comet_tail_props_df = comet_tail_props_df.append(i_comet_tail_props_df)
     comet_tail_props_df = comet_tail_props_df.sort_values(by = ['pulse_tail_length'])
     comet_tail_props_df.to_csv(folder_path_str + '/comet_tail_properties.csv')
     return comet_tail_props_df
+
 
 def plot_mean_npf_fluor(df_file_path_row):
     no_files = df_file_path_row.size
@@ -321,7 +433,7 @@ def plot_median_chase_fluor(df_file_path_row):
     axes_hand.legend(fontsize = 12)
     return (fig_hand, axes_hand)
     
-def plot_median_tail_length(df_file_path_row):
+def plot_median_tail_length(df_file_path_row, chase_minutes = 1.0):
     no_files = df_file_path_row.size
     median_tail_length_row = zeros(no_files)
     up_bound_row = zeros(no_files)
@@ -329,7 +441,8 @@ def plot_median_tail_length(df_file_path_row):
     for i in range(no_files):
         i_df = read_csv(df_file_path_row[i])
         i_is_comet_row = i_df['pulse_tail_length'] > 1
-        i_tail_length_row = i_df['chase_tail_length'][i_is_comet_row]
+        i_tail_length_row = i_df['chase_tail_length'][i_is_comet_row] / \
+                            chase_minutes
         i_percentile_row = percentile(i_tail_length_row, (25, 50, 75))
         median_tail_length_row[i] = i_percentile_row[1]
         low_bound_row[i] = i_percentile_row[0]
@@ -343,7 +456,7 @@ def plot_median_tail_length(df_file_path_row):
     axes_hand.set_ylabel('Median growth rate ($\mu$m/min)', fontsize = 12)
     return (fig_hand, axes_hand)
 
-def box_plot_tail_length(df_file_path_row):
+def box_plot_tail_length(df_file_path_row, chase_minutes = 1.0):
     no_files = df_file_path_row.size
     tail_length_df = DataFrame.from_dict({'25': array([]),
                                       '75': array([]),
@@ -353,7 +466,8 @@ def box_plot_tail_length(df_file_path_row):
     for i in range(no_files):
         i_df = read_csv(df_file_path_row[i])
         is_comet_tail_row = i_df['pulse_tail_length'] > 1.0
-        i_tail_length_row = i_df['chase_tail_length'][is_comet_tail_row]
+        i_tail_length_row = i_df['chase_tail_length'][is_comet_tail_row] / \
+                            chase_minutes
         tail_length_df[tail_length_df.columns[i]] = i_tail_length_row
     tail_length_plot_obj = catplot(data = tail_length_df, kind = 'swarm')
     tail_length_plot_obj.set_axis_labels("Capping protein (nM)", "Network growth rate ($\mu$m/min)", fontsize = 16)
