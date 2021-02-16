@@ -15,7 +15,7 @@ from numpy import mean, abs, append, array, convolve, delete, hstack, max, ones,
 from skimage.measure import label, regionprops
 from skimage.segmentation import clear_border, find_boundaries, morphological_chan_vese
 from pandas import DataFrame, read_csv
-from matplotlib.pyplot import subplots, savefig, ioff, close
+from matplotlib.pyplot import subplots, savefig, ioff, close, tight_layout
 from seaborn import catplot
 from scipy.ndimage.morphology import distance_transform_edt
 from scipy.ndimage import rank_filter
@@ -58,7 +58,7 @@ def make_composite(c0_im, c1_im, c2_im):
     
 def segment_composite(composite_im):
     closed_im = open_close(composite_im, 6)
-    composite_bw_im = closed_im > threshold_isodata(closed_im)
+    composite_bw_im = closed_im > max([threshold_isodata(closed_im), closed_im.mean() + 3 * closed_im.std()])
     return composite_bw_im
 
 
@@ -98,7 +98,7 @@ def skeletonize_alternate(bead_bw_im, comet_bw_im):
 def find_longest_path(bead_bw_im, composite_bw_im):
     pre_skel_bw_im = skeletonize(composite_bw_im)
     skel_bw_im = pre_skel_bw_im & ~bead_bw_im
-    if skel_bw_im.sum() > 1:
+    if skel_bw_im.sum() > 2:
         _, _, degrees_mat = skeleton_to_csgraph(skel_bw_im)
         ends_bw_im = degrees_mat == 1
         no_ends = ends_bw_im.sum()
@@ -313,9 +313,9 @@ def comet_tail_props(file_path_str, save_segmentation):
                 chase_tail_length_row[i] = i_distance_row[i_index_step]
                 pulse_tail_length_row[i] = i_distance_row[-1] - chase_tail_length_row[i]
                 c1_first_fluor_mean = c1_im[i_path_row_row[:i_index_step], i_path_col_row[:i_index_step]].mean() - c1_mean_back_fluor
-                c1_second_fluor_mean = c1_im[i_path_row_row[i_index_step:], i_path_col_row[i_index_step]].mean() - c1_mean_back_fluor
+                c1_second_fluor_mean = c1_im[i_path_row_row[i_index_step:], i_path_col_row[i_index_step:]].mean() - c1_mean_back_fluor
                 c2_first_fluor_mean = c2_im[i_path_row_row[:i_index_step], i_path_col_row[:i_index_step]].mean() - c2_mean_back_fluor
-                c2_second_fluor_mean = c2_im[i_path_row_row[i_index_step:], i_path_col_row[i_index_step]].mean() - c2_mean_back_fluor
+                c2_second_fluor_mean = c2_im[i_path_row_row[i_index_step:], i_path_col_row[i_index_step:]].mean() - c2_mean_back_fluor
                 if c1_first_fluor_mean > c1_second_fluor_mean:
                     chase_channel_name_row[i] = 1
                     chase_fluor_row[i] = c1_first_fluor_mean
@@ -392,11 +392,13 @@ def plot_mean_npf_fluor(df_file_path_row):
         up_bound_row[i] = i_percentile_row[1]
     yerr_mat = stack((median_fluor_row - low_bound_row, up_bound_row - median_fluor_row), axis = -1).T
     fig_hand, axes_hand = subplots()
-    axes_hand.set_ylim([0, up_bound_row.max()])
+    fig_hand.set_facecolor('white')
+    axes_hand.set_ylim([0, up_bound_row.max() * 1.1])
     axes_hand.errorbar(array([25, 75, 125, 175, 225]), median_fluor_row, yerr = yerr_mat, marker = '.', markersize = 16)
     axes_hand.set_xlabel('Capping protein (nM)', fontsize = 12)
     axes_hand.set_ylabel('Mean EGFP fluorescence', fontsize = 12)
-    return (fig_hand, axes_hand)
+    tight_layout()
+    return fig_hand, axes_hand
     
 def plot_median_chase_fluor(df_file_path_row):
     no_files = df_file_path_row.size
@@ -424,14 +426,16 @@ def plot_median_chase_fluor(df_file_path_row):
     c1_yerr_mat = stack((c1_median_fluor_row - c1_low_bound_row, c1_up_bound_row - c1_median_fluor_row), axis = -1).T
     c2_yerr_mat = stack((c2_median_fluor_row - c2_low_bound_row, c2_up_bound_row - c2_median_fluor_row), axis = -1).T
     fig_hand, axes_hand = subplots()
-    axes_hand.set_ylim([0, max([c1_up_bound_row.max(), c2_up_bound_row.max()])])
+    fig_hand.set_facecolor('white')
+    axes_hand.set_ylim([0, 1.1 * max([c1_up_bound_row.max(), c2_up_bound_row.max()])])
     axes_hand.errorbar(array([25, 75, 125, 175, 225]), c1_median_fluor_row, yerr = c1_yerr_mat, marker = '.', markersize = 16, label = 'Hylite-555')
     axes_hand.errorbar(array([25, 75, 125, 175, 225]), c2_median_fluor_row, yerr = c2_yerr_mat, marker = '.', markersize = 16, label = 'Alexa-647')
     axes_hand.tick_params(labelsize = 12)
     axes_hand.set_xlabel('Capping protein (nM)', fontsize = 12)
     axes_hand.set_ylabel('Median actin fluorescence', fontsize = 12)
     axes_hand.legend(fontsize = 12)
-    return (fig_hand, axes_hand)
+    tight_layout()
+    return fig_hand, axes_hand
     
 def plot_median_tail_length(df_file_path_row, chase_minutes = 1.0):
     no_files = df_file_path_row.size
@@ -441,6 +445,7 @@ def plot_median_tail_length(df_file_path_row, chase_minutes = 1.0):
     for i in range(no_files):
         i_df = read_csv(df_file_path_row[i])
         i_is_comet_row = i_df['pulse_tail_length'] > 1
+        #i_tail_length_row = (i_df['chase_tail_length'][i_is_comet_row] + i_df['pulse_tail_length'][i_is_comet_row]) / chase_minutes
         i_tail_length_row = i_df['chase_tail_length'][i_is_comet_row] / \
                             chase_minutes
         i_percentile_row = percentile(i_tail_length_row, (25, 50, 75))
@@ -449,12 +454,14 @@ def plot_median_tail_length(df_file_path_row, chase_minutes = 1.0):
         up_bound_row[i] = i_percentile_row[2]     
     yerr_mat = stack((median_tail_length_row - low_bound_row, up_bound_row - median_tail_length_row), axis = -1).T
     fig_hand, axes_hand = subplots()
-    axes_hand.set_ylim([0, up_bound_row.max()])
+    fig_hand.set_facecolor('white')
+    axes_hand.set_ylim([0, 1.1 * up_bound_row.max()])
     axes_hand.errorbar(array([25, 75, 125, 175, 225]), median_tail_length_row, yerr = yerr_mat, marker = '.', markersize = 16)
     axes_hand.tick_params(labelsize = 12)
     axes_hand.set_xlabel('Capping protein (nM)', fontsize = 12)
     axes_hand.set_ylabel('Median growth rate ($\mu$m/min)', fontsize = 12)
-    return (fig_hand, axes_hand)
+    tight_layout()
+    return fig_hand, axes_hand
 
 def box_plot_tail_length(df_file_path_row, chase_minutes = 1.0):
     no_files = df_file_path_row.size
@@ -472,4 +479,5 @@ def box_plot_tail_length(df_file_path_row, chase_minutes = 1.0):
     tail_length_plot_obj = catplot(data = tail_length_df, kind = 'swarm')
     tail_length_plot_obj.set_axis_labels("Capping protein (nM)", "Network growth rate ($\mu$m/min)", fontsize = 16)
     tail_length_plot_obj.ax.tick_params(labelsize = 12)
+    tight_layout()
     return tail_length_plot_obj
