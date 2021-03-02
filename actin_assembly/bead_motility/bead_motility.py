@@ -3,23 +3,20 @@ from os.path import join, basename
 import fnmatch
 from skimage.io import imread, imsave
 from scipy.ndimage.morphology import binary_fill_holes
-from skimage.morphology import dilation, disk, erosion, skeletonize, reconstruction, remove_small_objects, opening, white_tophat, medial_axis
+from skimage.morphology import dilation, disk, erosion, reconstruction, remove_small_objects, skeletonize
 from skimage.graph import route_through_array
 from skan import skeleton_to_csgraph
-from skimage.filters import gaussian, hessian, threshold_isodata, threshold_otsu, threshold_multiotsu
-from skimage.feature import canny
+from skimage.filters import threshold_isodata, threshold_li
 from skimage.exposure import equalize_adapthist
 from skimage.util import invert, img_as_ubyte
 from skimage.color import label2rgb
-from numpy import mean, abs, append, array, convolve, delete, hstack, max, ones, unravel_index, zeros, gradient, percentile, stack
+from numpy import abs, append, array, convolve, delete, gradient, hstack, max, ones, percentile, stack, unravel_index, zeros
 from skimage.measure import label, regionprops
-from skimage.segmentation import clear_border, find_boundaries, morphological_chan_vese
+from skimage.segmentation import clear_border, find_boundaries
 from pandas import DataFrame, read_csv
 from matplotlib.pyplot import subplots, savefig, ioff, close, tight_layout
 from seaborn import catplot
 from scipy.ndimage.morphology import distance_transform_edt
-from scipy.ndimage import rank_filter
-from scipy.signal import savgol_filter
 
 MICRON_PER_PIXEL = 0.16
 DIAMETER_THRESHOLD = 2.0
@@ -49,16 +46,16 @@ def open_close(raw_im, radius):
     
     
 def make_composite(c0_im, c1_im, c2_im):
-    c0_norm_im = c0_im / threshold_isodata(c0_im)
-    c1_norm_im = c1_im / threshold_isodata(c1_im)
-    c2_norm_im = c2_im / threshold_isodata(c2_im)
-    composite_im = mean(stack((c0_norm_im, c1_norm_im, c2_norm_im), axis = -1), axis = -1)
+    c0_norm_im = c0_im / threshold_li(c0_im)
+    c1_norm_im = c1_im / threshold_li(c1_im)
+    c2_norm_im = c2_im / threshold_li(c2_im)
+    composite_im = max(stack((c0_norm_im, c1_norm_im, c2_norm_im), axis = -1), axis = -1)
     return composite_im
     
     
 def segment_composite(composite_im):
-    closed_im = open_close(composite_im, 6)
-    composite_bw_im = closed_im > max([threshold_isodata(closed_im), closed_im.mean() + 3 * closed_im.std()])
+    closed_im = open_close(composite_im, 3)
+    composite_bw_im = closed_im > threshold_li(closed_im)
     return composite_bw_im
 
 
@@ -168,98 +165,6 @@ def find_step(c1_fluor_row, c2_fluor_row):
         index_step = no_points
     return index_step
 
-def estimate_comet_tail_props(file_path_str, save_scan = False):
-    # Load stack.
-    c0_im, c1_im, c2_im = load_stack(file_path_str)
-    # Segment channels.
-    bead_bw_im = segment_bead(c0_im)
-    actin1_bw_im = segment_actin(c1_im, bead_bw_im)
-    actin2_bw_im = segment_actin(c2_im, bead_bw_im)
-    # Process each tail.
-    bead_label_im, no_beads = label(bead_bw_im, return_num = True)
-    if no_beads > 0:
-        # Extract mean background fluorescence values.
-        bead_mean_back_fluor = c0_im[~bead_bw_im].mean()
-        actin1_mean_back_fluor = c1_im[~actin1_bw_im].mean()
-        actin2_mean_back_fluor = c2_im[~actin2_bw_im].mean()
-        # Set up property arrays.
-        npf_fluor_row = zeros(no_beads)
-        chase_fluor_row = zeros(no_beads)
-        chase_tail_length_row = zeros(no_beads)
-        chase_channel_name_row = zeros(no_beads)
-        pulse_fluor_row = zeros(no_beads)
-        pulse_tail_length_row = zeros(no_beads)
-        npf_chase_tail_bw_im = zeros(c0_im.shape, dtype=bool)
-        composite_bw_im = actin1_bw_im | actin2_bw_im
-        for i in range(no_beads):
-            i_bead_bw_im = bead_label_im == (i + 1)
-            # NPF fluorescence
-            i_npf_bw_im = i_bead_bw_im & ~erosion(i_bead_bw_im, disk(3))
-            npf_fluor_row[i] = c0_im[i_npf_bw_im].mean() - bead_mean_back_fluor
-            # Comet tail properties
-            i_composite_bw_im = reconstruction(dilation(i_bead_bw_im, disk(3)) & composite_bw_im, 
-                                               composite_bw_im).astype(bool)
-            if i_composite_bw_im.sum() > 0:
-                i_composite_props_list = regionprops(label(i_composite_bw_im))
-                i_axis_ratio = i_composite_props_list[0].major_axis_length / \
-                               i_composite_props_list[0].minor_axis_length
-                if i_axis_ratio > 2:
-                    i_skeleton_bw_im = skeletonize_comet(i_bead_bw_im, i_composite_bw_im)
-                    i_sorted_row_row, i_sorted_col_row = sort_pixel_coords(i_bead_bw_im, 
-                                                                           i_skeleton_bw_im)
-                    i_ds_row = (((i_sorted_row_row[1:] - i_sorted_row_row[:-1])**2 + \
-                                 (i_sorted_col_row[1:] - i_sorted_col_row[:-1])**2)**0.5) * 0.16
-                    i_distance_row = append([0], i_ds_row.cumsum())
-                    c1_path_bw_im = actin1_bw_im & i_skeleton_bw_im
-                    c2_path_bw_im = actin2_bw_im & i_skeleton_bw_im
-                    if c1_path_bw_im.sum() < c2_path_bw_im.sum():
-                        chase_channel_name_row[i] = 1
-                        chase_fluor_row[i] = c1_im[c1_path_bw_im].mean() - actin1_mean_back_fluor
-                        chase_tail_length_row[i] = i_distance_row[c1_path_bw_im.sum() - 1]
-                        pulse_fluor_row[i] = c2_im[c1_path_bw_im].mean() - actin2_mean_back_fluor
-                        pulse_tail_length_row[i] = i_distance_row[-1] - chase_tail_length_row[i]
-                        i_chase_im = equalize_adapthist(c1_im)
-                    else:
-                        chase_channel_name_row[i] = 2
-                        chase_fluor_row[i] = c2_im[c2_path_bw_im].mean() - actin2_mean_back_fluor
-                        chase_tail_length_row[i] = i_distance_row[c2_path_bw_im.sum() - 1]
-                        pulse_fluor_row[i] = c1_im[c2_path_bw_im].mean() - actin1_mean_back_fluor
-                        pulse_tail_length_row[i] = i_distance_row[-1] - chase_tail_length_row[i]
-                        i_chase_im = equalize_adapthist(c2_im)
-                    if save_scan == True:
-                        ioff()
-                        fig_hand, axes_hand = subplots()
-                        axes_hand.plot(i_distance_row, c1_im[i_sorted_row_row, i_sorted_col_row], 'red')
-                        axes_hand.plot(i_distance_row, c2_im[i_sorted_row_row, i_sorted_col_row], 'blue')
-                        axes_hand.plot([chase_tail_length_row[i], chase_tail_length_row[i]], \
-                                       [0, axes_hand.get_ylim()[1]], 'black')
-                        axes_hand.set_xlabel("Distance from bead ($\mu$m)", fontsize = 8)
-                        axes_hand.set_ylabel("Fluorescence intensity", fontsize = 8)
-                        savefig(file_path_str[:-21] + '_linescan.png', facecolor = 'white', dpi = 300)
-                        close()
-                    imsave(file_path_str[:-21] + '_skel_segment.jpg', \
-                           img_as_ubyte(label2rgb(label(i_skeleton_bw_im), \
-                                                  image = invert(i_chase_im), \
-                                                  bg_label = 0, colors = ['yellow'])), check_contrast = False)
-            else:
-                print("No actin tail.")
-            comet_tail_props_df = DataFrame.from_dict({'npf_fluor': npf_fluor_row,
-                                                   'chase_fluor': chase_fluor_row,
-                                                   'chase_tail_length': chase_tail_length_row,
-                                                   'chase_channel_name': chase_channel_name_row, 
-                                                   'pulse_fluor': pulse_fluor_row, 
-                                                   'pulse_tail_length': pulse_tail_length_row, 
-                                                   'file_path_str': basename(file_path_str)})
-    else:
-        print("No beads found")
-        comet_tail_props_df = DataFrame.from_dict({'npf_fluor': array([]),
-                                                   'chase_fluor': array([]),
-                                                   'chase_tail_length': array([]),
-                                                   'chase_channel_name': array([]),
-                                                   'pulse_fluor': array([]), 
-                                                   'pulse_tail_length': array([]),
-                                                   'file_path_str': basename(file_path_str)})
-    return comet_tail_props_df
     
 def comet_tail_props(file_path_str, save_segmentation):
     c0_im, c1_im, c2_im = load_stack(file_path_str)
@@ -323,7 +228,7 @@ def comet_tail_props(file_path_str, save_segmentation):
                 else:
                     chase_channel_name_row[i] = 2
                     chase_fluor_row[i] = c2_first_fluor_mean
-                    pulse_fluor_row[i] = c2_second_fluor_mean
+                    pulse_fluor_row[i] = c1_first_fluor_mean
                 ioff()
                 fig_hand, axes_hand = subplots()
                 axes_hand.plot(i_distance_row, c1_im[i_path_row_row, i_path_col_row], 'red')
@@ -394,13 +299,13 @@ def plot_mean_npf_fluor(df_file_path_row):
     fig_hand, axes_hand = subplots()
     fig_hand.set_facecolor('white')
     axes_hand.set_ylim([0, up_bound_row.max() * 1.1])
-    axes_hand.errorbar(array([25, 75, 125, 175, 225]), median_fluor_row, yerr = yerr_mat, marker = '.', markersize = 16)
+    axes_hand.errorbar(array([10, 20, 30, 40]), median_fluor_row, yerr = yerr_mat, marker = '.', markersize = 16)
     axes_hand.set_xlabel('Capping protein (nM)', fontsize = 12)
     axes_hand.set_ylabel('Mean EGFP fluorescence', fontsize = 12)
     tight_layout()
     return fig_hand, axes_hand
     
-def plot_median_chase_fluor(df_file_path_row):
+def plot_mean_chase_fluor(df_file_path_row):
     no_files = df_file_path_row.size
     c1_median_fluor_row = zeros(no_files)
     c1_up_bound_row = zeros(no_files)
@@ -416,23 +321,23 @@ def plot_median_chase_fluor(df_file_path_row):
         i_c1_fluor_row = i_df['chase_fluor'][i_is_comet_row & i_is_c1_row]
         i_c2_fluor_row = i_df['chase_fluor'][i_is_comet_row & i_is_c2_row]
         i_c1_percentile_row = percentile(i_c1_fluor_row, (25, 50, 75))
-        c1_median_fluor_row[i] = i_c1_percentile_row[1]
+        c1_median_fluor_row[i] = i_c1_fluor_row.mean()
         c1_low_bound_row[i] = i_c1_percentile_row[0]
         c1_up_bound_row[i] = i_c1_percentile_row[2]
         i_c2_percentile_row = percentile(i_c2_fluor_row, (25, 50, 75))
         c2_low_bound_row[i] = i_c2_percentile_row[0]
-        c2_median_fluor_row[i] = i_c2_percentile_row[1]
+        c2_median_fluor_row[i] = i_c2_fluor_row.mean()
         c2_up_bound_row[i] = i_c2_percentile_row[2]
     c1_yerr_mat = stack((c1_median_fluor_row - c1_low_bound_row, c1_up_bound_row - c1_median_fluor_row), axis = -1).T
     c2_yerr_mat = stack((c2_median_fluor_row - c2_low_bound_row, c2_up_bound_row - c2_median_fluor_row), axis = -1).T
     fig_hand, axes_hand = subplots()
     fig_hand.set_facecolor('white')
     axes_hand.set_ylim([0, 1.1 * max([c1_up_bound_row.max(), c2_up_bound_row.max()])])
-    axes_hand.errorbar(array([25, 75, 125, 175, 225]), c1_median_fluor_row, yerr = c1_yerr_mat, marker = '.', markersize = 16, label = 'Hylite-555')
-    axes_hand.errorbar(array([25, 75, 125, 175, 225]), c2_median_fluor_row, yerr = c2_yerr_mat, marker = '.', markersize = 16, label = 'Alexa-647')
+    axes_hand.errorbar(array([10, 20, 30, 40]), c1_median_fluor_row, yerr = c1_yerr_mat, marker = '.', markersize = 16, label = 'Hylite-555')
+    axes_hand.errorbar(array([10, 20, 30, 40]), c2_median_fluor_row, yerr = c2_yerr_mat, marker = '.', markersize = 16, label = 'Alexa-647')
     axes_hand.tick_params(labelsize = 12)
     axes_hand.set_xlabel('Capping protein (nM)', fontsize = 12)
-    axes_hand.set_ylabel('Median actin fluorescence', fontsize = 12)
+    axes_hand.set_ylabel('Mean actin fluorescence', fontsize = 12)
     axes_hand.legend(fontsize = 12)
     tight_layout()
     return fig_hand, axes_hand
@@ -449,17 +354,17 @@ def plot_median_tail_length(df_file_path_row, chase_minutes = 1.0):
         i_tail_length_row = i_df['chase_tail_length'][i_is_comet_row] / \
                             chase_minutes
         i_percentile_row = percentile(i_tail_length_row, (25, 50, 75))
-        median_tail_length_row[i] = i_percentile_row[1]
+        median_tail_length_row[i] = i_tail_length_row.mean()
         low_bound_row[i] = i_percentile_row[0]
         up_bound_row[i] = i_percentile_row[2]     
     yerr_mat = stack((median_tail_length_row - low_bound_row, up_bound_row - median_tail_length_row), axis = -1).T
     fig_hand, axes_hand = subplots()
     fig_hand.set_facecolor('white')
     axes_hand.set_ylim([0, 1.1 * up_bound_row.max()])
-    axes_hand.errorbar(array([25, 75, 125, 175, 225]), median_tail_length_row, yerr = yerr_mat, marker = '.', markersize = 16)
+    axes_hand.errorbar(array([10, 20, 30, 40]), median_tail_length_row, yerr = yerr_mat, marker = '.', markersize = 16)
     axes_hand.tick_params(labelsize = 12)
     axes_hand.set_xlabel('Capping protein (nM)', fontsize = 12)
-    axes_hand.set_ylabel('Median growth rate ($\mu$m/min)', fontsize = 12)
+    axes_hand.set_ylabel('Mean growth rate ($\mu$m/min)', fontsize = 12)
     tight_layout()
     return fig_hand, axes_hand
 
