@@ -1,0 +1,174 @@
+[I 10:38:13.681 LabApp] JupyterLab extension loaded from /home/jiongyi/anaconda3/lib/python3.7/site-packages/jupyterlab
+[I 10:38:13.681 LabApp] JupyterLab application directory is /home/jiongyi/anaconda3/share/jupyter/lab
+[I 10:38:13.684 LabApp] Serving notebooks from local directory: /home/jiongyi/github/jupyter/actin_assembly/simulation
+[I 10:38:13.684 LabApp] Jupyter Notebook 6.2.0 is running at:
+[I 10:38:13.684 LabApp] http://localhost:8888/?token=a424dadd7e709cd2d602aedc12b0aa1d45f4f2c6a3deceb9
+[I 10:38:13.684 LabApp]  or http://127.0.0.1:8888/?token=a424dadd7e709cd2d602aedc12b0aa1d45f4f2c6a3deceb9
+[I 10:38:13.684 LabApp] Use Control-C to stop this server and shut down all kernels (twice to skip confirmation).
+[C 10:38:13.736 LabApp] 
+    
+    To access the notebook, open this file in a browser:
+        file:///home/jiongyi/.local/share/jupyter/runtime/nbserver-13273-open.html
+    Or copy and paste one of these URLs:
+        http://localhost:8888/?token=a424dadd7e709cd2d602aedc12b0aa1d45f4f2c6a3deceb9
+     or http://127.0.0.1:8888/?token=a424dadd7e709cd2d602aedc12b0aa1d45f4f2c6a3deceb9
+[W 10:38:16.375 LabApp] Could not determine jupyterlab build status without nodejs
+[W 10:38:17.369 LabApp] 404 GET /api/contents/Untitled.ipynb?content=0&1614710297357 (127.0.0.1): No such file or directory: Untitled.ipynb
+[W 10:38:17.369 LabApp] No such file or directory: Untitled.ipynb
+[W 10:38:17.370 LabApp] 404 GET /api/contents/Untitled.ipynb?content=0&1614710297357 (127.0.0.1) 2.670000ms referer=http://localhost:8888/lab
+[I 10:38:29.961 LabApp] Kernel started: 5aab434b-a0ae-4b9a-8f00-0048a8d7df29, name: python3
+[W 10:38:35.016 LabApp] Notebook 2020-04-15-2d-network-polymerase.ipynb is not trusted
+[I 10:38:35.476 LabApp] Kernel started: 97f62668-1292-4a6f-b77e-0bc7d0d4b203, name: python3
+[I 10:40:23.143 LabApp] Kernel restarted: 97f62668-1292-4a6f-b77e-0bc7d0d4b203
+[I 10:40:30.785 LabApp] Saving file at /2020_10_09_dev_branched_actin_assembly.ipynb
+[I 10:40:35.847 LabApp] Saving file at /2020-04-15-2d-network-polymerase.ipynb
+[I 10:41:16.464 LabApp] Kernel restarted: 97f62668-1292-4a6f-b77e-0bc7d0d4b203
+[I 10:42:35.904 LabApp] Saving file at /2020-04-15-2d-network-polymerase.ipynb
+[I 10:56:45.213 LabApp] Creating new notebook in /
+[I 10:56:45.617 LabApp] Kernel started: b8152797-0d2c-47cc-8864-38cd8755eed1, name: python3
+[I 10:58:45.497 LabApp] Saving file at /2021_03_02_polymerase.ipynb
+[I 11:00:45.555 LabApp] Saving file at /2021_03_02_polymerase.ipynb
+[I 11:02:45.607 LabApp] Saving file at /2021_03_02_polymerase.ipynb
+[I 11:53:27.624 LabApp] Kernel interrupted: 97f62668-1292-4a6f-b77e-0bc7d0d4b203
+[I 11:53:36.035 LabApp] Saving file at /2020_10_09_dev_branched_actin_assembly.ipynb
+[I 11:53:42.722 LabApp] Kernel shutdown: 5aab434b-a0ae-4b9a-8f00-0048a8d7df29
+[I 11:53:51.441 LabApp] Kernel shutdown: 97f62668-1292-4a6f-b77e-0bc7d0d4b203
+[I 15:14:53.214 LabApp] Saving file at /2021_03_02_polymerase.ipynb
+[I 15:16:53.278 LabApp] Saving file at /2021_03_02_polymerase.ipynb
+[I 15:18:53.322 LabApp] Saving file at /2021_03_02_polymerase.ipynb
+[I 15:20:53.369 LabApp] Saving file at /2021_03_02_polymerase.ipynb
+[I 15:22:53.420 LabApp] Saving file at /2021_03_02_polymerase.ipynb
+[I 15:23:11.826 LabApp] Saving file at /2021_03_02_polymerase.ipynb
+[I 15:23:15.648 LabApp] Kernel restarted: b8152797-0d2c-47cc-8864-38cd8755eed1
+[I 15:23:24.975 LabApp] Kernel restarted: b8152797-0d2c-47cc-8864-38cd8755eed1
+[I 15:23:31.285 LabApp] Kernel restarted: b8152797-0d2c-47cc-8864-38cd8755eed1
+[I 15:25:12.829 LabApp] Saving file at /2021_03_02_polymerase.ipynb
+[I 15:27:12.882 LabApp] Saving file at /2021_03_02_polymerase.ipynb
+[I 15:29:12.932 LabApp] Saving file at /2021_03_02_polymerase.ipynb
+[I 15:31:12.977 LabApp] Saving file at /2021_03_02_polymerase.ipynb
+[I 15:33:13.032 LabApp] Saving file at /2021_03_02_polymerase.ipynb
+[I 15:35:13.086 LabApp] Saving file at /2021_03_02_polymerase.ipynb
+[I 15:37:13.138 LabApp] Saving file at /2021_03_02_polymerase.ipynb
+[I 15:41:13.194 LabApp] Saving file at /2021_03_02_polymerase.ipynb
+[I 15:43:13.248 LabApp] Saving file at /2021_03_02_polymerase.ipynb
+[I 15:45:13.304 LabApp] Saving file at /2021_03_02_polymerase.ipynb
+[I 15:47:13.359 LabApp] Saving file at /2021_03_02_polymerase.ipynb
+[I 15:49:13.673 LabApp] Saving file at /2021_03_02_polymerase.ipynb
+[I 15:50:52.305 LabApp] Saving file at /2021_03_02_polymerase.ipynb
+[I 15:51:46.977 LabApp] Saving file at /2021_03_02_polymerase.ipynb
+[I 15:51:51.692 LabApp] Kernel restarted: b8152797-0d2c-47cc-8864-38cd8755eed1
+[I 15:52:27.694 LabApp] Saving file at /2021_03_02_polymerase.ipynb
+[I 15:53:12.992 LabApp] Saving file at /2021_03_02_polymerase.ipynb
+[I 15:54:04.418 LabApp] Saving file at /2021_03_02_polymerase.ipynb
+[I 15:55:21.848 LabApp] Saving file at /2021_03_02_polymerase.ipynb
+[I 15:55:24.696 LabApp] Kernel restarted: b8152797-0d2c-47cc-8864-38cd8755eed1
+[I 15:55:57.692 LabApp] Saving file at /2021_03_02_polymerase.ipynb
+[I 15:56:00.885 LabApp] Kernel restarted: b8152797-0d2c-47cc-8864-38cd8755eed1
+[I 15:57:57.763 LabApp] Saving file at /2021_03_02_polymerase.ipynb
+[I 15:58:48.008 LabApp] Kernel interrupted: b8152797-0d2c-47cc-8864-38cd8755eed1
+[I 15:59:57.838 LabApp] Saving file at /2021_03_02_polymerase.ipynb
+[I 16:01:57.897 LabApp] Saving file at /2021_03_02_polymerase.ipynb
+[I 16:02:01.933 LabApp] Saving file at /2021_03_02_polymerase.ipynb
+[I 16:03:01.449 LabApp] Saving file at /2021_03_02_polymerase.ipynb
+[I 16:03:23.254 LabApp] Kernel restarted: b8152797-0d2c-47cc-8864-38cd8755eed1
+[I 16:04:21.078 LabApp] Saving file at /2021_03_02_polymerase.ipynb
+[I 16:04:24.745 LabApp] Kernel restarted: b8152797-0d2c-47cc-8864-38cd8755eed1
+[I 16:06:21.149 LabApp] Saving file at /2021_03_02_polymerase.ipynb
+[I 16:07:13.648 LabApp] Saving file at /2021_03_02_polymerase.ipynb
+[I 16:07:16.291 LabApp] Kernel restarted: b8152797-0d2c-47cc-8864-38cd8755eed1
+[I 16:07:59.828 LabApp] Saving file at /2021_03_02_polymerase.ipynb
+[I 16:08:11.732 LabApp] Saving file at /2021_03_02_polymerase.ipynb
+[I 16:08:15.247 LabApp] Kernel restarted: b8152797-0d2c-47cc-8864-38cd8755eed1
+[I 16:10:11.796 LabApp] Saving file at /2021_03_02_polymerase.ipynb
+[I 16:10:41.490 LabApp] Saving file at /2021_03_02_polymerase.ipynb
+[I 16:10:45.338 LabApp] Kernel restarted: b8152797-0d2c-47cc-8864-38cd8755eed1
+[I 16:12:41.546 LabApp] Saving file at /2021_03_02_polymerase.ipynb
+[I 16:13:10.027 LabApp] Saving file at /2021_03_02_polymerase.ipynb
+[I 16:15:30.485 LabApp] Kernel started: ed537614-006e-46e0-8361-d6f69e8ec4fd, name: python3
+[I 16:17:10.113 LabApp] Saving file at /2021_03_02_polymerase.ipynb
+[I 16:19:10.166 LabApp] Saving file at /2021_03_02_polymerase.ipynb
+[I 16:21:10.225 LabApp] Saving file at /2021_03_02_polymerase.ipynb
+[I 16:23:10.982 LabApp] Saving file at /2021_03_02_polymerase.ipynb
+[I 16:31:12.068 LabApp] Saving file at /2021_03_02_polymerase.ipynb
+[I 16:33:12.128 LabApp] Saving file at /2021_03_02_polymerase.ipynb
+[I 16:35:12.190 LabApp] Saving file at /2021_03_02_polymerase.ipynb
+[I 16:37:12.241 LabApp] Saving file at /2021_03_02_polymerase.ipynb
+[I 16:41:12.553 LabApp] Saving file at /2021_03_02_polymerase.ipynb
+[I 16:43:13.090 LabApp] Saving file at /2021_03_02_polymerase.ipynb
+[I 16:45:13.157 LabApp] Saving file at /2021_03_02_polymerase.ipynb
+[I 16:47:13.221 LabApp] Saving file at /2021_03_02_polymerase.ipynb
+[I 16:49:13.288 LabApp] Saving file at /2021_03_02_polymerase.ipynb
+[I 16:51:13.344 LabApp] Saving file at /2021_03_02_polymerase.ipynb
+[I 16:53:14.401 LabApp] Saving file at /2021_03_02_polymerase.ipynb
+[I 16:55:14.462 LabApp] Saving file at /2021_03_02_polymerase.ipynb
+[I 16:55:35.392 LabApp] Saving file at /2021_03_02_polymerase.ipynb
+[I 16:55:37.985 LabApp] Kernel restarted: b8152797-0d2c-47cc-8864-38cd8755eed1
+[I 16:56:08.005 LabApp] Saving file at /2021_03_02_polymerase.ipynb
+[I 16:56:13.389 LabApp] Saving file at /2021_03_02_polymerase.ipynb
+[I 16:56:16.375 LabApp] Kernel restarted: b8152797-0d2c-47cc-8864-38cd8755eed1
+[I 16:56:28.226 LabApp] Saving file at /2021_03_02_polymerase.ipynb
+[I 16:56:36.051 LabApp] Kernel restarted: b8152797-0d2c-47cc-8864-38cd8755eed1
+[I 16:57:33.256 LabApp] Saving file at /2021_03_02_polymerase.ipynb
+[I 16:57:36.938 LabApp] Kernel restarted: b8152797-0d2c-47cc-8864-38cd8755eed1
+[I 16:58:40.416 LabApp] Saving file at /2021_03_02_polymerase.ipynb
+[I 16:58:43.378 LabApp] Kernel restarted: b8152797-0d2c-47cc-8864-38cd8755eed1
+[I 16:59:36.294 LabApp] Saving file at /2021_03_02_polymerase.ipynb
+[I 16:59:41.570 LabApp] Kernel restarted: b8152797-0d2c-47cc-8864-38cd8755eed1
+[I 17:00:29.698 LabApp] Saving file at /2021_03_02_polymerase.ipynb
+[I 17:00:32.362 LabApp] Kernel restarted: b8152797-0d2c-47cc-8864-38cd8755eed1
+[I 17:01:34.025 LabApp] Saving file at /2021_03_02_polymerase.ipynb
+[I 17:01:46.125 LabApp] Saving file at /2021_03_02_polymerase.ipynb
+[I 17:01:48.998 LabApp] Kernel restarted: b8152797-0d2c-47cc-8864-38cd8755eed1
+[I 17:02:01.869 LabApp] Kernel restarted: b8152797-0d2c-47cc-8864-38cd8755eed1
+[I 17:02:10.274 LabApp] Saving file at /2021_03_02_polymerase.ipynb
+[I 17:02:12.809 LabApp] Kernel restarted: b8152797-0d2c-47cc-8864-38cd8755eed1
+[I 17:02:26.391 LabApp] Kernel restarted: b8152797-0d2c-47cc-8864-38cd8755eed1
+[I 17:02:32.986 LabApp] Kernel restarted: b8152797-0d2c-47cc-8864-38cd8755eed1
+[I 17:02:39.523 LabApp] Saving file at /2021_03_02_polymerase.ipynb
+[I 17:02:42.345 LabApp] Kernel restarted: b8152797-0d2c-47cc-8864-38cd8755eed1
+[I 17:02:50.253 LabApp] Kernel restarted: b8152797-0d2c-47cc-8864-38cd8755eed1
+[I 17:02:59.845 LabApp] Saving file at /2021_03_02_polymerase.ipynb
+[I 17:03:02.474 LabApp] Kernel restarted: b8152797-0d2c-47cc-8864-38cd8755eed1
+[I 17:04:36.914 LabApp] Saving file at /2021_03_02_polymerase.ipynb
+[I 17:04:40.748 LabApp] Saving file at /2021_03_02_polymerase.ipynb
+[I 17:04:44.908 LabApp] Kernel restarted: b8152797-0d2c-47cc-8864-38cd8755eed1
+[I 17:06:40.815 LabApp] Saving file at /2021_03_02_polymerase.ipynb
+[I 17:08:24.211 LabApp] Saving file at /2021_03_02_polymerase.ipynb
+[I 17:17:10.120 LabApp] Saving file at /2021_03_02_polymerase.ipynb
+[I 17:25:10.200 LabApp] Saving file at /2021_03_02_polymerase.ipynb
+[I 17:26:12.333 LabApp] Saving file at /2021_03_02_polymerase.ipynb
+[I 17:26:30.457 LabApp] Kernel restarted: b8152797-0d2c-47cc-8864-38cd8755eed1
+[I 17:26:41.357 LabApp] Saving file at /2021_03_02_polymerase.ipynb
+[I 17:26:45.310 LabApp] Kernel restarted: b8152797-0d2c-47cc-8864-38cd8755eed1
+[I 17:27:17.584 LabApp] Saving file at /2021_03_02_polymerase.ipynb
+[I 17:27:21.545 LabApp] Kernel restarted: b8152797-0d2c-47cc-8864-38cd8755eed1
+[I 17:27:31.106 LabApp] Saving file at /2021_03_02_polymerase.ipynb
+[I 17:27:34.436 LabApp] Kernel restarted: b8152797-0d2c-47cc-8864-38cd8755eed1
+[I 17:27:54.700 LabApp] Saving file at /2021_03_02_polymerase.ipynb
+[I 17:27:57.416 LabApp] Kernel restarted: b8152797-0d2c-47cc-8864-38cd8755eed1
+[I 17:28:08.104 LabApp] Saving file at /2021_03_02_polymerase.ipynb
+[I 17:28:10.719 LabApp] Kernel restarted: b8152797-0d2c-47cc-8864-38cd8755eed1
+[I 17:28:21.923 LabApp] Saving file at /2021_03_02_polymerase.ipynb
+[I 17:28:24.822 LabApp] Kernel restarted: b8152797-0d2c-47cc-8864-38cd8755eed1
+[I 17:28:34.705 LabApp] Kernel restarted: b8152797-0d2c-47cc-8864-38cd8755eed1
+[I 17:28:41.849 LabApp] Kernel restarted: b8152797-0d2c-47cc-8864-38cd8755eed1
+[I 17:28:49.722 LabApp] Kernel restarted: b8152797-0d2c-47cc-8864-38cd8755eed1
+[I 17:29:42.418 LabApp] Saving file at /2021_03_02_polymerase.ipynb
+[I 17:29:45.978 LabApp] Kernel restarted: b8152797-0d2c-47cc-8864-38cd8755eed1
+[I 17:29:53.815 LabApp] Kernel restarted: b8152797-0d2c-47cc-8864-38cd8755eed1
+[I 17:30:07.488 LabApp] Saving file at /2021_03_02_polymerase.ipynb
+[I 17:30:11.165 LabApp] Kernel restarted: b8152797-0d2c-47cc-8864-38cd8755eed1
+[I 17:32:07.552 LabApp] Saving file at /2021_03_02_polymerase.ipynb
+[I 17:37:34.284 LabApp] Saving file at /2021_03_02_polymerase.ipynb
+[I 17:37:37.168 LabApp] Kernel restarted: b8152797-0d2c-47cc-8864-38cd8755eed1
+[I 17:39:33.431 LabApp] Kernel restarted: b8152797-0d2c-47cc-8864-38cd8755eed1
+[I 17:39:34.358 LabApp] Saving file at /2021_03_02_polymerase.ipynb
+[I 17:41:34.416 LabApp] Saving file at /2021_03_02_polymerase.ipynb
+[I 09:32:13.183 LabApp] Saving file at /2021_03_02_polymerase.ipynb
+[I 09:32:13.222 LabApp] Saving file at /branched_actin_assembly.py
+[I 09:32:13.226 LabApp] Saving file at /2020-04-15-2d-network-polymerase.ipynb
+[I 09:32:17.391 LabApp] Shutting down on /api/shutdown request.
+[I 09:32:17.392 LabApp] Shutting down 2 kernels
+[I 09:32:17.693 LabApp] Kernel shutdown: b8152797-0d2c-47cc-8864-38cd8755eed1
+[I 09:32:17.693 LabApp] Kernel shutdown: ed537614-006e-46e0-8361-d6f69e8ec4fd
+[I 09:32:17.694 LabApp] Shutting down 0 terminals
