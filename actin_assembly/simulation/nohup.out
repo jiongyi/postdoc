@@ -172,3 +172,70 @@
 [I 09:32:17.693 LabApp] Kernel shutdown: b8152797-0d2c-47cc-8864-38cd8755eed1
 [I 09:32:17.693 LabApp] Kernel shutdown: ed537614-006e-46e0-8361-d6f69e8ec4fd
 [I 09:32:17.694 LabApp] Shutting down 0 terminals
+[I 09:38:17.116 LabApp] JupyterLab extension loaded from /home/jiongyi/anaconda3/lib/python3.7/site-packages/jupyterlab
+[I 09:38:17.116 LabApp] JupyterLab application directory is /home/jiongyi/anaconda3/share/jupyter/lab
+[I 09:38:17.118 LabApp] Serving notebooks from local directory: /home/jiongyi/github/jupyter/actin_assembly/simulation
+[I 09:38:17.118 LabApp] Jupyter Notebook 6.2.0 is running at:
+[I 09:38:17.118 LabApp] http://localhost:8888/?token=66f07100e0c37bb8c7a7049c9fed32584d0115bef94df5ba
+[I 09:38:17.118 LabApp]  or http://127.0.0.1:8888/?token=66f07100e0c37bb8c7a7049c9fed32584d0115bef94df5ba
+[I 09:38:17.118 LabApp] Use Control-C to stop this server and shut down all kernels (twice to skip confirmation).
+[C 09:38:17.169 LabApp] 
+    
+    To access the notebook, open this file in a browser:
+        file:///home/jiongyi/.local/share/jupyter/runtime/nbserver-29736-open.html
+    Or copy and paste one of these URLs:
+        http://localhost:8888/?token=66f07100e0c37bb8c7a7049c9fed32584d0115bef94df5ba
+     or http://127.0.0.1:8888/?token=66f07100e0c37bb8c7a7049c9fed32584d0115bef94df5ba
+[W 09:38:19.673 LabApp] Could not determine jupyterlab build status without nodejs
+[W 09:38:21.038 LabApp] Notebook 2021_03_02_polymerase.ipynb is not trusted
+[I 09:38:21.637 LabApp] Kernel started: a4fa9666-7d8d-4ec3-a066-fdfa763713f0, name: python3
+[I 09:38:21.653 LabApp] Kernel started: 0e002bd8-3628-4990-9ef2-1bc3505bc43d, name: python3
+[I 09:40:21.355 LabApp] Saving file at /2021_03_03_polymerase.ipynb
+[W 09:40:21.356 LabApp] Notebook 2021_03_03_polymerase.ipynb is not trusted
+[I 09:41:46.188 LabApp] Saving file at /2021_03_03_polymerase.ipynb
+[W 09:41:46.188 LabApp] Notebook 2021_03_03_polymerase.ipynb is not trusted
+[I 09:41:58.244 LabApp] Saving file at /2021_03_03_polymerase.ipynb
+[W 09:41:58.244 LabApp] Notebook 2021_03_03_polymerase.ipynb is not trusted
+[I 09:42:16.206 LabApp] Saving file at /2021_03_03_polymerase.ipynb
+[W 09:42:16.206 LabApp] Notebook 2021_03_03_polymerase.ipynb is not trusted
+[I 09:42:19.854 LabApp] Kernel restarted: a4fa9666-7d8d-4ec3-a066-fdfa763713f0
+[I 09:42:49.044 LabApp] Saving file at /2021_03_03_polymerase.ipynb
+[I 09:43:58.500 LabApp] Saving file at /2021_03_03_polymerase.ipynb
+[I 09:44:41.981 LabApp] Saving file at /2021_03_03_polymerase.ipynb
+[I 09:44:56.962 LabApp] Saving file at /2021_03_03_polymerase.ipynb
+[I 09:45:24.543 LabApp] Saving file at /2021_03_03_polymerase.ipynb
+[I 09:45:41.551 LabApp] Saving file at /2021_03_03_polymerase.ipynb
+[I 09:45:51.180 LabApp] Saving file at /2021_03_03_polymerase.ipynb
+[I 09:45:55.241 LabApp] Saving file at /2021_03_03_polymerase.ipynb
+[I 09:45:56.033 LabApp] Saving file at /2021_03_03_polymerase.ipynb
+[I 09:46:25.595 LabApp] Kernel restarted: a4fa9666-7d8d-4ec3-a066-fdfa763713f0
+[I 09:47:56.099 LabApp] Saving file at /2021_03_03_polymerase.ipynb
+[I 09:49:56.149 LabApp] Saving file at /2021_03_03_polymerase.ipynb
+[I 09:51:56.203 LabApp] Saving file at /2021_03_03_polymerase.ipynb
+[I 09:53:56.272 LabApp] Saving file at /2021_03_03_polymerase.ipynb
+[I 09:55:56.334 LabApp] Saving file at /2021_03_03_polymerase.ipynb
+[I 09:57:56.391 LabApp] Saving file at /2021_03_03_polymerase.ipynb
+[I 09:59:56.440 LabApp] Saving file at /2021_03_03_polymerase.ipynb
+[I 10:01:56.494 LabApp] Saving file at /2021_03_03_polymerase.ipynb
+[I 10:15:56.556 LabApp] Saving file at /2021_03_03_polymerase.ipynb
+[I 10:17:56.616 LabApp] Saving file at /2021_03_03_polymerase.ipynb
+[I 10:19:56.711 LabApp] Saving file at /2021_03_03_polymerase.ipynb
+[I 10:21:56.761 LabApp] Saving file at /2021_03_03_polymerase.ipynb
+[I 10:23:56.825 LabApp] Saving file at /2021_03_03_polymerase.ipynb
+[I 10:25:57.043 LabApp] Saving file at /2021_03_03_polymerase.ipynb
+[I 10:31:57.240 LabApp] Saving file at /2021_03_03_polymerase.ipynb
+[I 10:33:58.167 LabApp] Saving file at /2021_03_03_polymerase.ipynb
+[I 10:35:58.225 LabApp] Saving file at /2021_03_03_polymerase.ipynb
+[I 10:36:54.685 LabApp] Saving file at /2021_03_03_polymerase.ipynb
+[I 10:37:07.254 LabApp] Saving file at /2021_03_03_polymerase.ipynb
+[I 10:37:11.426 LabApp] Kernel restarted: a4fa9666-7d8d-4ec3-a066-fdfa763713f0
+[I 10:39:07.328 LabApp] Saving file at /2021_03_03_polymerase.ipynb
+[I 10:51:09.909 LabApp] Saving file at /2021_03_03_polymerase.ipynb
+[I 10:55:29.920 LabApp] Saving file at /2021_03_03_polymerase.ipynb
+[I 10:55:29.949 LabApp] Saving file at /branched_actin_assembly.py
+[I 10:55:29.955 LabApp] Saving file at /2020-04-15-2d-network-polymerase.ipynb
+[I 10:55:34.981 LabApp] Shutting down on /api/shutdown request.
+[I 10:55:34.985 LabApp] Shutting down 2 kernels
+[I 10:55:35.287 LabApp] Kernel shutdown: a4fa9666-7d8d-4ec3-a066-fdfa763713f0
+[I 10:55:35.288 LabApp] Kernel shutdown: 0e002bd8-3628-4990-9ef2-1bc3505bc43d
+[I 10:55:35.288 LabApp] Shutting down 0 terminals
