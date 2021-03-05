@@ -209,3 +209,165 @@
 [I 20:12:07.849 LabApp] Shutting down 0 terminals
 [I 20:12:07.854 LabApp] KernelRestarter: restarting kernel (1/5), keep random ports
 kernel 9532ffed-ca47-49cd-b83c-8a6eb3c5f51a restarted
+[I 16:05:51.233 LabApp] JupyterLab extension loaded from /home/jiongyi/anaconda3/lib/python3.8/site-packages/jupyterlab
+[I 16:05:51.234 LabApp] JupyterLab application directory is /home/jiongyi/anaconda3/share/jupyter/lab
+[I 16:05:51.238 LabApp] Serving notebooks from local directory: /home/jiongyi/github/jupyter
+[I 16:05:51.238 LabApp] Jupyter Notebook 6.2.0 is running at:
+[I 16:05:51.238 LabApp] http://localhost:8888/?token=e0c3e52c7204bf71b803445ca64f452f9edfe6c988d9e612
+[I 16:05:51.238 LabApp]  or http://127.0.0.1:8888/?token=e0c3e52c7204bf71b803445ca64f452f9edfe6c988d9e612
+[I 16:05:51.238 LabApp] Use Control-C to stop this server and shut down all kernels (twice to skip confirmation).
+[C 16:05:51.289 LabApp] 
+    
+    To access the notebook, open this file in a browser:
+        file:///home/jiongyi/.local/share/jupyter/runtime/nbserver-126306-open.html
+    Or copy and paste one of these URLs:
+        http://localhost:8888/?token=e0c3e52c7204bf71b803445ca64f452f9edfe6c988d9e612
+     or http://127.0.0.1:8888/?token=e0c3e52c7204bf71b803445ca64f452f9edfe6c988d9e612
+[W 16:05:55.330 LabApp] Could not determine jupyterlab build status without nodejs
+[W 16:06:18.915 LabApp] Notebook actin_assembly/simulation/2020-04-15-2d-network-polymerase.ipynb is not trusted
+[I 16:06:19.647 LabApp] Kernel started: a99b78ac-64aa-4e23-8fd5-916b7e0cee5f, name: python3
+[W 16:06:21.832 LabApp] Notebook actin_assembly/simulation/2021_03_03_polymerase.ipynb is not trusted
+[I 16:06:22.566 LabApp] Kernel started: c229d07a-0aea-4f81-b8a8-a49163a277c8, name: python3
+[I 16:08:19.416 LabApp] Saving file at /actin_assembly/simulation/2020-04-15-2d-network-polymerase.ipynb
+[I 16:24:23.436 LabApp] Saving file at /actin_assembly/simulation/2021_03_04_polymerase.ipynb
+[W 16:24:23.437 LabApp] Notebook actin_assembly/simulation/2021_03_04_polymerase.ipynb is not trusted
+[I 16:26:23.592 LabApp] Saving file at /actin_assembly/simulation/2021_03_04_polymerase.ipynb
+[W 16:26:23.593 LabApp] Notebook actin_assembly/simulation/2021_03_04_polymerase.ipynb is not trusted
+[I 16:30:23.710 LabApp] Saving file at /actin_assembly/simulation/2021_03_04_polymerase.ipynb
+[W 16:30:23.710 LabApp] Notebook actin_assembly/simulation/2021_03_04_polymerase.ipynb is not trusted
+[I 16:32:23.847 LabApp] Saving file at /actin_assembly/simulation/2021_03_04_polymerase.ipynb
+[W 16:32:23.847 LabApp] Notebook actin_assembly/simulation/2021_03_04_polymerase.ipynb is not trusted
+[I 16:34:23.960 LabApp] Saving file at /actin_assembly/simulation/2021_03_04_polymerase.ipynb
+[W 16:34:23.961 LabApp] Notebook actin_assembly/simulation/2021_03_04_polymerase.ipynb is not trusted
+[I 16:36:24.072 LabApp] Saving file at /actin_assembly/simulation/2021_03_04_polymerase.ipynb
+[W 16:36:24.072 LabApp] Notebook actin_assembly/simulation/2021_03_04_polymerase.ipynb is not trusted
+[I 16:38:24.193 LabApp] Saving file at /actin_assembly/simulation/2021_03_04_polymerase.ipynb
+[W 16:38:24.193 LabApp] Notebook actin_assembly/simulation/2021_03_04_polymerase.ipynb is not trusted
+[I 16:40:24.319 LabApp] Saving file at /actin_assembly/simulation/2021_03_04_polymerase.ipynb
+[W 16:40:24.320 LabApp] Notebook actin_assembly/simulation/2021_03_04_polymerase.ipynb is not trusted
+[I 16:42:24.433 LabApp] Saving file at /actin_assembly/simulation/2021_03_04_polymerase.ipynb
+[W 16:42:24.434 LabApp] Notebook actin_assembly/simulation/2021_03_04_polymerase.ipynb is not trusted
+[I 16:44:24.586 LabApp] Saving file at /actin_assembly/simulation/2021_03_04_polymerase.ipynb
+[W 16:44:24.586 LabApp] Notebook actin_assembly/simulation/2021_03_04_polymerase.ipynb is not trusted
+[I 16:46:24.700 LabApp] Saving file at /actin_assembly/simulation/2021_03_04_polymerase.ipynb
+[W 16:46:24.701 LabApp] Notebook actin_assembly/simulation/2021_03_04_polymerase.ipynb is not trusted
+[I 16:48:24.819 LabApp] Saving file at /actin_assembly/simulation/2021_03_04_polymerase.ipynb
+[W 16:48:24.819 LabApp] Notebook actin_assembly/simulation/2021_03_04_polymerase.ipynb is not trusted
+[I 16:50:24.940 LabApp] Saving file at /actin_assembly/simulation/2021_03_04_polymerase.ipynb
+[W 16:50:24.941 LabApp] Notebook actin_assembly/simulation/2021_03_04_polymerase.ipynb is not trusted
+[I 16:52:25.059 LabApp] Saving file at /actin_assembly/simulation/2021_03_04_polymerase.ipynb
+[W 16:52:25.060 LabApp] Notebook actin_assembly/simulation/2021_03_04_polymerase.ipynb is not trusted
+[I 16:54:25.172 LabApp] Saving file at /actin_assembly/simulation/2021_03_04_polymerase.ipynb
+[W 16:54:25.172 LabApp] Notebook actin_assembly/simulation/2021_03_04_polymerase.ipynb is not trusted
+[I 16:56:25.296 LabApp] Saving file at /actin_assembly/simulation/2021_03_04_polymerase.ipynb
+[W 16:56:25.297 LabApp] Notebook actin_assembly/simulation/2021_03_04_polymerase.ipynb is not trusted
+[I 16:57:54.932 LabApp] Saving file at /actin_assembly/simulation/2021_03_04_polymerase.ipynb
+[W 16:57:54.932 LabApp] Notebook actin_assembly/simulation/2021_03_04_polymerase.ipynb is not trusted
+[I 16:58:47.818 LabApp] Saving file at /actin_assembly/simulation/2021_03_04_polymerase.ipynb
+[W 16:58:47.819 LabApp] Notebook actin_assembly/simulation/2021_03_04_polymerase.ipynb is not trusted
+[I 16:58:52.459 LabApp] Kernel restarted: c229d07a-0aea-4f81-b8a8-a49163a277c8
+[I 17:00:48.761 LabApp] Saving file at /actin_assembly/simulation/2021_03_04_polymerase.ipynb
+[I 17:03:51.482 LabApp] Kernel interrupted: c229d07a-0aea-4f81-b8a8-a49163a277c8
+[I 17:04:00.890 LabApp] Saving file at /actin_assembly/simulation/2021_03_04_polymerase.ipynb
+[I 17:04:47.892 LabApp] Saving file at /actin_assembly/simulation/2021_03_04_polymerase.ipynb
+[I 17:04:51.460 LabApp] Kernel restarted: c229d07a-0aea-4f81-b8a8-a49163a277c8
+[I 17:05:21.763 LabApp] Saving file at /actin_assembly/simulation/2021_03_04_polymerase.ipynb
+[I 17:05:25.358 LabApp] Kernel restarted: c229d07a-0aea-4f81-b8a8-a49163a277c8
+[I 17:05:47.038 LabApp] Saving file at /actin_assembly/simulation/2021_03_04_polymerase.ipynb
+[I 17:05:50.987 LabApp] Kernel restarted: c229d07a-0aea-4f81-b8a8-a49163a277c8
+[I 17:07:02.152 LabApp] Kernel restarted: c229d07a-0aea-4f81-b8a8-a49163a277c8
+[I 17:07:47.107 LabApp] Saving file at /actin_assembly/simulation/2021_03_04_polymerase.ipynb
+[I 17:08:14.778 LabApp] Kernel restarted: c229d07a-0aea-4f81-b8a8-a49163a277c8
+[I 17:09:47.571 LabApp] Saving file at /actin_assembly/simulation/2021_03_04_polymerase.ipynb
+[I 17:10:32.684 LabApp] Saving file at /actin_assembly/simulation/2021_03_04_polymerase.ipynb
+[I 17:10:36.366 LabApp] Kernel restarted: c229d07a-0aea-4f81-b8a8-a49163a277c8
+[W 17:10:40.240 LabApp] IOPub data rate exceeded.
+    The notebook server will temporarily stop sending output
+    to the client in order to avoid crashing it.
+    To change this limit, set the config variable
+    `--NotebookApp.iopub_data_rate_limit`.
+    
+    Current values:
+    NotebookApp.iopub_data_rate_limit=1000000.0 (bytes/sec)
+    NotebookApp.rate_limit_window=3.0 (secs)
+    
+[W 17:10:41.055 LabApp] iopub messages resumed
+[W 17:10:43.760 LabApp] IOPub data rate exceeded.
+    The notebook server will temporarily stop sending output
+    to the client in order to avoid crashing it.
+    To change this limit, set the config variable
+    `--NotebookApp.iopub_data_rate_limit`.
+    
+    Current values:
+    NotebookApp.iopub_data_rate_limit=1000000.0 (bytes/sec)
+    NotebookApp.rate_limit_window=3.0 (secs)
+    
+[I 17:11:22.020 LabApp] Kernel restarted: c229d07a-0aea-4f81-b8a8-a49163a277c8
+[I 17:11:50.357 LabApp] Saving file at /actin_assembly/simulation/2021_03_04_polymerase.ipynb
+[I 17:12:02.278 LabApp] Kernel restarted: c229d07a-0aea-4f81-b8a8-a49163a277c8
+[I 17:13:47.364 LabApp] Saving file at /actin_assembly/simulation/2021_03_04_polymerase.ipynb
+[I 17:14:01.510 LabApp] Kernel restarted: c229d07a-0aea-4f81-b8a8-a49163a277c8
+[I 17:14:43.519 LabApp] Saving file at /actin_assembly/simulation/2021_03_04_polymerase.ipynb
+[I 17:14:47.381 LabApp] Kernel restarted: c229d07a-0aea-4f81-b8a8-a49163a277c8
+[I 17:15:55.868 LabApp] Saving file at /actin_assembly/simulation/2021_03_04_polymerase.ipynb
+[I 19:26:53.491 LabApp] Kernel restarted: c229d07a-0aea-4f81-b8a8-a49163a277c8
+[I 19:27:06.538 LabApp] Saving file at /actin_assembly/simulation/2021_03_04_polymerase.ipynb
+[I 19:29:06.613 LabApp] Saving file at /actin_assembly/simulation/2021_03_04_polymerase.ipynb
+[I 19:29:16.408 LabApp] Saving file at /actin_assembly/simulation/2021_03_04_polymerase.ipynb
+[I 19:29:26.597 LabApp] Kernel restarted: c229d07a-0aea-4f81-b8a8-a49163a277c8
+[I 19:29:41.301 LabApp] Kernel restarted: c229d07a-0aea-4f81-b8a8-a49163a277c8
+[I 19:29:53.004 LabApp] Kernel restarted: c229d07a-0aea-4f81-b8a8-a49163a277c8
+[I 19:31:00.640 LabApp] Saving file at /actin_assembly/simulation/2021_03_04_polymerase.ipynb
+[I 19:31:04.774 LabApp] Kernel restarted: c229d07a-0aea-4f81-b8a8-a49163a277c8
+[I 19:31:13.189 LabApp] Kernel restarted: c229d07a-0aea-4f81-b8a8-a49163a277c8
+[I 19:31:22.404 LabApp] Kernel restarted: c229d07a-0aea-4f81-b8a8-a49163a277c8
+[I 19:31:41.746 LabApp] Saving file at /actin_assembly/simulation/2021_03_04_polymerase.ipynb
+[I 19:31:47.128 LabApp] Kernel restarted: c229d07a-0aea-4f81-b8a8-a49163a277c8
+[I 19:31:53.485 LabApp] Kernel restarted: c229d07a-0aea-4f81-b8a8-a49163a277c8
+[I 19:32:00.831 LabApp] Kernel restarted: c229d07a-0aea-4f81-b8a8-a49163a277c8
+[I 19:32:17.518 LabApp] Saving file at /actin_assembly/simulation/2021_03_04_polymerase.ipynb
+[I 19:32:22.067 LabApp] Kernel restarted: c229d07a-0aea-4f81-b8a8-a49163a277c8
+[I 19:32:27.910 LabApp] Kernel restarted: c229d07a-0aea-4f81-b8a8-a49163a277c8
+[I 19:32:33.536 LabApp] Kernel restarted: c229d07a-0aea-4f81-b8a8-a49163a277c8
+[I 19:32:47.450 LabApp] Saving file at /actin_assembly/simulation/2021_03_04_polymerase.ipynb
+[I 19:32:52.596 LabApp] Kernel restarted: c229d07a-0aea-4f81-b8a8-a49163a277c8
+[I 19:33:23.238 LabApp] Saving file at /actin_assembly/simulation/2021_03_04_polymerase.ipynb
+[I 19:33:28.716 LabApp] Kernel restarted: c229d07a-0aea-4f81-b8a8-a49163a277c8
+[I 19:33:42.645 LabApp] Saving file at /actin_assembly/simulation/2021_03_04_polymerase.ipynb
+[I 19:33:46.321 LabApp] Kernel restarted: c229d07a-0aea-4f81-b8a8-a49163a277c8
+[I 19:33:52.650 LabApp] Kernel restarted: c229d07a-0aea-4f81-b8a8-a49163a277c8
+[I 19:34:47.198 LabApp] Saving file at /actin_assembly/simulation/2021_03_04_polymerase.ipynb
+[I 19:35:00.589 LabApp] Starting buffering for c229d07a-0aea-4f81-b8a8-a49163a277c8:2275473e-d400-4e1a-b47d-be0c60407812
+[I 19:35:00.590 LabApp] Starting buffering for a99b78ac-64aa-4e23-8fd5-916b7e0cee5f:9f5dd388-d0d6-4311-bae6-4635bc74fdde
+[I 19:35:00.717 LabApp] Starting buffering for a99b78ac-64aa-4e23-8fd5-916b7e0cee5f:ea6f79cc-91b8-4992-be61-79bde47ce7f7
+[W 19:35:03.245 LabApp] Could not determine jupyterlab build status without nodejs
+[W 19:35:04.544 LabApp] Notebook actin_assembly/simulation/2021_03_04_polymerase.ipynb is not trusted
+[I 19:35:09.307 LabApp] Starting buffering for a99b78ac-64aa-4e23-8fd5-916b7e0cee5f:2d6fdab4-3404-472a-a289-9e8118ca4fee
+[I 19:35:25.045 LabApp] Kernel restarted: c229d07a-0aea-4f81-b8a8-a49163a277c8
+[I 19:35:42.782 LabApp] Saving file at /actin_assembly/simulation/2021_03_04_polymerase.ipynb
+[I 19:36:06.063 LabApp] Saving file at /actin_assembly/simulation/2021_03_04_polymerase.ipynb
+[I 19:36:09.837 LabApp] Kernel restarted: c229d07a-0aea-4f81-b8a8-a49163a277c8
+[I 19:36:25.824 LabApp] Kernel restarted: c229d07a-0aea-4f81-b8a8-a49163a277c8
+[I 19:37:45.300 LabApp] Saving file at /actin_assembly/simulation/2021_03_04_polymerase.ipynb
+[I 19:37:48.999 LabApp] Kernel restarted: c229d07a-0aea-4f81-b8a8-a49163a277c8
+[I 19:39:45.555 LabApp] Saving file at /actin_assembly/simulation/2021_03_04_polymerase.ipynb
+[I 19:51:46.604 LabApp] Saving file at /actin_assembly/simulation/2021_03_04_polymerase.ipynb
+[I 19:53:18.814 LabApp] Kernel restarted: c229d07a-0aea-4f81-b8a8-a49163a277c8
+[I 19:53:46.660 LabApp] Saving file at /actin_assembly/simulation/2021_03_04_polymerase.ipynb
+[I 20:06:55.601 LabApp] Saving file at /actin_assembly/simulation/2021_03_04_polymerase.ipynb
+[I 20:06:59.569 LabApp] Kernel restarted: c229d07a-0aea-4f81-b8a8-a49163a277c8
+[I 20:08:55.687 LabApp] Saving file at /actin_assembly/simulation/2021_03_04_polymerase.ipynb
+[I 20:38:55.765 LabApp] Saving file at /actin_assembly/simulation/2021_03_04_polymerase.ipynb
+[I 20:40:23.650 LabApp] Saving file at /actin_assembly/simulation/2021_03_04_polymerase.ipynb
+[I 20:40:27.693 LabApp] Kernel restarted: c229d07a-0aea-4f81-b8a8-a49163a277c8
+[I 20:42:23.712 LabApp] Saving file at /actin_assembly/simulation/2021_03_04_polymerase.ipynb
+[I 21:20:23.764 LabApp] Saving file at /actin_assembly/simulation/2021_03_04_polymerase.ipynb
+[I 21:24:10.205 LabApp] Saving file at /actin_assembly/simulation/2021_03_04_polymerase.ipynb
+[I 21:24:13.661 LabApp] Kernel restarted: c229d07a-0aea-4f81-b8a8-a49163a277c8
+[I 21:26:10.301 LabApp] Saving file at /actin_assembly/simulation/2021_03_04_polymerase.ipynb
+[I 22:05:35.973 LabApp] Saving file at /actin_assembly/simulation/2021_03_04_polymerase.ipynb
+[I 22:05:42.469 LabApp] Shutting down on /api/shutdown request.
+[I 22:05:42.470 LabApp] Shutting down 2 kernels
+[I 22:05:42.772 LabApp] Kernel shutdown: a99b78ac-64aa-4e23-8fd5-916b7e0cee5f
+[I 22:05:42.873 LabApp] Kernel shutdown: c229d07a-0aea-4f81-b8a8-a49163a277c8
+[I 22:05:42.873 LabApp] Shutting down 0 terminals
