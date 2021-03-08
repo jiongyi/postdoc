@@ -371,3 +371,38 @@ kernel 9532ffed-ca47-49cd-b83c-8a6eb3c5f51a restarted
 [I 22:05:42.772 LabApp] Kernel shutdown: a99b78ac-64aa-4e23-8fd5-916b7e0cee5f
 [I 22:05:42.873 LabApp] Kernel shutdown: c229d07a-0aea-4f81-b8a8-a49163a277c8
 [I 22:05:42.873 LabApp] Shutting down 0 terminals
+[I 10:22:16.401 LabApp] JupyterLab extension loaded from /home/jiongyi/anaconda3/lib/python3.8/site-packages/jupyterlab
+[I 10:22:16.402 LabApp] JupyterLab application directory is /home/jiongyi/anaconda3/share/jupyter/lab
+[I 10:22:16.407 LabApp] Serving notebooks from local directory: /home/jiongyi/github/jupyter
+[I 10:22:16.407 LabApp] Jupyter Notebook 6.2.0 is running at:
+[I 10:22:16.407 LabApp] http://localhost:8888/?token=e0ebc70a4a35dbb5e58fbe215f0c9f3e2595c91a4bd6822b
+[I 10:22:16.407 LabApp]  or http://127.0.0.1:8888/?token=e0ebc70a4a35dbb5e58fbe215f0c9f3e2595c91a4bd6822b
+[I 10:22:16.407 LabApp] Use Control-C to stop this server and shut down all kernels (twice to skip confirmation).
+[C 10:22:16.474 LabApp] 
+    
+    To access the notebook, open this file in a browser:
+        file:///home/jiongyi/.local/share/jupyter/runtime/nbserver-146370-open.html
+    Or copy and paste one of these URLs:
+        http://localhost:8888/?token=e0ebc70a4a35dbb5e58fbe215f0c9f3e2595c91a4bd6822b
+     or http://127.0.0.1:8888/?token=e0ebc70a4a35dbb5e58fbe215f0c9f3e2595c91a4bd6822b
+[W 10:22:20.183 LabApp] Could not determine jupyterlab build status without nodejs
+[W 10:22:22.117 LabApp] Notebook actin_assembly/simulation/2021_03_04_polymerase.ipynb is not trusted
+[I 10:22:22.955 LabApp] Kernel started: 192ecbdf-e6b4-4d89-ba01-59947ada9964, name: python3
+[I 10:22:57.642 LabApp] Saving file at /actin_assembly/simulation/2021_03_04_polymerase.ipynb
+[W 10:22:57.643 LabApp] Notebook actin_assembly/simulation/2021_03_04_polymerase.ipynb is not trusted
+[I 10:23:28.843 LabApp] Saving file at /actin_assembly/simulation/2021_03_04_polymerase.ipynb
+[W 10:23:28.844 LabApp] Notebook actin_assembly/simulation/2021_03_04_polymerase.ipynb is not trusted
+[I 10:23:33.516 LabApp] Kernel restarted: 192ecbdf-e6b4-4d89-ba01-59947ada9964
+[I 10:25:28.914 LabApp] Saving file at /actin_assembly/simulation/2021_03_04_polymerase.ipynb
+[I 11:05:29.510 LabApp] Saving file at /actin_assembly/simulation/2021_03_04_polymerase.ipynb
+[I 11:13:29.604 LabApp] Saving file at /actin_assembly/simulation/2021_03_04_polymerase.ipynb
+[I 11:13:37.968 LabApp] Saving file at /actin_assembly/simulation/2021_03_04_polymerase.ipynb
+[I 11:13:42.328 LabApp] Kernel restarted: 192ecbdf-e6b4-4d89-ba01-59947ada9964
+[I 11:15:38.831 LabApp] Saving file at /actin_assembly/simulation/2021_03_04_polymerase.ipynb
+[I 11:53:39.948 LabApp] Saving file at /actin_assembly/simulation/2021_03_04_polymerase.ipynb
+[I 12:15:04.328 LabApp] Saving file at /actin_assembly/simulation/2021_03_04_polymerase.ipynb
+[I 12:15:10.652 LabApp] Saving file at /actin_assembly/simulation/2021_03_04_polymerase.ipynb
+[I 12:15:19.318 LabApp] Shutting down on /api/shutdown request.
+[I 12:15:19.320 LabApp] Shutting down 1 kernel
+[I 12:15:19.622 LabApp] Kernel shutdown: 192ecbdf-e6b4-4d89-ba01-59947ada9964
+[I 12:15:19.622 LabApp] Shutting down 0 terminals
