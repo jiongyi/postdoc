@@ -406,3 +406,56 @@ kernel 9532ffed-ca47-49cd-b83c-8a6eb3c5f51a restarted
 [I 12:15:19.320 LabApp] Shutting down 1 kernel
 [I 12:15:19.622 LabApp] Kernel shutdown: 192ecbdf-e6b4-4d89-ba01-59947ada9964
 [I 12:15:19.622 LabApp] Shutting down 0 terminals
+[I 14:14:13.034 LabApp] JupyterLab extension loaded from /home/jiongyi/anaconda3/lib/python3.8/site-packages/jupyterlab
+[I 14:14:13.034 LabApp] JupyterLab application directory is /home/jiongyi/anaconda3/share/jupyter/lab
+[I 14:14:13.037 LabApp] Serving notebooks from local directory: /home/jiongyi/github/jupyter
+[I 14:14:13.037 LabApp] Jupyter Notebook 6.2.0 is running at:
+[I 14:14:13.037 LabApp] http://localhost:8888/?token=c4a3ccf95669be96a62ba33b51acc7768bd304ba38ad41ea
+[I 14:14:13.037 LabApp]  or http://127.0.0.1:8888/?token=c4a3ccf95669be96a62ba33b51acc7768bd304ba38ad41ea
+[I 14:14:13.037 LabApp] Use Control-C to stop this server and shut down all kernels (twice to skip confirmation).
+[C 14:14:13.079 LabApp] 
+    
+    To access the notebook, open this file in a browser:
+        file:///home/jiongyi/.local/share/jupyter/runtime/nbserver-154091-open.html
+    Or copy and paste one of these URLs:
+        http://localhost:8888/?token=c4a3ccf95669be96a62ba33b51acc7768bd304ba38ad41ea
+     or http://127.0.0.1:8888/?token=c4a3ccf95669be96a62ba33b51acc7768bd304ba38ad41ea
+[W 14:14:16.661 LabApp] Could not determine jupyterlab build status without nodejs
+[W 14:14:30.095 LabApp] Notebook actin_assembly/simulation/2021_03_04_polymerase.ipynb is not trusted
+[I 14:14:30.857 LabApp] Kernel started: 04315cde-4d00-4bcd-8356-081138a5ac47, name: python3
+[I 14:16:49.896 LabApp] Kernel restarted: 04315cde-4d00-4bcd-8356-081138a5ac47
+[I 14:18:31.494 LabApp] Saving file at /actin_assembly/simulation/2021_03_04_polymerase.ipynb
+[I 14:18:59.840 LabApp] Creating new notebook in /actin_assembly/simulation
+[I 14:19:00.369 LabApp] Kernel started: 54cacfef-e094-4d9f-8504-784196806068, name: python3
+[I 14:21:00.228 LabApp] Saving file at /actin_assembly/simulation/2021_03_08_nuclease.ipynb
+[I 14:23:01.294 LabApp] Saving file at /actin_assembly/simulation/2021_03_08_nuclease.ipynb
+[I 14:25:01.329 LabApp] Saving file at /actin_assembly/simulation/2021_03_08_nuclease.ipynb
+[I 14:27:01.364 LabApp] Saving file at /actin_assembly/simulation/2021_03_08_nuclease.ipynb
+[I 14:29:01.402 LabApp] Saving file at /actin_assembly/simulation/2021_03_08_nuclease.ipynb
+[I 14:58:31.855 LabApp] Saving file at /actin_assembly/simulation/2021_03_04_polymerase.ipynb
+[I 14:59:09.064 LabApp] Saving file at /actin_assembly/simulation/2021_03_04_polymerase.ipynb
+[I 14:59:14.869 LabApp] Kernel restarted: 04315cde-4d00-4bcd-8356-081138a5ac47
+[I 14:59:48.387 LabApp] Saving file at /actin_assembly/simulation/2021_03_04_polymerase.ipynb
+[I 14:59:51.866 LabApp] Kernel restarted: 04315cde-4d00-4bcd-8356-081138a5ac47
+[I 15:01:48.450 LabApp] Saving file at /actin_assembly/simulation/2021_03_04_polymerase.ipynb
+[I 15:20:13.572 LabApp] Starting buffering for 54cacfef-e094-4d9f-8504-784196806068:24ae422d-f4b7-42d3-b94d-e2646fee9273
+[I 15:20:13.573 LabApp] Starting buffering for 04315cde-4d00-4bcd-8356-081138a5ac47:867d8b8c-011b-4789-b274-88362ea3aa6d
+[I 15:21:46.354 LabApp] 302 GET / (127.0.0.1) 0.790000ms
+[W 15:21:47.443 LabApp] Could not determine jupyterlab build status without nodejs
+[W 15:21:49.311 LabApp] Notebook actin_assembly/simulation/2021_03_04_polymerase.ipynb is not trusted
+[W 15:21:49.321 LabApp] Notebook actin_assembly/simulation/2021_03_08_nuclease.ipynb is not trusted
+[I 15:22:03.933 LabApp] Kernel restarted: 04315cde-4d00-4bcd-8356-081138a5ac47
+[I 15:22:23.515 LabApp] Kernel interrupted: 04315cde-4d00-4bcd-8356-081138a5ac47
+[I 15:22:28.573 LabApp] Kernel restarted: 04315cde-4d00-4bcd-8356-081138a5ac47
+[I 15:23:50.246 LabApp] Saving file at /actin_assembly/simulation/2021_03_04_polymerase.ipynb
+[I 16:17:54.916 LabApp] Saving file at /actin_assembly/simulation/2021_03_04_polymerase.ipynb
+[I 11:32:02.864 LabApp] Saving file at /actin_assembly/simulation/2021_03_08_nuclease.ipynb
+[I 11:32:03.072 LabApp] Saving file at /actin_assembly/simulation/branched_actin_assembly.py
+[I 11:32:03.083 LabApp] Saving file at /actin_assembly/simulation/2021_03_04_polymerase.ipynb
+[I 11:32:05.915 LabApp] Starting buffering for 54cacfef-e094-4d9f-8504-784196806068:23bcfd67-13a9-4024-b78b-ed91952d0689
+[I 11:32:06.016 LabApp] Starting buffering for 04315cde-4d00-4bcd-8356-081138a5ac47:29948976-cb81-423d-85f1-e653472bf08c
+[I 11:32:10.630 LabApp] Shutting down on /api/shutdown request.
+[I 11:32:10.648 LabApp] Shutting down 2 kernels
+[I 11:32:11.378 LabApp] Kernel shutdown: 04315cde-4d00-4bcd-8356-081138a5ac47
+[I 11:32:11.483 LabApp] Kernel shutdown: 54cacfef-e094-4d9f-8504-784196806068
+[I 11:32:11.486 LabApp] Shutting down 0 terminals
