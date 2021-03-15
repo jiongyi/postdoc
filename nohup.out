@@ -459,3 +459,38 @@ kernel 9532ffed-ca47-49cd-b83c-8a6eb3c5f51a restarted
 [I 11:32:11.378 LabApp] Kernel shutdown: 04315cde-4d00-4bcd-8356-081138a5ac47
 [I 11:32:11.483 LabApp] Kernel shutdown: 54cacfef-e094-4d9f-8504-784196806068
 [I 11:32:11.486 LabApp] Shutting down 0 terminals
+[I 10:28:41.331 LabApp] JupyterLab extension loaded from /home/jiongyi/anaconda3/lib/python3.8/site-packages/jupyterlab
+[I 10:28:41.332 LabApp] JupyterLab application directory is /home/jiongyi/anaconda3/share/jupyter/lab
+[I 10:28:41.339 LabApp] Serving notebooks from local directory: /home/jiongyi/github/jupyter
+[I 10:28:41.339 LabApp] Jupyter Notebook 6.2.0 is running at:
+[I 10:28:41.339 LabApp] http://localhost:8888/?token=dc1ad096ca7663dac9d4d78ec67e07fc2a5c058fc60d5341
+[I 10:28:41.339 LabApp]  or http://127.0.0.1:8888/?token=dc1ad096ca7663dac9d4d78ec67e07fc2a5c058fc60d5341
+[I 10:28:41.339 LabApp] Use Control-C to stop this server and shut down all kernels (twice to skip confirmation).
+[C 10:28:41.406 LabApp] 
+    
+    To access the notebook, open this file in a browser:
+        file:///home/jiongyi/.local/share/jupyter/runtime/nbserver-186831-open.html
+    Or copy and paste one of these URLs:
+        http://localhost:8888/?token=dc1ad096ca7663dac9d4d78ec67e07fc2a5c058fc60d5341
+     or http://127.0.0.1:8888/?token=dc1ad096ca7663dac9d4d78ec67e07fc2a5c058fc60d5341
+[W 10:28:45.738 LabApp] Could not determine jupyterlab build status without nodejs
+[W 10:29:00.059 LabApp] Notebook actin_assembly/simulation/2021_03_08_nuclease.ipynb is not trusted
+[I 10:29:00.638 LabApp] Kernel started: a1baddbb-bb01-4fc4-9fe1-796f9275de7f, name: python3
+[I 10:37:02.239 LabApp] Saving file at /actin_assembly/simulation/2021_03_08_nucleator.ipynb
+[W 11:03:02.097 LabApp] Notebook actin_assembly/simulation/2021_03_04_polymerase.ipynb is not trusted
+[I 11:03:02.808 LabApp] Kernel started: 2381afca-a810-419d-a060-7965312e7dcc, name: python3
+[I 11:05:04.031 LabApp] Saving file at /actin_assembly/simulation/2021_03_08_nucleator.ipynb
+[I 11:07:04.139 LabApp] Saving file at /actin_assembly/simulation/2021_03_08_nucleator.ipynb
+[I 11:09:04.245 LabApp] Saving file at /actin_assembly/simulation/2021_03_08_nucleator.ipynb
+[I 11:11:04.365 LabApp] Saving file at /actin_assembly/simulation/2021_03_08_nucleator.ipynb
+[I 11:11:25.676 LabApp] Saving file at /actin_assembly/simulation/2021_03_08_nucleator.ipynb
+[I 11:15:26.755 LabApp] Saving file at /actin_assembly/simulation/2021_03_08_nucleator.ipynb
+[I 11:16:42.434 LabApp] Saving file at /actin_assembly/simulation/2021_03_08_nucleator.ipynb
+[I 17:02:28.646 LabApp] Starting buffering for 2381afca-a810-419d-a060-7965312e7dcc:40424e1b-5e8e-4b1c-bf5d-1ed0956ab91e
+[I 17:02:33.613 LabApp] Shutting down on /api/shutdown request.
+[I 17:02:33.621 LabApp] Shutting down 2 kernels
+[I 17:02:34.025 LabApp] Kernel shutdown: a1baddbb-bb01-4fc4-9fe1-796f9275de7f
+[I 17:02:34.026 LabApp] Kernel shutdown: 2381afca-a810-419d-a060-7965312e7dcc
+[I 17:02:34.028 LabApp] Shutting down 0 terminals
+[I 17:02:34.034 LabApp] KernelRestarter: restarting kernel (1/5), keep random ports
+kernel a1baddbb-bb01-4fc4-9fe1-796f9275de7f restarted
