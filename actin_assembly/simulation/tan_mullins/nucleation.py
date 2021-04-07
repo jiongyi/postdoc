@@ -28,8 +28,8 @@ class Network(object):
         self.k_barbed_off_wh2 = 3.0
         self.k_barbed_monomer_off_wh2 = 10 * self.k_barbed_off_wh2
 
-        self.k_arp23_on_ca = 5.0 * arp23_umolar
-        self.k_arp23_off_ca = 10.0
+        self.k_arp23_on_ca = 100.0 * arp23_umolar
+        self.k_arp23_off_ca = 1.0e-1
         self.k_barbed_slow_off_arp23_ca = 1.0
         self.k_barbed_fast_off_arp23_ca = 10.0
         self.k_barbed_arp23_off_ca = 0.7
@@ -37,7 +37,7 @@ class Network(object):
         self.k_elongate = 11.0 * actin_umolar
         self.k_cap = 3.0 * cp_umolar
 
-        self.barbed_diff_coeff = 500.0e-6
+        self.barbed_diff_coeff = 8000.0e-6
         # Spatial constants.
         self.monomer_length = 2.7e-3
         self.branch_angle_mu = 70 / 180 * np.pi
@@ -117,7 +117,7 @@ class Network(object):
         k_barbed_on_monomer_wh2_mat = self.barbed_diff_coeff / cdist(self.barbed_xyz_mat, self.npf_xyz_mat) ** 2
         k_barbed_on_monomer_wh2_mat[self.barbed_is_capped_row, :] = 0.0
         k_barbed_on_monomer_wh2_mat[:, ~self.wh2_has_monomer_row] = 0.0
-        k_barbed_on_monomer_wh2_mat[:, ~self.wh2_has_monomer_barbed_row] = 0.0
+        k_barbed_on_monomer_wh2_mat[:, self.wh2_has_monomer_barbed_row] = 0.0
         k_barbed_on_monomer_wh2_mat[:, self.ca_has_arp23_row] = 0.0
         # Break tether and take monomer from WH2 domain
         k_barbed_off_monomer_wh2_col = self.k_barbed_monomer_off_wh2 * self.barbed_has_monomer_wh2_row[:, np.newaxis]

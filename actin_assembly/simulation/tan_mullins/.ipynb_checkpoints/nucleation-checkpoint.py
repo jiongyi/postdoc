@@ -1,6 +1,18 @@
 import numpy as np
 import matplotlib.pyplot as plt
+from numba import jit
 from scipy.spatial.distance import cdist
+
+
+@jit(nopython=True)
+def searchsorted_left(a, v):
+    y = np.searchsorted(a, v, side='left')
+    return y
+
+@jit(nopython=True)
+def searchsorted_right(a, v):
+    y = np.searchsorted(a, v, side='right')
+    return y
 
 
 class Network(object):
@@ -16,8 +28,8 @@ class Network(object):
         self.k_barbed_off_wh2 = 3.0
         self.k_barbed_monomer_off_wh2 = 10 * self.k_barbed_off_wh2
 
-        self.k_arp23_on_ca = 5.0 * arp23_umolar
-        self.k_arp23_off_ca = 10.0
+        self.k_arp23_on_ca = 100.0 * arp23_umolar
+        self.k_arp23_off_ca = 1.0e-1
         self.k_barbed_slow_off_arp23_ca = 1.0
         self.k_barbed_fast_off_arp23_ca = 10.0
         self.k_barbed_arp23_off_ca = 0.7
@@ -25,7 +37,7 @@ class Network(object):
         self.k_elongate = 11.0 * actin_umolar
         self.k_cap = 3.0 * cp_umolar
 
-        self.barbed_diff_coeff = 500.0e-6
+        self.barbed_diff_coeff = 8000.0e-6
         # Spatial constants.
         self.monomer_length = 2.7e-3
         self.branch_angle_mu = 70 / 180 * np.pi
@@ -97,16 +109,16 @@ class Network(object):
         k_barbed_on_wh2_mat[self.barbed_is_capped_row, :] = 0.0
         k_barbed_on_wh2_mat[:, self.wh2_has_monomer_row] = 0.0
         k_barbed_on_wh2_mat[:, self.wh2_has_barbed_row] = 0.0
+        k_barbed_on_wh2_mat[:, self.ca_has_arp23_row] = 0.0
+        k_barbed_on_wh2_mat[:, self.ca_arp23_has_barbed_row] = 0.0
         # Break tether from WH2 domain
         k_barbed_off_wh2_col = self.k_barbed_off_wh2 * self.barbed_has_wh2_row[:, np.newaxis]
         # Tether to loaded WH2 domain
         k_barbed_on_monomer_wh2_mat = self.barbed_diff_coeff / cdist(self.barbed_xyz_mat, self.npf_xyz_mat) ** 2
         k_barbed_on_monomer_wh2_mat[self.barbed_is_capped_row, :] = 0.0
-        k_barbed_on_monomer_wh2_mat[self.barbed_has_weak_arp23_ca_row, :] = 0.0
-        k_barbed_on_monomer_wh2_mat[self.barbed_has_strong_arp23_ca_row, :] = 0.0
-        k_barbed_on_monomer_wh2_mat[self.barbed_has_active_arp23_ca_row, :] = 0.0
         k_barbed_on_monomer_wh2_mat[:, ~self.wh2_has_monomer_row] = 0.0
-        k_barbed_on_monomer_wh2_mat[:, ~self.wh2_has_monomer_barbed_row] = 0.0
+        k_barbed_on_monomer_wh2_mat[:, self.wh2_has_monomer_barbed_row] = 0.0
+        k_barbed_on_monomer_wh2_mat[:, self.ca_has_arp23_row] = 0.0
         # Break tether and take monomer from WH2 domain
         k_barbed_off_monomer_wh2_col = self.k_barbed_monomer_off_wh2 * self.barbed_has_monomer_wh2_row[:, np.newaxis]
         # Load CA domain
@@ -124,14 +136,11 @@ class Network(object):
         k_barbed_on_arp23_ca_mat[:, ~self.ca_has_arp23_row] = 0.0
         k_barbed_on_arp23_ca_mat[:, ~self.ca_arp23_has_barbed_row] = 0.0
         # Break tether from weakly bound Arp2/3
-        k_barbed_off_weak_arp23_ca_col = self.k_barbed_fast_off_arp23_ca * \
-                                         self.barbed_has_weak_arp23_ca_row[:, np.newaxis]
+        k_barbed_off_weak_arp23_ca_col = self.k_barbed_fast_off_arp23_ca * self.barbed_has_weak_arp23_ca_row[:, np.newaxis]
         # Break tether from strongly bound Arp2/3
-        k_barbed_off_strong_arp23_ca_col = self.k_barbed_slow_off_arp23_ca * \
-                                           self.barbed_has_strong_arp23_ca_row[:, np.newaxis]
+        k_barbed_off_strong_arp23_ca_col = self.k_barbed_slow_off_arp23_ca * self.barbed_has_strong_arp23_ca_row[:, np.newaxis]
         # Break tether and take activated Arp2/3
-        k_barbed_off_active_arp23_ca_col = self.k_barbed_arp23_off_ca * \
-                                           self.barbed_has_active_arp23_ca_row[:, np.newaxis]
+        k_barbed_off_active_arp23_ca_col = self.k_barbed_arp23_off_ca * self.barbed_has_active_arp23_ca_row[:, np.newaxis]
         self.transition_rate_mat = np.concatenate((k_elongate_col,
                                                    k_cap_col,
                                                    k_monomer_on_wh2_mat,
@@ -227,9 +236,9 @@ class Network(object):
         self.calculate_transition_rates()
         sum_transition_rate = self.transition_rate_mat.sum()
         random_rate = sum_transition_rate * np.random.rand()
-        rate_index = np.searchsorted(self.transition_rate_mat.cumsum(), random_rate)
+        rate_index = searchsorted_left(self.transition_rate_mat.cumsum(), random_rate)
         rate_row, rate_col = np.unravel_index(rate_index, self.transition_rate_mat.shape)
-        transition_index = np.searchsorted(self.transition_rate_edge_row, rate_col, side='right')
+        transition_index = searchsorted_right(self.transition_rate_edge_row, rate_col)
         if transition_index == 0:
             self.elongate(rate_row)
         elif transition_index == 1:
@@ -282,7 +291,7 @@ class Network(object):
             self.barbed_has_active_arp23_ca_row[rate_row] = False
             self.barbed2npf_index_row[rate_row] = -1
             self.ca_arp23_has_barbed_row[rate_col - self.transition_rate_edge_row[12]] = False
-            self.ca_has_ar23_row[rate_col - self.transition_rate_edge_row[12]] = False
+            self.ca_has_arp23_row[rate_col - self.transition_rate_edge_row[12]] = False
             self.branch(rate_row)
         time_interval = -1 * np.log(np.random.rand()) / sum_transition_rate
         self.current_time += time_interval
@@ -291,11 +300,12 @@ class Network(object):
         while self.current_time < self.total_time:
             self.gillespie_step()
             self.barbed_xyz_mat[:, 2] -= self.barbed_xyz_mat[:, 2].min()
-            
+
     def display(self):
         arrow_length = 0.1 * self.barbed_xyz_mat[:, 2].max()
         fig1_hand = plt.figure()
-        axes1_hand = fig1_hand.add_subplot(111, projection = '3d')
+        axes1_hand = fig1_hand.add_subplot(111, projection='3d')
         axes1_hand.quiver(self.barbed_xyz_mat[:, 0], self.barbed_xyz_mat[:, 1], self.barbed_xyz_mat[:, 2],
-                          self.barbed_orientation_mat[:, 0], self.barbed_orientation_mat[:, 1], self.barbed_orientation_mat[:, 2], length = arrow_length)
+                          self.barbed_orientation_mat[:, 0], self.barbed_orientation_mat[:, 1],
+                          self.barbed_orientation_mat[:, 2], length=arrow_length)
         return fig1_hand, axes1_hand
