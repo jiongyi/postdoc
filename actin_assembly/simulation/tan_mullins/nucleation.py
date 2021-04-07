@@ -134,7 +134,7 @@ class Network(object):
         k_barbed_on_arp23_ca_mat[self.barbed_has_strong_arp23_ca_row, :] = 0.0
         k_barbed_on_arp23_ca_mat[self.barbed_has_active_arp23_ca_row, :] = 0.0
         k_barbed_on_arp23_ca_mat[:, ~self.ca_has_arp23_row] = 0.0
-        k_barbed_on_arp23_ca_mat[:, ~self.ca_arp23_has_barbed_row] = 0.0
+        k_barbed_on_arp23_ca_mat[:, self.ca_arp23_has_barbed_row] = 0.0
         # Break tether from weakly bound Arp2/3
         k_barbed_off_weak_arp23_ca_col = self.k_barbed_fast_off_arp23_ca * self.barbed_has_weak_arp23_ca_row[:, np.newaxis]
         # Break tether from strongly bound Arp2/3
@@ -302,7 +302,7 @@ class Network(object):
             self.barbed_xyz_mat[:, 2] -= self.barbed_xyz_mat[:, 2].min()
 
     def display(self):
-        arrow_length = 0.1 * self.barbed_xyz_mat[:, 2].max()
+        arrow_length = 0.1
         fig1_hand = plt.figure()
         axes1_hand = fig1_hand.add_subplot(111, projection='3d')
         axes1_hand.quiver(self.barbed_xyz_mat[:, 0], self.barbed_xyz_mat[:, 1], self.barbed_xyz_mat[:, 2],
