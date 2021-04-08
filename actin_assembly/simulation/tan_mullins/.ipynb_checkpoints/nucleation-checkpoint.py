@@ -14,6 +14,11 @@ def searchsorted_right(a, v):
     y = np.searchsorted(a, v, side='right')
     return y
 
+@jit(nopython=True)
+def concatenate_fast(x):
+    y = np.concatenate(x, axis=1)
+    return y
+    
 
 class Network(object):
     def __init__(self,
@@ -82,6 +87,7 @@ class Network(object):
         self.total_time = total_time
 
     def calculate_transition_rates(self):
+        k_barbed_on_npf_mat = self.barbed_diff_coeff / cdist(self.barbed_xyz_mat, self.npf_xyz_mat)**2
         # Elongation from solution
         k_elongate_col = self.k_elongate * ~self.barbed_is_capped_row[:, np.newaxis]
         k_elongate_col[self.barbed_has_wh2_row] = 0.0
@@ -105,7 +111,7 @@ class Network(object):
         k_monomer_off_wh2_mat[0, self.wh2_has_monomer_row] = self.k_monomer_off_wh2
         k_monomer_off_wh2_mat[0, self.wh2_has_monomer_barbed_row] = 0.0
         # Tether to empty WH2 domain
-        k_barbed_on_wh2_mat = self.barbed_diff_coeff / cdist(self.barbed_xyz_mat, self.npf_xyz_mat) ** 2
+        k_barbed_on_wh2_mat = np.copy(k_barbed_on_npf_mat)
         k_barbed_on_wh2_mat[self.barbed_is_capped_row, :] = 0.0
         k_barbed_on_wh2_mat[:, self.wh2_has_monomer_row] = 0.0
         k_barbed_on_wh2_mat[:, self.wh2_has_barbed_row] = 0.0
@@ -114,7 +120,7 @@ class Network(object):
         # Break tether from WH2 domain
         k_barbed_off_wh2_col = self.k_barbed_off_wh2 * self.barbed_has_wh2_row[:, np.newaxis]
         # Tether to loaded WH2 domain
-        k_barbed_on_monomer_wh2_mat = self.barbed_diff_coeff / cdist(self.barbed_xyz_mat, self.npf_xyz_mat) ** 2
+        k_barbed_on_monomer_wh2_mat = np.copy(k_barbed_on_npf_mat)
         k_barbed_on_monomer_wh2_mat[self.barbed_is_capped_row, :] = 0.0
         k_barbed_on_monomer_wh2_mat[:, ~self.wh2_has_monomer_row] = 0.0
         k_barbed_on_monomer_wh2_mat[:, self.wh2_has_monomer_barbed_row] = 0.0
@@ -129,7 +135,7 @@ class Network(object):
         k_arp23_off_ca_mat[0, self.ca_has_arp23_row] = self.k_arp23_off_ca
         k_arp23_off_ca_mat[0, self.ca_arp23_has_barbed_row] = 0.0
         # Tether to loaded CA domain
-        k_barbed_on_arp23_ca_mat = self.barbed_diff_coeff / cdist(self.barbed_xyz_mat, self.npf_xyz_mat) ** 2
+        k_barbed_on_arp23_ca_mat = np.copy(k_barbed_on_npf_mat)
         k_barbed_on_arp23_ca_mat[self.barbed_has_weak_arp23_ca_row, :] = 0.0
         k_barbed_on_arp23_ca_mat[self.barbed_has_strong_arp23_ca_row, :] = 0.0
         k_barbed_on_arp23_ca_mat[self.barbed_has_active_arp23_ca_row, :] = 0.0
@@ -141,7 +147,7 @@ class Network(object):
         k_barbed_off_strong_arp23_ca_col = self.k_barbed_slow_off_arp23_ca * self.barbed_has_strong_arp23_ca_row[:, np.newaxis]
         # Break tether and take activated Arp2/3
         k_barbed_off_active_arp23_ca_col = self.k_barbed_arp23_off_ca * self.barbed_has_active_arp23_ca_row[:, np.newaxis]
-        self.transition_rate_mat = np.concatenate((k_elongate_col,
+        self.transition_rate_mat = concatenate_fast((k_elongate_col,
                                                    k_cap_col,
                                                    k_monomer_on_wh2_mat,
                                                    k_monomer_off_wh2_mat,
@@ -154,7 +160,7 @@ class Network(object):
                                                    k_barbed_on_arp23_ca_mat,
                                                    k_barbed_off_weak_arp23_ca_col,
                                                    k_barbed_off_strong_arp23_ca_col,
-                                                   k_barbed_off_active_arp23_ca_col), axis=1)
+                                                   k_barbed_off_active_arp23_ca_col))
         self.transition_rate_edge_row = np.cumsum(np.array([k_elongate_col.shape[1],
                                                             k_cap_col.shape[1],
                                                             k_monomer_on_wh2_mat.shape[1],
@@ -236,9 +242,9 @@ class Network(object):
         self.calculate_transition_rates()
         sum_transition_rate = self.transition_rate_mat.sum()
         random_rate = sum_transition_rate * np.random.rand()
-        rate_index = searchsorted_left(self.transition_rate_mat.cumsum(), random_rate)
+        rate_index = np.searchsorted(self.transition_rate_mat.cumsum(), random_rate)
         rate_row, rate_col = np.unravel_index(rate_index, self.transition_rate_mat.shape)
-        transition_index = searchsorted_right(self.transition_rate_edge_row, rate_col)
+        transition_index = np.searchsorted(self.transition_rate_edge_row, rate_col, side='right')
         if transition_index == 0:
             self.elongate(rate_row)
         elif transition_index == 1:
@@ -303,9 +309,15 @@ class Network(object):
 
     def display(self):
         arrow_length = 0.1
+        color_tup = []
+        for i in range(self.no_barbed):
+            if self.barbed_is_capped_row[i] == False:
+                color_tup.append((0, 0, 1))
+            else:
+                color_tup.append((1, 0, 0))
         fig1_hand = plt.figure()
         axes1_hand = fig1_hand.add_subplot(111, projection='3d')
         axes1_hand.quiver(self.barbed_xyz_mat[:, 0], self.barbed_xyz_mat[:, 1], self.barbed_xyz_mat[:, 2],
                           self.barbed_orientation_mat[:, 0], self.barbed_orientation_mat[:, 1],
-                          self.barbed_orientation_mat[:, 2], length=arrow_length)
+                          self.barbed_orientation_mat[:, 2], length=arrow_length, color=color_tup)
         return fig1_hand, axes1_hand
