@@ -284,7 +284,7 @@ def batch_analysis(folder_path_str, save_segmentation = False):
     return comet_tail_props_df
 
 
-def plot_mean_npf_fluor(df_file_path_row):
+def plot_mean_npf_fluor(df_file_path_row, cp_conc_row):
     no_files = df_file_path_row.size
     median_fluor_row = zeros(no_files)
     up_bound_row = zeros(no_files)
@@ -299,13 +299,14 @@ def plot_mean_npf_fluor(df_file_path_row):
     fig_hand, axes_hand = subplots()
     fig_hand.set_facecolor('white')
     axes_hand.set_ylim([0, up_bound_row.max() * 1.1])
-    axes_hand.errorbar(array([10, 20, 30, 40]), median_fluor_row, yerr = yerr_mat, marker = '.', markersize = 16)
-    axes_hand.set_xlabel('Capping protein (nM)', fontsize = 12)
-    axes_hand.set_ylabel('Mean EGFP fluorescence', fontsize = 12)
+    axes_hand.errorbar(cp_conc_row, median_fluor_row, yerr = yerr_mat, marker = '.', markersize = 16, linewidth=3)
+    axes_hand.set_xlabel('Capping protein (nM)', fontsize = 14)
+    axes_hand.set_ylabel('Mean EGFP fluorescence', fontsize = 14)
+    axes_hand.tick_params(labelsize=14)
     tight_layout()
     return fig_hand, axes_hand
     
-def plot_mean_chase_fluor(df_file_path_row):
+def plot_mean_chase_fluor(df_file_path_row, cp_conc_row):
     no_files = df_file_path_row.size
     c1_median_fluor_row = zeros(no_files)
     c1_up_bound_row = zeros(no_files)
@@ -333,16 +334,17 @@ def plot_mean_chase_fluor(df_file_path_row):
     fig_hand, axes_hand = subplots()
     fig_hand.set_facecolor('white')
     axes_hand.set_ylim([0, 1.1 * max([c1_up_bound_row.max(), c2_up_bound_row.max()])])
-    axes_hand.errorbar(array([10, 20, 30, 40]), c1_median_fluor_row, yerr = c1_yerr_mat, marker = '.', markersize = 16, label = 'Hylite-555')
-    axes_hand.errorbar(array([10, 20, 30, 40]), c2_median_fluor_row, yerr = c2_yerr_mat, marker = '.', markersize = 16, label = 'Alexa-647')
+    axes_hand.errorbar(cp_conc_row, c1_median_fluor_row, yerr = c1_yerr_mat, marker = '.', markersize = 16, label = 'Hylite-555', linewidth=3)
+    axes_hand.errorbar(cp_conc_row, c2_median_fluor_row, yerr = c2_yerr_mat, marker = '.', markersize = 16, label = 'Alexa-647', linewidth=3)
     axes_hand.tick_params(labelsize = 12)
-    axes_hand.set_xlabel('Capping protein (nM)', fontsize = 12)
-    axes_hand.set_ylabel('Mean actin fluorescence', fontsize = 12)
-    axes_hand.legend(fontsize = 12)
+    axes_hand.set_xlabel('Capping protein (nM)', fontsize = 14)
+    axes_hand.set_ylabel('Mean actin fluorescence', fontsize = 14)
+    axes_hand.tick_params(labelsize=14)
+    axes_hand.legend(fontsize = 14)
     tight_layout()
     return fig_hand, axes_hand
     
-def plot_median_tail_length(df_file_path_row, chase_minutes = 1.0):
+def plot_median_tail_length(df_file_path_row, cp_conc_row, chase_minutes = 1.0):
     no_files = df_file_path_row.size
     median_tail_length_row = zeros(no_files)
     up_bound_row = zeros(no_files)
@@ -361,10 +363,11 @@ def plot_median_tail_length(df_file_path_row, chase_minutes = 1.0):
     fig_hand, axes_hand = subplots()
     fig_hand.set_facecolor('white')
     axes_hand.set_ylim([0, 1.1 * up_bound_row.max()])
-    axes_hand.errorbar(array([10, 20, 30, 40]), median_tail_length_row, yerr = yerr_mat, marker = '.', markersize = 16)
+    axes_hand.errorbar(cp_conc_row, median_tail_length_row, yerr = yerr_mat, marker = '.', markersize = 16, linewidth=3)
     axes_hand.tick_params(labelsize = 12)
-    axes_hand.set_xlabel('Capping protein (nM)', fontsize = 12)
-    axes_hand.set_ylabel('Mean growth rate ($\mu$m/min)', fontsize = 12)
+    axes_hand.set_xlabel('Capping protein (nM)', fontsize = 14)
+    axes_hand.set_ylabel('Mean growth rate ($\mu$m/min)', fontsize = 14)
+    axes_hand.tick_params(labelsize=14)
     tight_layout()
     return fig_hand, axes_hand
 
@@ -373,7 +376,6 @@ def box_plot_tail_length(df_file_path_row, chase_minutes = 1.0):
     tail_length_df = DataFrame.from_dict({'25': array([]),
                                       '75': array([]),
                                       '125': array([]),
-                                      '175': array([]),
                                       '225': array([])})
     for i in range(no_files):
         i_df = read_csv(df_file_path_row[i])
