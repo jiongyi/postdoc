@@ -263,6 +263,33 @@ def comet_tail_props(file_path_str, save_segmentation):
                                                    'pulse_tail_length': array([]),
                                                    'file_path_str': basename(file_path_str)})
     return comet_tail_props_df
+
+def measure_npf_props(file_path_str, save_segmentation):
+    c0_im, _, _ = load_stack(file_path_str)
+    bead_bw_im = segment_bead(c0_im)
+    bead_label_im, no_beads = label(bead_bw_im, return_num = True)
+    if save_segmentation == True:
+        imsave(file_path_str[:-21] + '_c0_segment.jpg', \
+               img_as_ubyte(label2rgb(label(find_boundaries(bead_bw_im)), \
+                            image = equalize_adapthist(invert(c0_im)), \
+                            bg_label = 0, colors = ['green'])), \
+                            check_contrast = False)
+    if no_beads > 0:
+        c0_mean_back_fluor = c0_im[~bead_bw_im].mean()
+        # Set up property arrays.
+        npf_fluor_row = zeros(no_beads)
+        for i in range(no_beads):
+            i_bead_bw_im = bead_label_im == (i + 1)
+            i_npf_bw_im = i_bead_bw_im & ~erosion(i_bead_bw_im, disk(3))
+            npf_fluor_row[i] = c0_im[i_npf_bw_im].mean() - c0_mean_back_fluor
+           
+        comet_tail_props_df = DataFrame.from_dict({'npf_fluor': npf_fluor_row,
+                                                   'file_path_str': basename(file_path_str)})
+    else:
+        print("No beads found")
+        comet_tail_props_df = DataFrame.from_dict({'npf_fluor': array([]),
+                                                   'file_path_str': basename(file_path_str)})
+    return comet_tail_props_df
             
     
 
@@ -282,6 +309,18 @@ def batch_analysis(folder_path_str, save_segmentation = False):
     comet_tail_props_df = comet_tail_props_df.sort_values(by = ['pulse_tail_length'])
     comet_tail_props_df.to_csv(folder_path_str + '/comet_tail_properties.csv')
     return comet_tail_props_df
+
+def batch_measure_npf_fluor(folder_path_str, save_segmentation = False):
+    mmstack_file_path_list = find_mmstack_files(folder_path_str)
+    no_files = len(mmstack_file_path_list)
+    comet_tail_props_df = DataFrame.from_dict({'npf_fluor': array([]),
+                                               'file_path_str': array([])})
+    for i in range(no_files):
+        i_comet_tail_props_df = measure_npf_props(mmstack_file_path_list[i], save_segmentation)
+        comet_tail_props_df = comet_tail_props_df.append(i_comet_tail_props_df)
+    comet_tail_props_df.to_csv(folder_path_str + '/comet_tail_properties.csv')
+    return comet_tail_props_df
+    
 
 
 def plot_mean_npf_fluor(df_file_path_row, cp_conc_row):
