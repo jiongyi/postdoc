@@ -42,7 +42,7 @@ class Network(object):
         self.k_elongate = 11.0 * actin_umolar
         self.k_cap = 3.0 * cp_umolar
 
-        self.barbed_diff_coeff = 50.0e-6
+        self.barbed_diff_coeff = 8000.0e-6
         # Spatial constants.
         self.monomer_length = 2.7e-3
         self.branch_angle_mu = 70 / 180 * np.pi
@@ -52,7 +52,7 @@ class Network(object):
         self.no_barbed = 200
         self.barbed_xyz_mat = np.random.rand(self.no_barbed, 3)
         self.barbed_xyz_mat[:, [0, 1]] -= 0.5
-        self.barbed_xyz_mat[:, 2] *= self.monomer_length
+        self.barbed_xyz_mat[:, 2] *= 200 * self.monomer_length
 
         random_phi_col = 2 * np.pi * np.random.rand(self.no_barbed, 1)
         random_theta_col = 0.5 * np.pi * (1 + np.random.rand(self.no_barbed, 1))
@@ -78,11 +78,17 @@ class Network(object):
         self.wh2_has_monomer_barbed_row = np.zeros(self.no_npfs, dtype=bool)
         self.ca_has_arp23_row = np.zeros(self.no_npfs, dtype=bool)
         self.ca_arp23_has_barbed_row = np.zeros(self.no_npfs, dtype=bool)
-
+        
+        # Network mechanics.
+        self.membrane_stiffness = 100.0e3 # piconewtons per micron
+        self.barbed_tether_force_row = np.zeros(self.no_npfs)
+        self.mean_bond_tension = 0.0
+        self.exp_force_weight = 1.0
+        self.thermal_force_scale = 4.114 / 2.7
+        self.no_tethered_barbed = 0
+        # Simulation parameters
         self.transition_rate_mat = np.array([])
         self.transition_rate_edge_row = np.array([])
-
-        # Simulation parameters
         self.current_time = 0.0
         self.total_time = total_time
 
@@ -118,7 +124,7 @@ class Network(object):
         k_barbed_on_wh2_mat[:, self.ca_has_arp23_row] = 0.0
         k_barbed_on_wh2_mat[:, self.ca_arp23_has_barbed_row] = 0.0
         # Break tether from WH2 domain
-        k_barbed_off_wh2_col = self.k_barbed_off_wh2 * self.barbed_has_wh2_row[:, np.newaxis]
+        k_barbed_off_wh2_col = self.k_barbed_off_wh2 * self.exp_force_weight * self.barbed_has_wh2_row[:, np.newaxis]
         # Tether to loaded WH2 domain
         k_barbed_on_monomer_wh2_mat = np.copy(k_barbed_on_npf_mat)
         k_barbed_on_monomer_wh2_mat[self.barbed_is_capped_row, :] = 0.0
@@ -126,7 +132,7 @@ class Network(object):
         k_barbed_on_monomer_wh2_mat[:, self.wh2_has_monomer_barbed_row] = 0.0
         k_barbed_on_monomer_wh2_mat[:, self.ca_has_arp23_row] = 0.0
         # Break tether and take monomer from WH2 domain
-        k_barbed_off_monomer_wh2_col = self.k_barbed_monomer_off_wh2 * self.barbed_has_monomer_wh2_row[:, np.newaxis]
+        k_barbed_off_monomer_wh2_col = self.k_barbed_monomer_off_wh2 * self.exp_force_weight * self.barbed_has_monomer_wh2_row[:, np.newaxis]
         # Load CA domain
         k_arp23_on_ca_mat = np.zeros((self.no_barbed, self.no_npfs))
         k_arp23_on_ca_mat[0, ~self.ca_has_arp23_row] = self.k_arp23_on_ca
@@ -142,11 +148,11 @@ class Network(object):
         k_barbed_on_arp23_ca_mat[:, ~self.ca_has_arp23_row] = 0.0
         k_barbed_on_arp23_ca_mat[:, self.ca_arp23_has_barbed_row] = 0.0
         # Break tether from weakly bound Arp2/3
-        k_barbed_off_weak_arp23_ca_col = self.k_barbed_fast_off_arp23_ca * self.barbed_has_weak_arp23_ca_row[:, np.newaxis]
+        k_barbed_off_weak_arp23_ca_col = self.k_barbed_fast_off_arp23_ca * self.exp_force_weight * self.barbed_has_weak_arp23_ca_row[:, np.newaxis]
         # Break tether from strongly bound Arp2/3
-        k_barbed_off_strong_arp23_ca_col = self.k_barbed_slow_off_arp23_ca * self.barbed_has_strong_arp23_ca_row[:, np.newaxis]
+        k_barbed_off_strong_arp23_ca_col = self.k_barbed_slow_off_arp23_ca * self.exp_force_weight * self.barbed_has_strong_arp23_ca_row[:, np.newaxis]
         # Break tether and take activated Arp2/3
-        k_barbed_off_active_arp23_ca_col = self.k_barbed_arp23_off_ca * self.barbed_has_active_arp23_ca_row[:, np.newaxis]
+        k_barbed_off_active_arp23_ca_col = self.k_barbed_arp23_off_ca * self.exp_force_weight * self.barbed_has_active_arp23_ca_row[:, np.newaxis]
         self.transition_rate_mat = concatenate_fast((k_elongate_col,
                                                    k_cap_col,
                                                    k_monomer_on_wh2_mat,
@@ -237,6 +243,19 @@ class Network(object):
         self.barbed_has_active_arp23_ca_row = np.append(self.barbed_has_active_arp23_ca_row, False)
         self.barbed2npf_index_row = np.append(self.barbed2npf_index_row, -1)
         self.no_barbed += 1
+        
+    def update_network_mechanics(self):
+        self.no_tethered_barbed = (self.barbed_has_monomer_wh2_row | self.barbed_has_wh2_row | self.barbed_has_weak_arp23_ca_row | self.barbed_has_strong_arp23_ca_row | self.barbed_has_active_arp23_ca_row).sum()
+        if self.no_tethered_barbed > 0:
+            protrusion_distance_row = self.barbed_xyz_mat[:, 2] - self.npf_xyz_mat[:, 2][0]
+            protrusion_force_row = self.membrane_stiffness * protrusion_distance_row
+            protrusion_force_row[protrusion_force_row > 0] = 0.0
+            self.mean_bond_tension = np.abs(protrusion_force_row.sum()) / self.no_tethered_barbed
+            self.exp_force_weight = np.exp(self.mean_bond_tension / self.thermal_force_scale)
+        else:
+            self.mean_bond_tension = 0.0
+            self.exp_force_weight = 1.0
+        
 
     def gillespie_step(self):
         self.calculate_transition_rates()
@@ -305,7 +324,11 @@ class Network(object):
     def simulate(self):
         while self.current_time < self.total_time:
             self.gillespie_step()
-            self.barbed_xyz_mat[:, 2] -= self.barbed_xyz_mat[:, 2].min()
+            self.update_network_mechanics()
+            if self.no_tethered_barbed == 0:
+                self.npf_xyz_mat[:, 2] = self.barbed_xyz_mat[:, 2].min()
+                self.mean_bond_tension = 0.0
+                self.exp_force_weight = 1.0
 
     def display(self):
         arrow_length = 0.1
