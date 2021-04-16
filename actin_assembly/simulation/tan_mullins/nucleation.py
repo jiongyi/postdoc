@@ -42,7 +42,7 @@ class Network(object):
         self.k_elongate = 11.0 * actin_umolar
         self.k_cap = 3.0 * cp_umolar
 
-        self.barbed_diff_coeff = 8000.0e-6
+        self.barbed_diff_coeff = 50.0e-6
         # Spatial constants.
         self.monomer_length = 2.7e-3
         self.branch_angle_mu = 70 / 180 * np.pi
