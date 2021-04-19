@@ -91,9 +91,10 @@ class Network(object):
         self.transition_rate_edge_row = np.array([])
         self.current_time = 0.0
         self.total_time = total_time
-
+        
     def calculate_transition_rates(self):
-        k_barbed_on_npf_mat = self.barbed_diff_coeff / cdist(self.barbed_xyz_mat, self.npf_xyz_mat)**2
+        #k_barbed_on_npf_mat = self.barbed_diff_coeff / cdist(self.barbed_xyz_mat, self.npf_xyz_mat)**2
+        k_barbed_on_npf_mat = self.barbed_diff_coeff / np.linalg.norm(self.barbed_xyz_mat[:, None, :] - self.npf_xyz_mat[None, :, :], axis=-1)**2
         # Elongation from solution
         k_elongate_col = self.k_elongate * ~self.barbed_is_capped_row[:, np.newaxis]
         k_elongate_col[self.barbed_has_wh2_row] = 0.0
@@ -322,7 +323,7 @@ class Network(object):
         self.current_time += time_interval
 
     def simulate(self):
-        while self.current_time < self.total_time:
+        while (self.current_time < self.total_time) and (self.no_barbed > self.barbed_is_capped_row.sum()):
             self.gillespie_step()
             self.update_network_mechanics()
             if self.no_tethered_barbed == 0:
