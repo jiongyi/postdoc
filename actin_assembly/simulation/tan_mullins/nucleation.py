@@ -99,16 +99,16 @@ class Network(object):
         k_elongate_col = self.k_elongate * ~self.barbed_is_capped_row[:, np.newaxis]
         k_elongate_col[self.barbed_has_wh2_row] = 0.0
         k_elongate_col[self.barbed_has_monomer_wh2_row] = 0.0
-        k_elongate_col[self.barbed_has_weak_arp23_ca_row] = 0.0
-        k_elongate_col[self.barbed_has_strong_arp23_ca_row] = 0.0
-        k_elongate_col[self.barbed_has_active_arp23_ca_row] = 0.0
+        #k_elongate_col[self.barbed_has_weak_arp23_ca_row] = 0.0
+        #k_elongate_col[self.barbed_has_strong_arp23_ca_row] = 0.0
+        #k_elongate_col[self.barbed_has_active_arp23_ca_row] = 0.0
         # Capping from solution
         k_cap_col = self.k_cap * ~self.barbed_is_capped_row[:, np.newaxis]
         k_cap_col[self.barbed_has_wh2_row] = 0.0
         k_cap_col[self.barbed_has_monomer_wh2_row] = 0.0
-        k_cap_col[self.barbed_has_weak_arp23_ca_row] = 0.0
-        k_cap_col[self.barbed_has_strong_arp23_ca_row] = 0.0
-        k_cap_col[self.barbed_has_active_arp23_ca_row] = 0.0
+        #k_cap_col[self.barbed_has_weak_arp23_ca_row] = 0.0
+        #k_cap_col[self.barbed_has_strong_arp23_ca_row] = 0.0
+        #k_cap_col[self.barbed_has_active_arp23_ca_row] = 0.0
         # Load WH2 domains
         k_monomer_on_wh2_mat = np.zeros((self.no_barbed, self.no_npfs))
         k_monomer_on_wh2_mat[0, ~self.wh2_has_monomer_row] = self.k_monomer_on_wh2
@@ -118,7 +118,8 @@ class Network(object):
         k_monomer_off_wh2_mat[0, self.wh2_has_monomer_row] = self.k_monomer_off_wh2
         k_monomer_off_wh2_mat[0, self.wh2_has_monomer_barbed_row] = 0.0
         # Tether to empty WH2 domain
-        k_barbed_on_wh2_mat = np.copy(k_barbed_on_npf_mat)
+        #k_barbed_on_wh2_mat = np.copy(k_barbed_on_npf_mat)
+        k_barbed_on_wh2_mat = -k_barbed_on_npf_mat * self.barbed_orientation_mat[:, None, 2]
         k_barbed_on_wh2_mat[self.barbed_is_capped_row, :] = 0.0
         k_barbed_on_wh2_mat[:, self.wh2_has_monomer_row] = 0.0
         k_barbed_on_wh2_mat[:, self.wh2_has_barbed_row] = 0.0
@@ -127,13 +128,15 @@ class Network(object):
         # Break tether from WH2 domain
         k_barbed_off_wh2_col = self.k_barbed_off_wh2 * self.exp_force_weight * self.barbed_has_wh2_row[:, np.newaxis]
         # Tether to loaded WH2 domain
-        k_barbed_on_monomer_wh2_mat = np.copy(k_barbed_on_npf_mat)
+        #k_barbed_on_monomer_wh2_mat = np.copy(k_barbed_on_npf_mat)
+        k_barbed_on_monomer_wh2_mat = -k_barbed_on_npf_mat * self.barbed_orientation_mat[:, None, 2]
         k_barbed_on_monomer_wh2_mat[self.barbed_is_capped_row, :] = 0.0
         k_barbed_on_monomer_wh2_mat[:, ~self.wh2_has_monomer_row] = 0.0
         k_barbed_on_monomer_wh2_mat[:, self.wh2_has_monomer_barbed_row] = 0.0
         k_barbed_on_monomer_wh2_mat[:, self.ca_has_arp23_row] = 0.0
         # Break tether and take monomer from WH2 domain
-        k_barbed_off_monomer_wh2_col = self.k_barbed_monomer_off_wh2 * self.exp_force_weight * self.barbed_has_monomer_wh2_row[:, np.newaxis]
+        #k_barbed_off_monomer_wh2_col = self.k_barbed_monomer_off_wh2 * self.exp_force_weight * self.barbed_has_monomer_wh2_row[:, np.newaxis]
+        k_barbed_off_monomer_wh2_col = self.k_elongate * self.exp_force_weight * self.barbed_has_monomer_wh2_row[:, np.newaxis]
         # Load CA domain
         k_arp23_on_ca_mat = np.zeros((self.no_barbed, self.no_npfs))
         k_arp23_on_ca_mat[0, ~self.ca_has_arp23_row] = self.k_arp23_on_ca
@@ -142,7 +145,8 @@ class Network(object):
         k_arp23_off_ca_mat[0, self.ca_has_arp23_row] = self.k_arp23_off_ca
         k_arp23_off_ca_mat[0, self.ca_arp23_has_barbed_row] = 0.0
         # Tether to loaded CA domain
-        k_barbed_on_arp23_ca_mat = np.copy(k_barbed_on_npf_mat)
+        #k_barbed_on_arp23_ca_mat = np.copy(k_barbed_on_npf_mat)
+        k_barbed_on_arp23_ca_mat = k_barbed_on_npf_mat * np.sqrt(1 - self.barbed_orientation_mat[:, None, 2]**2)
         k_barbed_on_arp23_ca_mat[self.barbed_has_weak_arp23_ca_row, :] = 0.0
         k_barbed_on_arp23_ca_mat[self.barbed_has_strong_arp23_ca_row, :] = 0.0
         k_barbed_on_arp23_ca_mat[self.barbed_has_active_arp23_ca_row, :] = 0.0
