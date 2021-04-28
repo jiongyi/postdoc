@@ -19,7 +19,7 @@ def concatenate_fast(x):
     y = np.concatenate(x, axis=1)
     return y
     
-
+    
 class Network(object):
     def __init__(self,
                  actin_umolar=5.0,
@@ -52,12 +52,12 @@ class Network(object):
         self.no_barbed = 200
         self.barbed_xyz_mat = np.random.rand(self.no_barbed, 3)
         self.barbed_xyz_mat[:, [0, 1]] -= 0.5
-        self.barbed_xyz_mat[:, 2] *= 200 * self.monomer_length
+        self.barbed_xyz_mat[:, 2] *= 100 * self.monomer_length
 
         random_phi_col = 2 * np.pi * np.random.rand(self.no_barbed, 1)
         random_theta_col = 0.5 * np.pi * (1 + np.random.rand(self.no_barbed, 1))
-        self.barbed_orientation_mat = np.concatenate((np.sin(random_theta_col) + np.cos(random_phi_col),
-                                                      np.sin(random_theta_col) + np.sin(random_phi_col),
+        self.barbed_orientation_mat = np.concatenate((np.sin(random_theta_col) * np.cos(random_phi_col),
+                                                      np.sin(random_theta_col) * np.sin(random_phi_col),
                                                       np.cos(random_theta_col)), axis=1)
 
         self.barbed_is_capped_row = np.zeros(self.no_barbed, dtype=bool)
@@ -80,7 +80,7 @@ class Network(object):
         self.ca_arp23_has_barbed_row = np.zeros(self.no_npfs, dtype=bool)
         
         # Network mechanics.
-        self.membrane_stiffness = 100.0e3 # piconewtons per micron
+        self.membrane_stiffness = 10.0e3 # piconewtons per micron
         self.barbed_tether_force_row = np.zeros(self.no_npfs)
         self.mean_bond_tension = 0.0
         self.exp_force_weight = 1.0
@@ -93,8 +93,8 @@ class Network(object):
         self.total_time = total_time
         
     def calculate_transition_rates(self):
-        #k_barbed_on_npf_mat = self.barbed_diff_coeff / cdist(self.barbed_xyz_mat, self.npf_xyz_mat)**2
-        k_barbed_on_npf_mat = self.barbed_diff_coeff / np.linalg.norm(self.barbed_xyz_mat[:, None, :] - self.npf_xyz_mat[None, :, :], axis=-1)**2
+        k_barbed_on_npf_mat = self.barbed_diff_coeff / cdist(self.barbed_xyz_mat, self.npf_xyz_mat)**2
+        #k_barbed_on_npf_mat = self.barbed_diff_coeff / np.linalg.norm(self.barbed_xyz_mat[:, None, :] - self.npf_xyz_mat[None, :, :], axis=-1)**2
         # Elongation from solution
         k_elongate_col = self.k_elongate * ~self.barbed_is_capped_row[:, np.newaxis]
         k_elongate_col[self.barbed_has_wh2_row] = 0.0
@@ -126,7 +126,8 @@ class Network(object):
         k_barbed_on_wh2_mat[:, self.ca_has_arp23_row] = 0.0
         k_barbed_on_wh2_mat[:, self.ca_arp23_has_barbed_row] = 0.0
         # Break tether from WH2 domain
-        k_barbed_off_wh2_col = self.k_barbed_off_wh2 * self.exp_force_weight * self.barbed_has_wh2_row[:, np.newaxis]
+        # k_barbed_off_wh2_col = self.k_barbed_off_wh2 * self.exp_force_weight * self.barbed_has_wh2_row[:, np.newaxis]
+        k_barbed_off_wh2_col = 0.5 * self.k_elongate * (1 + self.barbed_orientation_mat[:, 2, None]) * self.exp_force_weight * self.barbed_has_wh2_row[:, np.newaxis]
         # Tether to loaded WH2 domain
         #k_barbed_on_monomer_wh2_mat = np.copy(k_barbed_on_npf_mat)
         k_barbed_on_monomer_wh2_mat = -k_barbed_on_npf_mat * self.barbed_orientation_mat[:, None, 2]
@@ -136,7 +137,7 @@ class Network(object):
         k_barbed_on_monomer_wh2_mat[:, self.ca_has_arp23_row] = 0.0
         # Break tether and take monomer from WH2 domain
         #k_barbed_off_monomer_wh2_col = self.k_barbed_monomer_off_wh2 * self.exp_force_weight * self.barbed_has_monomer_wh2_row[:, np.newaxis]
-        k_barbed_off_monomer_wh2_col = self.k_elongate * self.exp_force_weight * self.barbed_has_monomer_wh2_row[:, np.newaxis]
+        k_barbed_off_monomer_wh2_col = 0.5 * self.k_elongate * (1 + self.barbed_orientation_mat[:, 2, None]) * self.exp_force_weight * self.barbed_has_monomer_wh2_row[:, np.newaxis]
         # Load CA domain
         k_arp23_on_ca_mat = np.zeros((self.no_barbed, self.no_npfs))
         k_arp23_on_ca_mat[0, ~self.ca_has_arp23_row] = self.k_arp23_on_ca
@@ -199,20 +200,11 @@ class Network(object):
         self.barbed_is_capped_row[index] = True
 
     def branch(self, index):
-        def rotation_angle_axis(ux_axis, uy_axis, uz_axis, theta_axis):
-            r11 = np.cos(theta_axis) + ux_axis ** 2 * (1 - np.cos(theta_axis))
-            r12 = ux_axis * uy_axis * (1 - np.cos(theta_axis)) - uz_axis * np.sin(theta_axis)
-            r13 = ux_axis * uz_axis * (1 - np.cos(theta_axis)) + uy_axis * np.sin(theta_axis)
-            r21 = uy_axis * ux_axis * (1 - np.cos(theta_axis)) + uz_axis * np.sin(theta_axis)
-            r22 = np.cos(theta_axis) + uy_axis ** 2 * (1 - np.cos(theta_axis))
-            r23 = uy_axis * uz_axis * (1 - np.cos(theta_axis)) - ux_axis * np.sin(theta_axis)
-            r31 = uz_axis * ux_axis * (1 - np.cos(theta_axis)) - uy_axis * np.sin(theta_axis)
-            r32 = uz_axis * uy_axis * (1 - np.cos(theta_axis)) + ux_axis * np.sin(theta_axis)
-            r33 = np.cos(theta_axis) + uz_axis ** 2 * (1 - np.cos(theta_axis))
-            rotation_mat = np.array([[r11, r12, r13], [r21, r22, r23], [r31, r32, r33]])
-            return rotation_mat
+        def rotate_3d(x, u, theta):
+            x_new = u * (np.dot(u, x)) + np.cos(theta) * np.cross(np.cross(u, x), u) + np.sin(theta) * np.cross(u, x)
+            return x_new
 
-        ux_old, uy_old, uz_old = self.barbed_xyz_mat[index]
+        ux_old, uy_old, uz_old = self.barbed_orientation_mat[index]
 
         # Find an axis perpendicular to orientation of ended end.
         u_perp_mag = np.sqrt(2 + (ux_old + uy_old) ** 2)
@@ -223,19 +215,15 @@ class Network(object):
         # Perform rotation to find new orientation.
         theta_polar = self.branch_angle_mu + self.branch_angle_sigma * np.random.randn()
         theta_azi = 2 * np.pi * np.random.rand()
-        polar_rotation_mat = rotation_angle_axis(ux_perp_old, uy_perp_old, uz_perp_old, theta_polar)
-        u_new_polar_row = polar_rotation_mat @ np.array([ux_old, uy_old, uz_old])
-        azi_rotation_mat = rotation_angle_axis(ux_old, uy_old, uz_old, theta_azi)
-        u_new_row = azi_rotation_mat @ u_new_polar_row
+        u_polar_row = rotate_3d(self.barbed_orientation_mat[index], np.array([ux_perp_old, uy_perp_old, uz_perp_old]), theta_polar)
+        u_new_row = rotate_3d(u_polar_row, self.barbed_orientation_mat[index], theta_azi)
 
         # Do it until it's facing the right way (-z).
         while u_new_row[2] >= 0.0:
             theta_polar = self.branch_angle_mu + self.branch_angle_sigma * np.random.randn()
             theta_azi = 2 * np.pi * np.random.rand()
-            polar_rotation_mat = rotation_angle_axis(ux_perp_old, uy_perp_old, uz_perp_old, theta_polar)
-            u_new_polar_row = polar_rotation_mat @ np.array([ux_old, uy_old, uz_old])
-            azi_rotation_mat = rotation_angle_axis(ux_old, uy_old, uz_old, theta_azi)
-            u_new_row = azi_rotation_mat @ u_new_polar_row
+            u_polar_row = rotate_3d(self.barbed_orientation_mat[index], np.array([ux_perp_old, uy_perp_old, uz_perp_old]), theta_polar)
+            u_new_row = rotate_3d(u_polar_row, self.barbed_orientation_mat[index], theta_azi)
 
         # Add new barbed end to relevant arrays.
         self.barbed_xyz_mat = np.vstack((self.barbed_xyz_mat, self.barbed_xyz_mat[index]))
@@ -331,6 +319,9 @@ class Network(object):
             self.gillespie_step()
             self.update_network_mechanics()
             if self.no_tethered_barbed == 0:
+                self.wh2_has_barbed_row[:] = False
+                self.wh2_has_monomer_barbed_row[:] = False
+                self.ca_arp23_has_barbed_row[:] = False
                 self.npf_xyz_mat[:, 2] = self.barbed_xyz_mat[:, 2].min()
                 self.mean_bond_tension = 0.0
                 self.exp_force_weight = 1.0
@@ -348,4 +339,10 @@ class Network(object):
         axes1_hand.quiver(self.barbed_xyz_mat[:, 0], self.barbed_xyz_mat[:, 1], self.barbed_xyz_mat[:, 2],
                           self.barbed_orientation_mat[:, 0], self.barbed_orientation_mat[:, 1],
                           self.barbed_orientation_mat[:, 2], length=arrow_length, color=color_tup)
+        fig1_hand.set_figwidth(15)
+        fig1_hand.set_figheight(15)
+        axes1_hand.set_xlabel("$x$ ($\mathrm{\mu m}$)", fontsize=14)
+        axes1_hand.set_ylabel("$y$ ($\mathrm{\mu m}$)", fontsize=14)
+        axes1_hand.set_zlabel("$z$ ($\mathrm{\mu m}$)", fontsize=14)
+        axes1_hand.tick_params(labelsize=14)
         return fig1_hand, axes1_hand
