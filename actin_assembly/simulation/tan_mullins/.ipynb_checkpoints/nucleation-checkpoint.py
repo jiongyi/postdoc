@@ -94,24 +94,18 @@ class Network(object):
         
     def calculate_transition_rates(self):
         k_barbed_on_npf_mat = self.barbed_diff_coeff / cdist(self.barbed_xyz_mat, self.npf_xyz_mat)**2
-        #k_barbed_on_npf_mat = self.barbed_diff_coeff / np.linalg.norm(self.barbed_xyz_mat[:, None, :] - self.npf_xyz_mat[None, :, :], axis=-1)**2
         # Elongation from solution
         k_elongate_col = self.k_elongate * ~self.barbed_is_capped_row[:, np.newaxis]
         k_elongate_col[self.barbed_has_wh2_row] = 0.0
         k_elongate_col[self.barbed_has_monomer_wh2_row] = 0.0
-        #k_elongate_col[self.barbed_has_weak_arp23_ca_row] = 0.0
-        #k_elongate_col[self.barbed_has_strong_arp23_ca_row] = 0.0
-        #k_elongate_col[self.barbed_has_active_arp23_ca_row] = 0.0
         # Capping from solution
         k_cap_col = self.k_cap * ~self.barbed_is_capped_row[:, np.newaxis]
         k_cap_col[self.barbed_has_wh2_row] = 0.0
         k_cap_col[self.barbed_has_monomer_wh2_row] = 0.0
-        #k_cap_col[self.barbed_has_weak_arp23_ca_row] = 0.0
-        #k_cap_col[self.barbed_has_strong_arp23_ca_row] = 0.0
-        #k_cap_col[self.barbed_has_active_arp23_ca_row] = 0.0
         # Load WH2 domains
         k_monomer_on_wh2_mat = np.zeros((self.no_barbed, self.no_npfs))
         k_monomer_on_wh2_mat[0, ~self.wh2_has_monomer_row] = self.k_monomer_on_wh2
+        k_monomer_on_wh2_mat[0, self.wh2_has_barbed_row] = 0.0
         k_monomer_on_wh2_mat[0, self.wh2_has_monomer_barbed_row] = 0.0
         # Unload WH2 domains
         k_monomer_off_wh2_mat = np.zeros((self.no_barbed, self.no_npfs))
@@ -121,8 +115,12 @@ class Network(object):
         #k_barbed_on_wh2_mat = np.copy(k_barbed_on_npf_mat)
         k_barbed_on_wh2_mat = -k_barbed_on_npf_mat * self.barbed_orientation_mat[:, None, 2]
         k_barbed_on_wh2_mat[self.barbed_is_capped_row, :] = 0.0
+        k_barbed_on_wh2_mat[self.barbed_has_weak_arp23_ca_row, :] = 0.0
+        k_barbed_on_wh2_mat[self.barbed_has_strong_arp23_ca_row, :] = 0.0
+        k_barbed_on_wh2_mat[self.barbed_has_active_arp23_ca_row, :] = 0.0
         k_barbed_on_wh2_mat[:, self.wh2_has_monomer_row] = 0.0
         k_barbed_on_wh2_mat[:, self.wh2_has_barbed_row] = 0.0
+        k_barbed_on_wh2_mat[:, self.wh2_has_monomer_barbed_row] = 0.0
         k_barbed_on_wh2_mat[:, self.ca_has_arp23_row] = 0.0
         k_barbed_on_wh2_mat[:, self.ca_arp23_has_barbed_row] = 0.0
         # Break tether from WH2 domain
@@ -132,9 +130,14 @@ class Network(object):
         #k_barbed_on_monomer_wh2_mat = np.copy(k_barbed_on_npf_mat)
         k_barbed_on_monomer_wh2_mat = -k_barbed_on_npf_mat * self.barbed_orientation_mat[:, None, 2]
         k_barbed_on_monomer_wh2_mat[self.barbed_is_capped_row, :] = 0.0
+        k_barbed_on_monomer_wh2_mat[self.barbed_has_weak_arp23_ca_row, :] = 0.0
+        k_barbed_on_monomer_wh2_mat[self.barbed_has_strong_arp23_ca_row, :] = 0.0
+        k_barbed_on_monomer_wh2_mat[self.barbed_has_active_arp23_ca_row, :] = 0.0
         k_barbed_on_monomer_wh2_mat[:, ~self.wh2_has_monomer_row] = 0.0
+        k_barbed_on_monomer_wh2_mat[:, self.wh2_has_barbed_row] = 0.0
         k_barbed_on_monomer_wh2_mat[:, self.wh2_has_monomer_barbed_row] = 0.0
         k_barbed_on_monomer_wh2_mat[:, self.ca_has_arp23_row] = 0.0
+        k_barbed_on_monomer_wh2_mat[:, self.ca_arp23_has_barbed_row] = 0.0
         # Break tether and take monomer from WH2 domain
         #k_barbed_off_monomer_wh2_col = self.k_barbed_monomer_off_wh2 * self.exp_force_weight * self.barbed_has_monomer_wh2_row[:, np.newaxis]
         k_barbed_off_monomer_wh2_col = 0.5 * self.k_elongate * (1 + self.barbed_orientation_mat[:, 2, None]) * self.exp_force_weight * self.barbed_has_monomer_wh2_row[:, np.newaxis]
@@ -148,11 +151,15 @@ class Network(object):
         # Tether to loaded CA domain
         #k_barbed_on_arp23_ca_mat = np.copy(k_barbed_on_npf_mat)
         k_barbed_on_arp23_ca_mat = k_barbed_on_npf_mat * np.sqrt(1 - self.barbed_orientation_mat[:, None, 2]**2)
+        k_barbed_on_arp23_ca_mat[self.barbed_has_wh2_row, :] = 0.0
+        k_barbed_on_arp23_ca_mat[self.barbed_has_monomer_wh2_row, :] = 0.0
         k_barbed_on_arp23_ca_mat[self.barbed_has_weak_arp23_ca_row, :] = 0.0
         k_barbed_on_arp23_ca_mat[self.barbed_has_strong_arp23_ca_row, :] = 0.0
         k_barbed_on_arp23_ca_mat[self.barbed_has_active_arp23_ca_row, :] = 0.0
         k_barbed_on_arp23_ca_mat[:, ~self.ca_has_arp23_row] = 0.0
         k_barbed_on_arp23_ca_mat[:, self.ca_arp23_has_barbed_row] = 0.0
+        k_barbed_on_arp23_ca_mat[:, self.wh2_has_monomer_barbed_row] = 0.0
+        k_barbed_on_arp23_ca_mat[:, self.wh2_has_barbed_row] = 0.0
         # Break tether from weakly bound Arp2/3
         k_barbed_off_weak_arp23_ca_col = self.k_barbed_fast_off_arp23_ca * self.exp_force_weight * self.barbed_has_weak_arp23_ca_row[:, np.newaxis]
         # Break tether from strongly bound Arp2/3
@@ -257,36 +264,37 @@ class Network(object):
         rate_index = np.searchsorted(self.transition_rate_mat.cumsum(), random_rate)
         rate_row, rate_col = np.unravel_index(rate_index, self.transition_rate_mat.shape)
         transition_index = np.searchsorted(self.transition_rate_edge_row, rate_col, side='right')
+        npf_index = rate_col - self.transition_rate_edge_row[transition_index - 1]
         if transition_index == 0:
             self.elongate(rate_row)
         elif transition_index == 1:
             self.cap(rate_row)
         elif transition_index == 2:
-            self.wh2_has_monomer_row[rate_col - self.transition_rate_edge_row[1]] = True
+            self.wh2_has_monomer_row[npf_index] = True
         elif transition_index == 3:
-            self.wh2_has_monomer_row[rate_col - self.transition_rate_edge_row[2]] = False
+            self.wh2_has_monomer_row[npf_index] = False
         elif transition_index == 4:
             self.barbed_has_wh2_row[rate_row] = True
-            self.barbed2npf_index_row[rate_row] = rate_col - self.transition_rate_edge_row[3]
-            self.wh2_has_barbed_row[rate_col - self.transition_rate_edge_row[3]] = True
+            self.barbed2npf_index_row[rate_row] = npf_index
+            self.wh2_has_barbed_row[npf_index] = True
         elif transition_index == 5:
             self.barbed_has_wh2_row[rate_row] = False
+            self.wh2_has_barbed_row[self.barbed2npf_index_row[rate_row]] = False
             self.barbed2npf_index_row[rate_row] = -1
-            self.wh2_has_barbed_row[rate_col - self.transition_rate_edge_row[4]] = False
         elif transition_index == 6:
             self.barbed_has_monomer_wh2_row[rate_row] = True
-            self.barbed2npf_index_row[rate_row] = rate_col - self.transition_rate_edge_row[5]
-            self.wh2_has_monomer_barbed_row[rate_col - self.transition_rate_edge_row[5]] = True
+            self.barbed2npf_index_row[rate_row] = npf_index
+            self.wh2_has_monomer_barbed_row[npf_index] = True
         elif transition_index == 7:
             self.barbed_has_monomer_wh2_row[rate_row] = False
+            self.wh2_has_monomer_barbed_row[self.barbed2npf_index_row[rate_row]] = False
+            self.wh2_has_monomer_row[self.barbed2npf_index_row[rate_row]] = False
             self.barbed2npf_index_row[rate_row] = -1
-            self.wh2_has_monomer_barbed_row[rate_col - self.transition_rate_edge_row[6]] = False
-            self.elongate(rate_row)
-            self.wh2_has_monomer_row[rate_col - self.transition_rate_edge_row[6]] = False
+            self.elongate(rate_row) 
         elif transition_index == 8:
-            self.ca_has_arp23_row[rate_col - self.transition_rate_edge_row[7]] = True
+            self.ca_has_arp23_row[npf_index] = True
         elif transition_index == 9:
-            self.ca_has_arp23_row[rate_col - self.transition_rate_edge_row[8]] = False
+            self.ca_has_arp23_row[npf_index] = False
         elif transition_index == 10:
             urand = np.random.rand()
             if urand < 0.97:
@@ -295,21 +303,21 @@ class Network(object):
                 self.barbed_has_strong_arp23_ca_row[rate_row] = True
             else:
                 self.barbed_has_active_arp23_ca_row[rate_row] = True
-            self.barbed2npf_index_row[rate_row] = rate_col - self.transition_rate_edge_row[9]
-            self.ca_arp23_has_barbed_row[rate_col - self.transition_rate_edge_row[9]] = True
+            self.barbed2npf_index_row[rate_row] = npf_index
+            self.ca_arp23_has_barbed_row[npf_index] = True
         elif transition_index == 11:
             self.barbed_has_weak_arp23_ca_row[rate_row] = False
+            self.ca_arp23_has_barbed_row[self.barbed2npf_index_row[rate_row]] = False
             self.barbed2npf_index_row[rate_row] = -1
-            self.ca_arp23_has_barbed_row[rate_col - self.transition_rate_edge_row[10]] = False
         elif transition_index == 12:
             self.barbed_has_strong_arp23_ca_row[rate_row] = False
+            self.ca_arp23_has_barbed_row[self.barbed2npf_index_row[rate_row]] = False
             self.barbed2npf_index_row[rate_row] = -1
-            self.ca_arp23_has_barbed_row[rate_col - self.transition_rate_edge_row[11]] = False
         elif transition_index == 13:
             self.barbed_has_active_arp23_ca_row[rate_row] = False
+            self.ca_arp23_has_barbed_row[self.barbed2npf_index_row[rate_row]] = False
+            self.ca_has_arp23_row[self.barbed2npf_index_row[rate_row]] = False
             self.barbed2npf_index_row[rate_row] = -1
-            self.ca_arp23_has_barbed_row[rate_col - self.transition_rate_edge_row[12]] = False
-            self.ca_has_arp23_row[rate_col - self.transition_rate_edge_row[12]] = False
             self.branch(rate_row)
         time_interval = -1 * np.log(np.random.rand()) / sum_transition_rate
         self.current_time += time_interval
