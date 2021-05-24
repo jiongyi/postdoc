@@ -42,7 +42,7 @@ class Network(object):
         self.k_elongate = 11.0 * actin_umolar
         self.k_cap = 3.0 * cp_umolar
 
-        self.barbed_diff_coeff = 8000.0e-6
+        self.barbed_diff_coeff = 8000.0e-6 # square nanometers per second, estimated from polyproline-WH2 paper
         # Spatial constants.
         self.monomer_length = 2.7e-3
         self.branch_angle_mu = 70 / 180 * np.pi
@@ -112,7 +112,6 @@ class Network(object):
         k_monomer_off_wh2_mat[0, self.wh2_has_monomer_row] = self.k_monomer_off_wh2
         k_monomer_off_wh2_mat[0, self.wh2_has_monomer_barbed_row] = 0.0
         # Tether to empty WH2 domain
-        #k_barbed_on_wh2_mat = np.copy(k_barbed_on_npf_mat)
         k_barbed_on_wh2_mat = -k_barbed_on_npf_mat * self.barbed_orientation_mat[:, None, 2]
         k_barbed_on_wh2_mat[self.barbed_is_capped_row, :] = 0.0
         k_barbed_on_wh2_mat[self.barbed_has_weak_arp23_ca_row, :] = 0.0
@@ -124,10 +123,8 @@ class Network(object):
         k_barbed_on_wh2_mat[:, self.ca_has_arp23_row] = 0.0
         k_barbed_on_wh2_mat[:, self.ca_arp23_has_barbed_row] = 0.0
         # Break tether from WH2 domain
-        # k_barbed_off_wh2_col = self.k_barbed_off_wh2 * self.exp_force_weight * self.barbed_has_wh2_row[:, np.newaxis]
         k_barbed_off_wh2_col = 0.5 * self.k_elongate * (1 + self.barbed_orientation_mat[:, 2, None]) * self.exp_force_weight * self.barbed_has_wh2_row[:, np.newaxis]
         # Tether to loaded WH2 domain
-        #k_barbed_on_monomer_wh2_mat = np.copy(k_barbed_on_npf_mat)
         k_barbed_on_monomer_wh2_mat = -k_barbed_on_npf_mat * self.barbed_orientation_mat[:, None, 2]
         k_barbed_on_monomer_wh2_mat[self.barbed_is_capped_row, :] = 0.0
         k_barbed_on_monomer_wh2_mat[self.barbed_has_weak_arp23_ca_row, :] = 0.0
@@ -139,7 +136,6 @@ class Network(object):
         k_barbed_on_monomer_wh2_mat[:, self.ca_has_arp23_row] = 0.0
         k_barbed_on_monomer_wh2_mat[:, self.ca_arp23_has_barbed_row] = 0.0
         # Break tether and take monomer from WH2 domain
-        #k_barbed_off_monomer_wh2_col = self.k_barbed_monomer_off_wh2 * self.exp_force_weight * self.barbed_has_monomer_wh2_row[:, np.newaxis]
         k_barbed_off_monomer_wh2_col = 0.5 * self.k_elongate * (1 + self.barbed_orientation_mat[:, 2, None]) * self.exp_force_weight * self.barbed_has_monomer_wh2_row[:, np.newaxis]
         # Load CA domain
         k_arp23_on_ca_mat = np.zeros((self.no_barbed, self.no_npfs))
@@ -149,7 +145,6 @@ class Network(object):
         k_arp23_off_ca_mat[0, self.ca_has_arp23_row] = self.k_arp23_off_ca
         k_arp23_off_ca_mat[0, self.ca_arp23_has_barbed_row] = 0.0
         # Tether to loaded CA domain
-        #k_barbed_on_arp23_ca_mat = np.copy(k_barbed_on_npf_mat)
         k_barbed_on_arp23_ca_mat = k_barbed_on_npf_mat * np.sqrt(1 - self.barbed_orientation_mat[:, None, 2]**2)
         k_barbed_on_arp23_ca_mat[self.barbed_has_wh2_row, :] = 0.0
         k_barbed_on_arp23_ca_mat[self.barbed_has_monomer_wh2_row, :] = 0.0
@@ -255,7 +250,6 @@ class Network(object):
         else:
             self.mean_bond_tension = 0.0
             self.exp_force_weight = 1.0
-        
 
     def gillespie_step(self):
         self.calculate_transition_rates()
