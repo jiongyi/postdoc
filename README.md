@@ -2,7 +2,7 @@
 
 This repository contains all the code I've developed in my postdoc in the Mullins lab at UCSF.
 
-## Contents summry
+## Contents summary
 
 ### Actin assembly
 
