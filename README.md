@@ -21,3 +21,13 @@ This repository contains all the code I've developed in my postdoc in the Mullin
 - Monte Carlo simulation for Weichsel-Schwarz model from PNAS 2010
 - Monte Carlo simulation for Mueller-et-al-Sixt model from Cell 2017
 - Monte Carlo simulation of homebrewed model (tan-mullins)
+
+#### Usage
+
+In all nucleation modules, simulations are implemented in the Network class.
+
+~~~
+from nucleation import *
+
+actin_network_obj = Network()
+~~~
